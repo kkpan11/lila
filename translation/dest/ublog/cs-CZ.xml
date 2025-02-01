@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="communityBlogs">Komunitní blogy</string>
+  <string name="friendBlogs">Blogy přátel</string>
+  <string name="likedBlogs">Oblíbené příspěvky blogu</string>
+  <string name="blogTopics">Témata blogů</string>
+  <string name="lichessOfficialBlog">Oficiální blog Lichess</string>
+  <string name="continueReadingPost">Pokračovat ve čtení tohoto příspěvku</string>
+  <string name="lichessBlogPostsFromXYear">Příspěvky blogu Lichess v %s</string>
+  <string name="previousBlogPosts">Předchozí příspěvky blogu</string>
   <string name="xBlog">Blog hráče %s</string>
   <string name="newPost">Nový příspěvek</string>
   <string name="editYourBlogPost">Upravit svůj příspěvek na blogu</string>
@@ -42,11 +50,12 @@
   <string name="imageAlt">Alternativní text obrázku</string>
   <string name="imageCredit">Zdroj obrázku</string>
   <string name="deleteBlog">Definitivně smazat tento blogový příspěvek</string>
-  <string name="deleteImage">Smazat obrázek</string>
   <string name="safeToUseImages">Je bezpečné používat obrázky z těchto stránek: </string>
   <string name="selectPostTopics">Zvolte témata vašeho příspěvku</string>
   <string name="useImagesYouMadeYourself">Můžete také přidat obrázky, vytvořené vámi, screenshoty... cokoliv na co se nevztahují autorská práva.</string>
   <string name="safeAndRespectfulContent">Publikuje prosím jenom svůj vlastní a bezpečný obsah. Nekopírujte obsah někoho jiného.</string>
   <string name="inappropriateContentAccountClosed">Cokoliv nevhodného může způsobit smazání vašeho účtu.</string>
   <string name="blogTips">Naše jednoduché rady, jak psát skvělé příspěvky do blogu</string>
+  <string name="discussThisBlogPostInTheForum">Diskutujte o tomto příspěvku blogu ve fóru</string>
+  <string name="youBlockedByBlogAuthor">Jste zablokováni autorem blogu.</string>
 </resources>

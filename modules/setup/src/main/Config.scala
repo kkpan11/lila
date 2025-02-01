@@ -3,10 +3,9 @@ package lila.setup
 import chess.format.Fen
 import chess.variant.{ FromPosition, Variant }
 import chess.{ Clock, Game as ChessGame, Situation, Speed }
+import scalalib.model.Days
 
-import lila.common.Days
-import lila.game.Game
-import lila.lobby.Color
+import lila.lobby.TriColor
 import lila.rating.PerfType
 
 private[setup] trait Config:
@@ -26,12 +25,7 @@ private[setup] trait Config:
   // Game variant code
   val variant: Variant
 
-  // Creator player color
-  val color: Color
-
   def hasClock = timeMode == TimeMode.RealTime
-
-  lazy val creatorColor = color.resolve
 
   def makeGame(v: Variant): ChessGame =
     ChessGame(situation = Situation(v), clock = makeClock.map(_.toClock))
@@ -46,7 +40,7 @@ private[setup] trait Config:
 
   def clockHasTime = time + increment.value > 0
 
-  def makeClock = hasClock option justMakeClock
+  def makeClock = hasClock.option(justMakeClock)
 
   protected def justMakeClock =
     Clock.Config(
@@ -54,25 +48,34 @@ private[setup] trait Config:
       if clockHasTime then increment else Clock.IncrementSeconds(1)
     )
 
-  def makeDaysPerTurn: Option[Days] = (timeMode == TimeMode.Correspondence) option days
+  def makeDaysPerTurn: Option[Days] = (timeMode == TimeMode.Correspondence).option(days)
 
   def makeSpeed: Speed = chess.Speed(makeClock)
 
-  def perfType: PerfType = PerfType(variant, makeSpeed)
+  def perfType: PerfType = lila.rating.PerfType(variant, makeSpeed)
+  def perfKey            = perfType.key
+
+trait WithColor:
+  self: Config =>
+
+  // creator player color
+  def color: TriColor
+
+  lazy val creatorColor = color.resolve()
 
 trait Positional:
   self: Config =>
 
-  def fen: Option[Fen.Epd]
+  def fen: Option[Fen.Full]
 
   def strictFen: Boolean
 
   lazy val validFen = variant != FromPosition ||
     fen.exists: f =>
-      Fen.read(f).exists(_ playable strictFen)
+      Fen.read(f).exists(_.playable(strictFen))
 
   def fenGame(builder: ChessGame => Fu[Game]): Fu[Game] =
-    val baseState = fen.ifTrue(variant.fromPosition) flatMap {
+    val baseState = fen.ifTrue(variant.fromPosition).flatMap {
       Fen.readWithMoveNumber(FromPosition, _)
     }
     val (chessGame, state) = baseState.fold(makeGame -> none[Situation.AndFullMoveNumber]) {
@@ -86,7 +89,7 @@ trait Positional:
         if Fen.write(game).isInitial then makeGame(chess.variant.Standard) -> none
         else game                                                          -> baseState
     }
-    builder(chessGame) dmap { game =>
+    builder(chessGame).dmap { game =>
       state.fold(game) { case sit @ Situation.AndFullMoveNumber(Situation(board, _), _) =>
         game.copy(
           chess = game.chess.copy(

@@ -14,9 +14,8 @@ case class PuzzleRound(
   def themeVote(theme: PuzzleTheme.Key, vote: Option[Boolean]): Option[List[PuzzleRound.Theme]] =
     themes.find(_.theme == theme) match
       case None =>
-        vote map { v =>
+        vote.map: v =>
           PuzzleRound.Theme(theme, v) :: themes
-        }
       case Some(prev) =>
         vote match
           case None                      => themes.filter(_.theme != theme).some
@@ -27,11 +26,11 @@ case class PuzzleRound(
               case t                     => t
             }.some
 
-  def nonEmptyThemes = themes.nonEmpty option themes
+  def nonEmptyThemes = themes.nonEmpty.option(themes)
 
   def updateWithWin(win: PuzzleWin) = copy(
     win = win,
-    fixedAt = fixedAt orElse win.yes.option(nowInstant)
+    fixedAt = fixedAt.orElse(win.yes.option(nowInstant))
   )
 
   def firstWin = win.yes && fixedAt.isEmpty

@@ -1,7 +1,5 @@
 package lila.forum
 
-import lila.user.User
-
 case class ForumCateg(
     _id: ForumCategId, // slug
     name: String,
@@ -24,7 +22,8 @@ case class ForumCateg(
   def lastPostId(forUser: Option[User]): ForumPostId =
     if forUser.exists(_.marks.troll) then lastPostIdTroll else lastPostId
 
-  def isTeam = team.nonEmpty
+  def isTeam       = team.nonEmpty
+  def isDiagnostic = id == ForumCateg.diagnosticId
 
   def withPost(topic: ForumTopic, post: ForumPost): ForumCateg =
     copy(
@@ -37,13 +36,21 @@ case class ForumCateg(
       lastPostIdTroll = if topic.isTooBig then lastPostIdTroll else post.id
     )
 
-  def slug = id
+  def withoutTopic(topic: ForumTopic, lastPostId: ForumPostId, lastPostIdTroll: ForumPostId): ForumCateg =
+    copy(
+      nbTopics = nbTopics - 1,
+      nbTopicsTroll = nbTopicsTroll - 1,
+      nbPosts = nbPosts - topic.nbPosts,
+      nbPostsTroll = nbPostsTroll - topic.nbPostsTroll,
+      lastPostId = lastPostId,
+      lastPostIdTroll = lastPostIdTroll
+    )
 
 object ForumCateg:
 
-  val ublogId = ForumCategId("community-blog-discussions")
+  export lila.core.forum.ForumCateg.*
 
-  def isTeamSlug(id: ForumCategId) = id.value.startsWith("team-")
+  val ublogId      = ForumCategId("community-blog-discussions")
+  val diagnosticId = ForumCategId("diagnostic")
 
-  def toTeamId(id: ForumCategId): Option[TeamId] = isTeamSlug(id) option TeamId(id.value.drop(5))
-  def fromTeamId(id: TeamId): ForumCategId       = ForumCategId(s"team-$id")
+  def fromTeamId(id: TeamId): ForumCategId = ForumCategId(s"team-$id")

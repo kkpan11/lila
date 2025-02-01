@@ -2,20 +2,18 @@ package lila.relation
 
 import reactivemongo.api.bson.*
 
+import lila.core.relation.Relation.{ Block, Follow }
+import lila.core.userId.UserSearch
 import lila.db.dsl.{ *, given }
-import lila.user.User
 
-final private class RelationRepo(colls: Colls, userRepo: lila.user.UserRepo)(using
-    ec: Executor
-):
+final private class RelationRepo(colls: Colls, userRepo: lila.core.user.UserRepo)(using Executor):
 
-  import RelationRepo.*
   val coll = colls.relation
 
-  def following(userId: UserId) = relating(userId, Follow)
+  def following(userId: UserId): Fu[Set[UserId]] = relating(userId, Follow)
 
-  def blockers(userId: UserId) = relaters(userId, Block)
-  def blocking(userId: UserId) = relating(userId, Block)
+  def blockers(userId: UserId): Fu[Set[UserId]] = relaters(userId, Block)
+  def blocking(userId: UserId): Fu[Set[UserId]] = relating(userId, Block)
 
   def freshFollowersFromSecondary(userId: UserId): Fu[List[UserId]] =
     coll
@@ -23,7 +21,7 @@ final private class RelationRepo(colls: Colls, userRepo: lila.user.UserRepo)(usi
         import framework.*
         Match($doc("u2" -> userId, "r" -> Follow)) -> List(
           PipelineOperator(
-            $lookup.pipeline(
+            $lookup.pipelineBC(
               from = userRepo.coll,
               as = "follower",
               local = "u1",
@@ -34,7 +32,7 @@ final private class RelationRepo(colls: Colls, userRepo: lila.user.UserRepo)(usi
               )
             )
           ),
-          Match("follower" $ne $arr()),
+          Match("follower".$ne($arr())),
           Group(BSONNull)("ids" -> PushField("u1"))
         )
       .map(~_.flatMap(_.getAsOpt[List[UserId]]("ids")))
@@ -44,7 +42,7 @@ final private class RelationRepo(colls: Colls, userRepo: lila.user.UserRepo)(usi
       "u2",
       $doc(
         "u1" -> userId,
-        "u2" $startsWith term.value,
+        "u2".$startsWith(term.value),
         "r" -> Follow
       )
     )
@@ -72,9 +70,11 @@ final private class RelationRepo(colls: Colls, userRepo: lila.user.UserRepo)(usi
   def unblock(u1: UserId, u2: UserId): Funit  = remove(u1, u2)
 
   def unfollowMany(u1: UserId, u2s: Iterable[UserId]): Funit =
-    coll.delete.one($inIds(u2s map { makeId(u1, _) })).void
+    coll.delete.one($inIds(u2s.map { makeId(u1, _) })).void
 
   def unfollowAll(u1: UserId): Funit = coll.delete.one($doc("u1" -> u1)).void
+
+  def removeAllFollowers(u2: UserId): Funit = coll.delete.one($doc("u2" -> u2, "r" -> Follow)).void
 
   private def save(u1: UserId, u2: UserId, relation: Relation): Funit =
     coll.update
@@ -95,15 +95,10 @@ final private class RelationRepo(colls: Colls, userRepo: lila.user.UserRepo)(usi
       )
       .cursor[Bdoc]()
       .list(nb)
-      .dmap {
+      .dmap:
         _.flatMap { _.string("_id") }
-      } flatMap { ids =>
-      coll.delete.one($inIds(ids)).void
-    }
+      .flatMap: ids =>
+        coll.delete.one($inIds(ids)).void
 
   def filterBlocked(by: UserId, candidates: Iterable[UserId]): Fu[Set[UserId]] =
-    coll.distinctEasy[UserId, Set]("u2", $doc("u2" $in candidates, "u1" -> by, "r" -> Block))
-
-object RelationRepo:
-
-  def makeId(u1: UserId, u2: UserId) = s"$u1/$u2"
+    coll.distinctEasy[UserId, Set]("u2", $doc("u2".$in(candidates), "u1" -> by, "r" -> Block))

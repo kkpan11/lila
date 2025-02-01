@@ -1,24 +1,26 @@
 package lila.tree
 
 import alleycats.Zero
-import chess.Centis
+import chess.bitboard.Bitboard
 import chess.format.pgn.{ Glyph, Glyphs }
 import chess.format.{ Fen, Uci, UciCharPair, UciPath }
 import chess.opening.Opening
-import chess.{ Ply, Square, Check }
-import chess.bitboard.Bitboard
-import chess.variant.{ Variant, Crazyhouse }
+import chess.variant.{ Crazyhouse, Variant }
+import chess.{ Centis, Check, Ply, Square }
 import play.api.libs.json.*
-import ornicar.scalalib.ThreadLocalRandom
+import scalalib.StringOps.softCleanUp
+import scalalib.ThreadLocalRandom
+import scalalib.json.Json.{ *, given }
 
-import lila.common.Json.given
 import Node.{ Comments, Comment, Gamebook, Shapes }
 
-//opaque type not working due to cyclic ref try again later
+// opaque type not working due to cyclic ref try again later
 // either we decide that branches strictly represent all the children from a node
 // with the first being the mainline, OR we just use it as an List with extra functionalities
 case class Branches(nodes: List[Branch]) extends AnyVal:
-  def first      = nodes.headOption
+  def first = nodes.headOption
+  def mainlineFirst = nodes.collectFirst:
+    case node if !node.forceVariation => node
   def variations = nodes.drop(1)
   def isEmpty    = nodes.isEmpty
   def nonEmpty   = !isEmpty
@@ -29,42 +31,32 @@ case class Branches(nodes: List[Branch]) extends AnyVal:
   def get(id: UciCharPair): Option[Branch] = nodes.find(_.id == id)
   def hasNode(id: UciCharPair): Boolean    = nodes.exists(_.id == id)
 
-  def getNodeAndIndex(id: UciCharPair): Option[(Branch, Int)] =
-    nodes.zipWithIndex.collectFirst {
-      case pair if pair._1.id == id => pair
-    }
-
   def nodeAt(path: UciPath): Option[Branch] =
-    path.split.flatMap { (head, rest) =>
-      rest.computeIds.foldLeft(get(head)) { (cur, id) =>
+    path.split.flatMap: (head, rest) =>
+      rest.computeIds.foldLeft(get(head)): (cur, id) =>
         cur.flatMap(_.children.get(id))
-      }
-    }
 
   // select all nodes on that path
   def nodesOn(path: UciPath): Vector[(Branch, UciPath)] =
-    path.split
-      .so { (head, tail) =>
-        get(head).so { first =>
-          (first, UciPath.fromId(head)) +: first.children.nodesOn(tail).map { (n, p) =>
-            (n, p prepend head)
-          }
+    path.split.so: (head, tail) =>
+      get(head).so: first =>
+        (first, UciPath.fromId(head)) +: first.children.nodesOn(tail).map { (n, p) =>
+          (n, p.prepend(head))
         }
-      }
 
   def addNodeAt(node: Branch, path: UciPath): Option[Branches] =
     path.split match
-      case None               => addNode(node).some
-      case Some((head, tail)) => updateChildren(head, _.addNodeAt(node, tail))
+      case None             => addNode(node).some
+      case Some(head, tail) => updateChildren(head, _.addNodeAt(node, tail))
 
   // suboptimal due to using List instead of Vector
   def addNode(node: Branch): Branches =
-    Branches(get(node.id).fold(nodes :+ node) { prev =>
-      nodes.filterNot(_.id == node.id) :+ prev.merge(node)
-    })
+    Branches:
+      get(node.id).fold(nodes :+ node): prev =>
+        nodes.filterNot(_.id == node.id) :+ prev.merge(node)
 
   def deleteNodeAt(path: UciPath): Option[Branches] =
-    path.split flatMap {
+    path.split.flatMap {
       case (head, p) if p.isEmpty && hasNode(head) => Branches(nodes.filterNot(_.id == head)).some
       case (_, p) if p.isEmpty                     => none
       case (head, tail)                            => updateChildren(head, _.deleteNodeAt(tail))
@@ -73,21 +65,20 @@ case class Branches(nodes: List[Branch]) extends AnyVal:
   def promoteToMainlineAt(path: UciPath): Option[Branches] =
     path.split match
       case None => this.some
-      case Some((head, tail)) =>
-        get(head).flatMap { node =>
+      case Some(head, tail) =>
+        get(head).flatMap: node =>
           node.withChildren(_.promoteToMainlineAt(tail)).map { promoted =>
             Branches(promoted :: nodes.filterNot(node ==))
           }
-        }
 
   def promoteUpAt(path: UciPath): Option[(Branches, Boolean)] =
     path.split match
       case None => Some(this -> false)
-      case Some((head, tail)) =>
+      case Some(head, tail) =>
         for
           node                  <- get(head)
           mainlineNode          <- this.first
-          (newChildren, isDone) <- node.children promoteUpAt tail
+          (newChildren, isDone) <- node.children.promoteUpAt(tail)
           newNode = node.copy(children = newChildren)
         yield
           if isDone then update(newNode) -> true
@@ -95,53 +86,45 @@ case class Branches(nodes: List[Branch]) extends AnyVal:
           else Branches(newNode :: nodes.filterNot(newNode ==))      -> true
 
   def updateAt(path: UciPath, f: Branch => Branch): Option[Branches] =
-    path.split flatMap {
+    path.split.flatMap:
       case (head, p) if p.isEmpty => updateWith(head, n => Some(f(n)))
       case (head, tail)           => updateChildren(head, _.updateAt(tail, f))
-    }
 
   def updateAllWith(op: Branch => Branch): Branches =
-    Branches(nodes.map { n =>
-      op(n.copy(children = n.children.updateAllWith(op)))
-    })
+    Branches(nodes.map: n =>
+      op(n.copy(children = n.children.updateAllWith(op))))
 
   def update(child: Branch): Branches =
-    Branches(nodes.map {
+    Branches(nodes.map:
       case n if child.id == n.id => child
-      case n                     => n
-    })
+      case n                     => n)
 
   def updateWith(id: UciCharPair, op: Branch => Option[Branch]): Option[Branches] =
-    get(id) flatMap op map update
+    get(id).flatMap(op).map(update)
 
   def updateChildren(id: UciCharPair, f: Branches => Option[Branches]): Option[Branches] =
-    updateWith(id, _ withChildren f)
+    updateWith(id, _.withChildren(f))
 
   def updateMainline(f: Branch => Branch): Branches =
     Branches(nodes match
       case main :: others =>
         val newNode = f(main)
         newNode.copy(children = newNode.children.updateMainline(f)) :: others
-      case x => x
-    )
+      case x => x)
 
   def takeMainlineWhile(f: Branch => Boolean): Branches =
-    updateMainline { node =>
-      node.children.first.fold(node) { mainline =>
+    updateMainline: node =>
+      node.children.first.fold(node): mainline =>
         if f(mainline) then node
         else node.withoutChildren
-      }
-    }
 
   def countRecursive: Int =
-    nodes.foldLeft(nodes.size) { (count, n) =>
+    nodes.foldLeft(nodes.size): (count, n) =>
       count + n.children.countRecursive
-    }
 
   def lastMainlineNode: Option[Node] =
-    this.first map { first =>
+    first.map: first =>
       first.children.lastMainlineNode | first
-    }
 
   override def toString = nodes.mkString(", ")
 
@@ -153,7 +136,7 @@ object Branches:
 
 sealed trait Node:
   def ply: Ply
-  def fen: Fen.Epd
+  def fen: Fen.Full
   def check: Check
   // None when not computed yet
   def dests: Option[Map[Square, Bitboard]]
@@ -169,7 +152,7 @@ sealed trait Node:
   def crazyData: Option[Crazyhouse.Data]
   def addChild(branch: Branch): Node
   def dropFirstChild: Node
-  def clock: Option[Centis]
+  def clock: Option[Clock]
   def forceVariation: Boolean
 
   // implementation dependent
@@ -184,7 +167,7 @@ sealed trait Node:
 
 case class Root(
     ply: Ply,
-    fen: Fen.Epd,
+    fen: Fen.Full,
     check: Check,
     // None when not computed yet
     dests: Option[Map[Square, Bitboard]] = None,
@@ -196,7 +179,7 @@ case class Root(
     glyphs: Glyphs = Glyphs.empty,
     children: Branches = Branches.empty,
     opening: Option[Opening] = None,
-    clock: Option[Centis] = None, // clock state at game start, assumed same for both players
+    clock: Option[Clock] = None, // clock state at game start, assumed same for both players
     crazyData: Option[Crazyhouse.Data]
 ) extends Node:
 
@@ -206,57 +189,64 @@ case class Root(
   def forceVariation = false
 
   // def addChild(branch: Branch)     = copy(children = children :+ branch)
-  def addChild(child: Branch)      = copy(children = children addNode child)
-  def prependChild(branch: Branch) = copy(children = branch :: children)
+  def addChild(child: Branch): Root = copy(children = children.addNode(child))
+  def prependChild(branch: Branch)  = copy(children = branch :: children)
   def dropFirstChild = copy(children = if children.isEmpty then children else Branches(children.variations))
 
-  def withChildren(f: Branches => Option[Branches]) =
-    f(children) map { newChildren =>
+  def withChildren(f: Branches => Option[Branches]): Option[Root] =
+    f(children).map: newChildren =>
       copy(children = newChildren)
-    }
 
   def withoutChildren = copy(children = Branches.empty)
 
   def nodeAt(path: UciPath): Option[Node] =
-    if path.isEmpty then this.some else children nodeAt path
+    if path.isEmpty then this.some else children.nodeAt(path)
 
   def pathExists(path: UciPath): Boolean = nodeAt(path).isDefined
 
   def setShapesAt(shapes: Shapes, path: UciPath): Option[Root] =
     if path.isEmpty then copy(shapes = shapes).some
-    else updateChildrenAt(path, _ setShapes shapes)
+    else updateChildrenAt(path, _.setShapes(shapes))
 
   def setCommentAt(comment: Comment, path: UciPath): Option[Root] =
-    if path.isEmpty then copy(comments = comments set comment).some
-    else updateChildrenAt(path, _ setComment comment)
+    if path.isEmpty then copy(comments = comments.set(comment)).some
+    else updateChildrenAt(path, _.setComment(comment))
 
   def deleteCommentAt(commentId: Comment.Id, path: UciPath): Option[Root] =
-    if path.isEmpty then copy(comments = comments delete commentId).some
-    else updateChildrenAt(path, _ deleteComment commentId)
+    if path.isEmpty then copy(comments = comments.delete(commentId)).some
+    else updateChildrenAt(path, _.deleteComment(commentId))
 
   def setGamebookAt(gamebook: Gamebook, path: UciPath): Option[Root] =
     if path.isEmpty then copy(gamebook = gamebook.some).some
-    else updateChildrenAt(path, _ setGamebook gamebook)
+    else updateChildrenAt(path, _.setGamebook(gamebook))
 
   def toggleGlyphAt(glyph: Glyph, path: UciPath): Option[Root] =
-    if path.isEmpty then copy(glyphs = glyphs toggle glyph).some
-    else updateChildrenAt(path, _ toggleGlyph glyph)
+    if path.isEmpty then copy(glyphs = glyphs.toggle(glyph)).some
+    else updateChildrenAt(path, _.toggleGlyph(glyph))
 
-  def setClockAt(clock: Option[Centis], path: UciPath): Option[Root] =
+  def setClockAt(clock: Option[Clock], path: UciPath): Option[Root] =
     if path.isEmpty then copy(clock = clock).some
-    else updateChildrenAt(path, _ withClock clock)
+    else updateChildrenAt(path, _.withClock(clock))
 
   def forceVariationAt(force: Boolean, path: UciPath): Option[Root] =
     if path.isEmpty then copy(clock = clock).some
-    else updateChildrenAt(path, _ withForceVariation force)
+    else updateChildrenAt(path, _.withForceVariation(force))
 
   private def updateChildrenAt(path: UciPath, f: Branch => Branch): Option[Root] =
     withChildren(_.updateAt(path, f))
 
   def updateMainlineLast(f: Branch => Branch): Root =
     children.first.fold(this) { main =>
-      copy(children = children.update(main updateMainlineLast f))
+      copy(children = children.update(main.updateMainlineLast(f)))
     }
+
+  def clearAnnotationsRecursively =
+    copy(
+      comments = Comments(Nil),
+      shapes = Shapes(Nil),
+      glyphs = Glyphs.empty,
+      children = children.updateAllWith(_.clearAnnotations)
+    )
 
   def clearVariations =
     copy(
@@ -280,7 +270,7 @@ case class Root(
 
   def mainlinePath = UciPath.fromIds(mainline.map(_.id))
 
-  def lastMainlineNode: Node = children.lastMainlineNode getOrElse this
+  def lastMainlineNode: Node = children.lastMainlineNode.getOrElse(this)
 
   def takeMainlineWhile(f: Branch => Boolean) =
     if children.first.isDefined
@@ -290,12 +280,12 @@ case class Root(
   def merge(n: Root): Root = copy(
     shapes = shapes ++ n.shapes,
     comments = comments ++ n.comments,
-    gamebook = n.gamebook orElse gamebook,
-    glyphs = glyphs merge n.glyphs,
-    eval = n.eval orElse eval,
-    clock = n.clock orElse clock,
-    crazyData = n.crazyData orElse crazyData,
-    children = n.children.nodes.foldLeft(children)(_ addNode _)
+    gamebook = n.gamebook.orElse(gamebook),
+    glyphs = glyphs.merge(n.glyphs),
+    eval = n.eval.orElse(eval),
+    clock = n.clock.orElse(clock),
+    crazyData = n.crazyData.orElse(crazyData),
+    children = n.children.nodes.foldLeft(children)(_.addNode(_))
   )
 
   override def toString = s"$ply $children"
@@ -306,14 +296,17 @@ object Root:
       ply = Ply.initial,
       fen = variant.initialFen,
       check = Check.No,
-      crazyData = variant.crazyhouse option Crazyhouse.Data.init
+      crazyData = variant.crazyhouse.option(Crazyhouse.Data.init)
     )
+
+case class Clock(centis: Centis, trust: Option[Boolean] = none):
+  def positive = centis >= Centis(0)
 
 case class Branch(
     id: UciCharPair,
     ply: Ply,
     move: Uci.WithSan,
-    fen: Fen.Epd,
+    fen: Fen.Full,
     check: Check,
     // None when not computed yet
     dests: Option[Map[Square, Bitboard]] = None,
@@ -326,7 +319,7 @@ case class Branch(
     children: Branches = Branches.empty, // Vector used in `Study.Node`, switch?
     opening: Option[Opening] = None,
     comp: Boolean = false,
-    clock: Option[Centis] = None, // clock state after the move is played, and the increment applied
+    clock: Option[Clock] = None, // clock state after the move is played, and the increment applied
     crazyData: Option[Crazyhouse.Data],
     forceVariation: Boolean = false // cannot be mainline
 ) extends Node:
@@ -339,7 +332,7 @@ case class Branch(
   def mainline: List[Branch] = this :: children.first.so(_.mainline)
 
   def withChildren(f: Branches => Option[Branches]) =
-    f(children) map { newChildren =>
+    f(children).map { newChildren =>
       copy(children = newChildren)
     }
 
@@ -347,20 +340,20 @@ case class Branch(
 
   def addChild(branch: Branch): Branch = copy(children = children :+ branch)
 
-  def withClock(centis: Option[Centis])  = copy(clock = centis)
+  def withClock(clock: Option[Clock])    = copy(clock = clock)
   def withForceVariation(force: Boolean) = copy(forceVariation = force)
 
   def isCommented                          = comments.value.nonEmpty
-  def setComment(comment: Comment)         = copy(comments = comments set comment)
-  def deleteComment(commentId: Comment.Id) = copy(comments = comments delete commentId)
+  def setComment(comment: Comment)         = copy(comments = comments.set(comment))
+  def deleteComment(commentId: Comment.Id) = copy(comments = comments.delete(commentId))
   def deleteComments                       = copy(comments = Comments.empty)
   def setGamebook(gamebook: Gamebook)      = copy(gamebook = gamebook.some)
   def setShapes(s: Shapes)                 = copy(shapes = s)
-  def toggleGlyph(glyph: Glyph)            = copy(glyphs = glyphs toggle glyph)
+  def toggleGlyph(glyph: Glyph)            = copy(glyphs = glyphs.toggle(glyph))
 
   def updateMainlineLast(f: Branch => Branch): Branch =
     children.first.fold(f(this)) { main =>
-      copy(children = children.update(main updateMainlineLast f))
+      copy(children = children.update(main.updateMainlineLast(f)))
     }
 
   def clearAnnotations =
@@ -384,13 +377,13 @@ case class Branch(
     copy(
       shapes = shapes ++ n.shapes,
       comments = comments ++ n.comments,
-      gamebook = n.gamebook orElse gamebook,
-      glyphs = glyphs merge n.glyphs,
-      eval = n.eval orElse eval,
-      clock = n.clock orElse clock,
-      crazyData = n.crazyData orElse crazyData,
+      gamebook = n.gamebook.orElse(gamebook),
+      glyphs = glyphs.merge(n.glyphs),
+      eval = n.eval.orElse(eval),
+      clock = n.clock.orElse(clock),
+      crazyData = n.crazyData.orElse(crazyData),
       children = n.children.nodes.foldLeft(children) { (cs, c) =>
-        cs addNode c
+        cs.addNode(c)
       },
       forceVariation = n.forceVariation || forceVariation
     )
@@ -411,18 +404,18 @@ object Node:
     val empty: Shapes                                    = Nil
 
   case class Comment(id: Comment.Id, text: Comment.Text, by: Comment.Author):
-    def removeMeta = text.removeMeta map { t => copy(text = t) }
+    def removeMeta = text.removeMeta.map(t => copy(text = t))
   object Comment:
     opaque type Id = String
     object Id extends OpaqueString[Id]:
-      def make = Id(ThreadLocalRandom nextString 4)
+      def make = Id(ThreadLocalRandom.nextString(4))
     private val metaReg = """\[%[^\]]++\]""".r
     opaque type Text = String
     object Text extends OpaqueString[Text]:
       extension (a: Text)
         def removeMeta: Option[Text] =
           val v = metaReg.replaceAllIn(a.value, "").trim
-          v.nonEmpty option Text(v)
+          v.nonEmpty.option(Text(v))
     enum Author:
       case User(id: UserId, titleName: String)
       case External(name: String)
@@ -434,8 +427,7 @@ object Node:
         case _                        => this == other
 
     def sanitize(text: String) = Text:
-      lila.common.String
-        .softCleanUp(text)
+      softCleanUp(text)
         .take(4000)
         .replaceAll("""\r\n""", "\n") // these 3 lines dedup white spaces and new lines
         .replaceAll("""(?m)(^ *| +(?= |$))""", "")
@@ -445,7 +437,7 @@ object Node:
   opaque type Comments = List[Comment]
   object Comments extends TotalWrapper[Comments, List[Comment]]:
     extension (a: Comments)
-      def findBy(author: Comment.Author) = a.value.find(_.by is author)
+      def findBy(author: Comment.Author) = a.value.find(_.by.is(author))
       def set(comment: Comment): Comments =
         if a.value.exists(_.by.is(comment.by)) then
           a.value.map {
@@ -469,33 +461,17 @@ object Node:
       )
     def nonEmpty = deviation.nonEmpty || hint.nonEmpty
 
-  given OWrites[chess.opening.Opening] = OWrites { o =>
-    Json.obj(
-      "eco"  -> o.eco,
-      "name" -> o.name
-    )
-  }
-
-  private given Writes[Square] = Writes[Square] { p =>
-    JsString(p.key)
-  }
+  import chess.json.Json.given
   private val shapeCircleWrites = Json.writes[Shape.Circle]
   private val shapeArrowWrites  = Json.writes[Shape.Arrow]
   given shapeWrites: Writes[Shape] = Writes[Shape] {
-    case s: Shape.Circle => shapeCircleWrites writes s
-    case s: Shape.Arrow  => shapeArrowWrites writes s
+    case s: Shape.Circle => shapeCircleWrites.writes(s)
+    case s: Shape.Arrow  => shapeArrowWrites.writes(s)
   }
   given Writes[Node.Shapes] = Writes[Node.Shapes] { s =>
     JsArray(s.value.map(shapeWrites.writes))
   }
-  given Writes[Glyph] = Json.writes[Glyph]
-  given Writes[Glyphs] = Writes[Glyphs] { gs =>
-    Json.toJson(gs.toList)
-  }
 
-  given Writes[Centis] = Writes { clock =>
-    JsNumber(clock.centis)
-  }
   given Writes[Comment.Id] = Writes { id =>
     JsString(id.value)
   }
@@ -511,17 +487,15 @@ object Node:
   given Writes[Node.Comment]  = Json.writes[Node.Comment]
   given Writes[Node.Gamebook] = Json.writes[Node.Gamebook]
 
-  import lila.common.Json.given
-  import JsonHandlers.given
+  import lila.tree.evals.jsonWrites
 
   given defaultNodeJsonWriter: Writes[Node] = makeNodeJsonWriter(alwaysChildren = true)
 
-  val minimalNodeJsonWriter = makeNodeJsonWriter(alwaysChildren = false)
+  val minimalNodeJsonWriter: Writes[Node] = makeNodeJsonWriter(alwaysChildren = false)
 
-  def nodeListJsonWriter(alwaysChildren: Boolean): Writes[List[Node]] =
+  private val nodeListJsonWriter: Writes[List[Node]] =
     Writes: list =>
-      val writer = if alwaysChildren then defaultNodeJsonWriter else minimalNodeJsonWriter
-      JsArray(list map writer.writes)
+      JsArray(list.map(defaultNodeJsonWriter.writes))
 
   def makeNodeJsonWriter(alwaysChildren: Boolean): Writes[Node] =
     Writes: node =>
@@ -545,35 +519,64 @@ object Node:
           .add("opening", opening)
           .add("dests", dests)
           .add("drops", drops.map(drops => JsString(drops.map(_.key).mkString)))
-          .add("clock", clock)
+          .add("clock", clock.map(_.centis))
           .add("crazy", crazyData)
           .add("comp", comp)
           .add(
             "children",
-            if alwaysChildren || children.nonEmpty then
-              Some:
-                nodeListJsonWriter(true) writes children.nodes
-            else None
+            Option.when(alwaysChildren || children.nonEmpty):
+              nodeListJsonWriter.writes(children.nodes)
           )
           .add("forceVariation", forceVariation)
       catch
         case e: StackOverflowError =>
           e.printStackTrace()
-          sys error s"### StackOverflowError ### in tree.makeNodeJsonWriter($alwaysChildren)"
-
-  def destString(dests: Map[Square, Bitboard]): String =
-    val sb    = java.lang.StringBuilder(80)
-    var first = true
-    dests.foreach: (orig, dests) =>
-      if first then first = false
-      else sb append " "
-      sb append orig.asChar
-      dests.foreach(sb append _.asChar)
-    sb.toString
-
-  given Writes[Map[Square, Bitboard]] = Writes: dests =>
-    JsString(destString(dests))
+          sys.error(s"### StackOverflowError ### in tree.makeNodeJsonWriter($alwaysChildren)")
 
   val partitionTreeJsonWriter: Writes[Node] = Writes: node =>
     JsArray:
       node.mainlineNodeList.map(minimalNodeJsonWriter.writes)
+
+object Tree:
+
+  def makeMinimalJsonString(
+      game: Game,
+      analysis: Option[Analysis],
+      initialFen: Fen.Full,
+      options: ExportOptions,
+      logChessError: TreeBuilder.LogChessError
+  ): JsValue =
+    Node.minimalNodeJsonWriter.writes:
+      TreeBuilder(game, analysis, initialFen, lila.tree.ExportOptions.default, logChessError)
+
+  def makePartitionTreeJson(
+      game: Game,
+      analysis: Option[Analysis],
+      initialFen: Fen.Full,
+      options: ExportOptions,
+      logChessError: TreeBuilder.LogChessError
+  ): JsValue =
+    Node.partitionTreeJsonWriter.writes:
+      TreeBuilder(game, analysis, initialFen, options, logChessError)
+
+  def makeMinimalJsonStringNew(
+      game: Game,
+      analysis: Option[Analysis],
+      initialFen: Fen.Full,
+      options: ExportOptions,
+      logChessError: TreeBuilder.LogChessError
+  ): JsValue =
+    NewRoot.minimalNodeJsonWriter.writes:
+      val x = NewTreeBuilder(game, analysis, initialFen, lila.tree.ExportOptions.default, logChessError)
+      x.size
+      x
+
+  def makePartitionTreeJsonNew(
+      game: Game,
+      analysis: Option[Analysis],
+      initialFen: Fen.Full,
+      options: ExportOptions,
+      logChessError: TreeBuilder.LogChessError
+  ): JsValue =
+    NewRoot.partitionTreeJsonWriter.writes:
+      NewTreeBuilder(game, analysis, initialFen, options, logChessError)

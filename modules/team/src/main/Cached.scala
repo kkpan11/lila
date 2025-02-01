@@ -2,9 +2,9 @@ package lila.team
 
 import reactivemongo.api.bson.BSONNull
 
+import lila.core.team.{ Access, LightTeam }
 import lila.db.dsl.{ *, given }
 import lila.memo.Syncache
-import lila.hub.LightTeam
 
 final class Cached(
     teamRepo: TeamRepo,
@@ -18,8 +18,8 @@ final class Cached(
     initialCapacity = 32_768,
     compute = teamRepo.light,
     default = _ => none,
-    strategy = Syncache.Strategy.WaitAfterUptime(20 millis),
-    expireAfter = Syncache.ExpireAfter.Write(10 minutes)
+    strategy = Syncache.Strategy.WaitAfterUptime(20.millis),
+    expireAfter = Syncache.ExpireAfter.Write(10.minutes)
   )
 
   val async = LightTeam.Getter(lightCache.async)
@@ -30,7 +30,7 @@ final class Cached(
   val lightApi = new LightTeam.Api:
     def async = Cached.this.async
     def sync  = Cached.this.sync
-    export lightCache.{ preloadSet as preload }
+    export lightCache.preloadSet as preload
 
   private val teamIdsCache = cacheApi.sync[UserId, Team.IdsStr](
     name = "team.ids",
@@ -39,10 +39,10 @@ final class Cached(
       memberRepo.coll
         .aggregateOne(_.sec): framework =>
           import framework.*
-          Match($doc("_id" $startsWith s"$u@")) -> List(
+          Match($doc("_id".$startsWith(s"$u@"))) -> List(
             Project($doc("_id" -> $doc("$substr" -> $arr("$_id", u.value.size + 1, -1)))),
             PipelineOperator(
-              $lookup.pipeline(
+              $lookup.pipelineBC(
                 from = teamRepo.coll,
                 as = "team",
                 local = "_id",
@@ -60,8 +60,8 @@ final class Cached(
         .map: doc =>
           Team.IdsStr(~doc.flatMap(_.getAsOpt[List[TeamId]]("ids"))),
     default = _ => Team.IdsStr.empty,
-    strategy = Syncache.Strategy.WaitAfterUptime(20 millis),
-    expireAfter = Syncache.ExpireAfter.Write(40 minutes)
+    strategy = Syncache.Strategy.WaitAfterUptime(20.millis),
+    expireAfter = Syncache.ExpireAfter.Write(40.minutes)
   )
 
   export teamIdsCache.{ async as teamIds, invalidate as invalidateTeamIds, sync as syncTeamIds }
@@ -69,17 +69,17 @@ final class Cached(
   def teamIdsSet[U: UserIdOf](user: UserId): Fu[Set[TeamId]] = teamIds(user.id).dmap(_.toSet)
 
   val nbRequests = cacheApi[UserId, Int](32_768, "team.nbRequests"):
-    _.expireAfterAccess(40 minutes)
+    _.expireAfterAccess(40.minutes)
       .maximumSize(131_072)
       .buildAsyncFuture[UserId, Int]: userId =>
         for
           myTeams     <- teamIds(userId)
-          leaderTeams <- myTeams.nonEmpty so memberRepo.teamsWhereIsGrantedRequest(userId)
+          leaderTeams <- myTeams.nonEmpty.so(memberRepo.teamsWhereIsGrantedRequest(userId))
           nbReqs      <- requestRepo.countPendingForTeams(leaderTeams)
         yield nbReqs
 
-  val forumAccess = cacheApi[TeamId, Team.Access](1_024, "team.forum.access"):
-    _.expireAfterWrite(5 minutes).buildAsyncFuture(id => teamRepo.forumAccess(id).dmap(_ | Team.Access.NONE))
+  private[team] val forumAccess = cacheApi[TeamId, Access](256, "team.forum.access"):
+    _.expireAfterWrite(5.minutes).buildAsyncFuture(id => teamRepo.forumAccess(id).dmap(_ | Access.None))
 
   val unsubs = cacheApi[TeamId, Int](512, "team.unsubs"):
-    _.expireAfterWrite(1 hour).buildAsyncFuture(memberRepo.countUnsub)
+    _.expireAfterWrite(1.hour).buildAsyncFuture(memberRepo.countUnsub)

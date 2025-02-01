@@ -1,13 +1,12 @@
 import { parseUci, makeSquare } from 'chessops/util';
 import { isDrop } from 'chessops/types';
 import { winningChances } from 'ceval';
-import * as cg from 'chessground/types';
 import { opposite } from 'chessground/util';
-import { DrawModifiers, DrawShape } from 'chessground/draw';
-import { annotationShapes } from './glyphs';
-import AnalyseCtrl from './ctrl';
+import type { DrawModifiers, DrawShape } from 'chessground/draw';
+import { annotationShapes } from 'chess/glyphs';
+import type AnalyseCtrl from './ctrl';
 
-const pieceDrop = (key: cg.Key, role: cg.Role, color: Color): DrawShape => ({
+const pieceDrop = (key: Key, role: Role, color: Color): DrawShape => ({
   orig: key,
   piece: {
     color,
@@ -83,9 +82,9 @@ export function compute(ctrl: AnalyseCtrl): DrawShape[] {
   if (ctrl.showAutoShapes() && ctrl.showComputer()) {
     if (nEval.best && !ctrl.showVariationArrows())
       shapes = shapes.concat(makeShapesFromUci(rcolor, nEval.best, 'paleGreen'));
-    if (!hovering && instance.multiPv()) {
+    if (!hovering && instance.search.multiPv) {
       const nextBest = instance.enabled() && nCeval ? nCeval.pvs[0].moves[0] : ctrl.nextNodeBest();
-      if (nextBest) shapes = shapes.concat(makeShapesFromUci(color, nextBest, 'paleBlue', undefined));
+      if (nextBest) shapes = shapes.concat(makeShapesFromUci(color, nextBest, 'paleBlue'));
       if (
         instance.enabled() &&
         nCeval &&
@@ -122,7 +121,7 @@ export function compute(ctrl: AnalyseCtrl): DrawShape[] {
       }
     });
   }
-  shapes = shapes.concat(annotationShapes(ctrl));
+  if (ctrl.showMoveAnnotation()) shapes = shapes.concat(annotationShapes(ctrl.node));
   if (ctrl.showVariationArrows()) hiliteVariations(ctrl, shapes);
   return shapes;
 }
@@ -143,12 +142,12 @@ function hiliteVariations(ctrl: AnalyseCtrl, autoShapes: DrawShape[]) {
         ? 'paleGreen'
         : 'paleRed'
       : existing
-      ? existing.brush
-      : 'white';
+        ? existing.brush
+        : 'white';
     if (existing) {
       if (i === ctrl.fork.selected()) {
         existing.brush = brush;
-        existing.modifiers ??= {};
+        if (!existing.modifiers) existing.modifiers = {};
         existing.modifiers.hilite = true;
       }
     } else if (!userShape) {

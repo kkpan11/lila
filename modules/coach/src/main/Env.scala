@@ -1,18 +1,15 @@
 package lila.coach
 
-import com.softwaremill.macwire.*
-import lila.common.autoconfig.{ *, given }
-import play.api.Configuration
-
-import lila.common.config.*
 import akka.actor.ActorSystem
+import com.softwaremill.macwire.*
+import lila.core.config.*
 
 @Module
 final class Env(
-    appConfig: Configuration,
-    userRepo: lila.user.UserRepo,
-    perfsRepo: lila.user.UserPerfsRepo,
-    notifyApi: lila.notify.NotifyApi,
+    perfsRepo: lila.core.user.PerfsRepo,
+    userRepo: lila.core.user.UserRepo,
+    userApi: lila.core.user.UserApi,
+    flagApi: lila.core.user.FlagApi,
     cacheApi: lila.memo.CacheApi,
     db: lila.db.Db,
     picfitApi: lila.memo.PicfitApi
@@ -25,7 +22,6 @@ final class Env(
   lazy val pager = wire[CoachPager]
 
   lila.common.Bus.subscribeFun("finishGame"):
-    case lila.game.actorApi.FinishGame(game, users) if game.rated =>
-      if lila.rating.PerfType.standard.has(game.perfType) then
-        users.white so api.setRating
-        users.black so api.setRating
+    case lila.core.game.FinishGame(game, users) if game.rated =>
+      if lila.rating.PerfType.standardSet(game.perfKey)
+      then users.foreach(u => u.foreach(u => api.updateRatingFromDb(u._1)))

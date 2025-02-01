@@ -1,9 +1,40 @@
 package lila.common
 
-import scala.util.Try
-import lila.Lila.Fu
-
 object Chronometer:
+
+  object futureExtension:
+
+    import scala.concurrent.Await
+    extension [A](fua: Future[A])
+
+      def await(duration: FiniteDuration, name: String): A =
+        Chronometer.syncMon(_.blocking.time(name)) {
+          try Await.result(fua, duration)
+          catch
+            case e: Exception =>
+              lila.mon.blocking.timeout(name).increment()
+              throw e
+        }
+      def awaitOrElse(duration: FiniteDuration, name: String, default: => A): A =
+        try await(duration, name)
+        catch case _: Exception => default
+
+      def chronometer    = Chronometer(fua)
+      def chronometerTry = Chronometer.lapTry(fua)
+
+      def mon(path: lila.mon.TimerPath): Fu[A] = chronometer.mon(path).result
+      def monTry(path: scala.util.Try[A] => lila.mon.TimerPath): Fu[A] =
+        chronometerTry.mon(r => path(r)(lila.mon)).result
+      def monSuccess(path: lila.mon.type => Boolean => kamon.metric.Timer): Fu[A] =
+        chronometerTry
+          .mon: r =>
+            path(lila.mon)(r.isSuccess)
+          .result
+      def monValue(path: A => lila.mon.TimerPath): Fu[A] = chronometer.monValue(path).result
+
+      def logTime(name: String): Fu[A]                               = chronometer.pp(name)
+      def logTimeIfGt(name: String, duration: FiniteDuration): Fu[A] = chronometer.ppIfGt(name, duration)
+  end futureExtension
 
   case class Lap[A](result: A, nanos: Long):
 
@@ -39,7 +70,7 @@ object Chronometer:
 
     def showDuration: String = if millis >= 1 then s"$millis ms" else s"$micros micros"
 
-  case class LapTry[A](result: Try[A], nanos: Long):
+  case class LapTry[A](result: scala.util.Try[A], nanos: Long):
     def millis = (nanos / 1000000).toInt
 
   case class FuLap[A](lap: Fu[Lap[A]]) extends AnyVal:
@@ -61,18 +92,18 @@ object Chronometer:
       this
 
     def pp: Fu[A]                                            = lap.dmap(_.pp)
-    def pp(msg: String): Fu[A]                               = lap.dmap(_ pp msg)
+    def pp(msg: String): Fu[A]                               = lap.dmap(_.pp(msg))
     def ppIfGt(msg: String, duration: FiniteDuration): Fu[A] = lap.dmap(_.ppIfGt(msg, duration))
 
     def tap(f: Lap[A] => Unit) =
-      lap dforeach f
+      lap.dforeach(f)
       this
 
     def result = lap.dmap(_.result)
 
   case class FuLapTry[A](lap: Fu[LapTry[A]]) extends AnyVal:
 
-    def mon(path: Try[A] => kamon.metric.Timer) =
+    def mon(path: scala.util.Try[A] => kamon.metric.Timer) =
       lap.dforeach: l =>
         path(l.result).record(l.nanos)
       this
@@ -83,21 +114,21 @@ object Chronometer:
       }(scala.concurrent.ExecutionContext.parasitic)
 
   def apply[A](f: Fu[A]): FuLap[A] =
-    val start = nowNanos
-    FuLap(f dmap { Lap(_, nowNanos - start) })
+    val start = nowNanosRel
+    FuLap(f.dmap { Lap(_, nowNanosRel - start) })
 
   def lapTry[A](f: Fu[A]): FuLapTry[A] =
-    val start = nowNanos
+    val start = nowNanosRel
     FuLapTry {
       f.transformWith { r =>
-        fuccess(LapTry(r, nowNanos - start))
+        fuccess(LapTry(r, nowNanosRel - start))
       }(scala.concurrent.ExecutionContext.parasitic)
     }
 
   def sync[A](f: => A): Lap[A] =
-    val start = nowNanos
+    val start = nowNanosRel
     val res   = f
-    Lap(res, nowNanos - start)
+    Lap(res, nowNanosRel - start)
 
   def syncEffect[A](f: => A)(effect: Lap[A] => Unit): A =
     val lap = sync(f)
@@ -111,5 +142,5 @@ object Chronometer:
     res
 
   def start =
-    val at = nowNanos
-    () => Lap((), nowNanos - at)
+    val at = nowNanosRel
+    () => Lap((), nowNanosRel - at)

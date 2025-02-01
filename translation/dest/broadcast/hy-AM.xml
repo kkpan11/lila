@@ -4,6 +4,7 @@
   <string name="myBroadcasts">Իմ հեռարձակումները</string>
   <string name="liveBroadcasts">Մրցաշարի ուղիղ հեռարձակումներ</string>
   <string name="newBroadcast">Նոր ուղիղ հեռարձակում</string>
+  <string name="subscribedBroadcasts">Բաժանորդագրված հեռարձակումներ</string>
   <string name="addRound">Ավելացնել խաղափուլ</string>
   <string name="ongoing">Ընթացիկ</string>
   <string name="upcoming">Առաջիկայում սպասվող</string>
@@ -13,11 +14,7 @@
   <string name="tournamentName">Մրցաշարի անվանում</string>
   <string name="tournamentDescription">Իրադարձության համառոտ նկարագրություն</string>
   <string name="fullDescription">Իրադարձության ամբողջական նկարագրություն</string>
-  <string name="startDate">Սկսվելու ամսաթիվը Ձեր ժամագոտում</string>
   <string name="startDateHelp">Լրացուցիչ, եթե գիտեք, թե երբ է սկսվելու իրադարձությունը</string>
-  <string name="credits">Երախտագիտություն</string>
-  <string name="broadcastUrl">Հեռարձակման URL-հասցեն</string>
-  <string name="currentRoundUrl">Ընթացիկ խաղափուլի URL-հասցեն</string>
   <string name="currentGameUrl">Ընթացիկ պարտիայի URL-հասցեն</string>
   <string name="downloadAllRounds">Բեռնել բոլոր խաղափուլերը</string>
   <string name="resetRound">Հեռացնել այս խաղափուլը</string>

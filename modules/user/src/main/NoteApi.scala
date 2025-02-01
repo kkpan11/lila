@@ -1,9 +1,10 @@
 package lila.user
 
+import scalalib.ThreadLocalRandom
+import scalalib.paginator.Paginator
+
 import lila.db.dsl.{ *, given }
-import ornicar.scalalib.ThreadLocalRandom
-import lila.common.paginator.Paginator
-import lila.common.config.MaxPerPage
+import lila.core.perm.Granter
 
 case class Note(
     _id: String,
@@ -13,74 +14,77 @@ case class Note(
     mod: Boolean,
     dox: Boolean,
     date: Instant
-):
+) extends lila.core.user.Note:
   def userIds            = List(from, to)
-  def isFrom(user: User) = user.id is from
-  def searchable = mod && from.isnt(User.lichessId) && from.isnt(User.watcherbotId) &&
+  def isFrom(user: User) = user.id.is(from)
+  def searchable = mod && from.isnt(UserId.lichess) && from.isnt(UserId.watcherbot) &&
     !text.startsWith("Appeal reply:")
 
-final class NoteApi(userRepo: UserRepo, coll: Coll)(using
-    Executor,
-    play.api.libs.ws.StandaloneWSClient
-):
+final class NoteApi(coll: Coll)(using Executor) extends lila.core.user.NoteApi:
 
   import reactivemongo.api.bson.*
   private given bsonHandler: BSONDocumentHandler[Note] = Macros.handler[Note]
 
-  def get(user: User, isMod: Boolean)(using me: Me.Id): Fu[List[Note]] =
+  lila.common.Bus.sub[lila.core.user.UserDelete]: del =>
+    for
+      _ <- coll.delete.one($doc("from" -> del.id, "mod" -> false)) // hits the from_1 partial index
+      maybeKeepModNotes = del.user.marks.dirty.so($doc("mod" -> false))
+      _ <- coll.delete.one($doc("to" -> del.id) ++ maybeKeepModNotes)
+    yield ()
+
+  def getForMyPermissions(user: User, max: Max = Max(30))(using me: Me): Fu[List[Note]] =
     coll
       .find(
         $doc("to" -> user.id) ++ {
-          if isMod then
+          if Granter(_.ModNote) then
             $or(
-              $doc("from" -> me),
+              $doc("from" -> me.userId),
               $doc("mod"  -> true)
             )
-          else $doc("from" -> me, "mod" -> false)
-        }
+          else $doc("from" -> me.userId, "mod" -> false)
+        } ++
+          (!Granter(_.Admin)).so($doc("dox" -> false))
       )
-      .sort($sort desc "date")
+      .sort($sort.desc("date"))
       .cursor[Note]()
-      .list(20)
+      .list(max.value)
 
-  def byUserForMod(id: UserId): Fu[List[Note]] =
+  def toUserForMod(id: UserId, max: Max = Max(50)): Fu[List[Note]] =
     coll
       .find($doc("to" -> id, "mod" -> true))
-      .sort($sort desc "date")
+      .sort($sort.desc("date"))
       .cursor[Note]()
-      .list(50)
+      .list(max.value)
+
+  def recentToUserForMod(id: UserId): Fu[Option[Note]] =
+    toUserForMod(id, Max(1))
+      .map(_.headOption.filter(_.date.isAfter(nowInstant.minusMinutes(5))))
 
   def byUsersForMod(ids: List[UserId]): Fu[List[Note]] =
     coll
-      .find($doc("to" $in ids, "mod" -> true))
-      .sort($sort desc "date")
+      .find($doc("to".$in(ids), "mod" -> true))
+      .sort($sort.desc("date"))
       .cursor[Note]()
       .list(100)
 
-  def write(to: User, text: String, modOnly: Boolean, dox: Boolean)(using me: Me) = {
+  def write(to: UserId, text: String, modOnly: Boolean, dox: Boolean)(using me: MyId): Funit =
     val note = Note(
-      _id = ThreadLocalRandom nextString 8,
+      _id = ThreadLocalRandom.nextString(8),
       from = me,
-      to = to.id,
+      to = to,
       text = text,
       mod = modOnly,
-      dox = modOnly && (dox || Title.fromUrl.toFideId(text).isDefined),
+      dox = modOnly && dox,
       date = nowInstant
     )
     Future
       .fromTry(bsonHandler.writeTry(note))
       .flatMap: base =>
         val bson = if note.searchable then base ++ searchableBsonFlag else base
-        coll.insert.one(bson)
-  } >> {
-    modOnly so Title.fromUrl(text) flatMap {
-      _ so { userRepo.addTitle(to.id, _) }
-    }
-  }
+        coll.insert.one(bson).void
 
   def lichessWrite(to: User, text: String) =
-    userRepo.lichess.flatMapz: lichess =>
-      write(to, text, modOnly = true, dox = false)(using Me(lichess))
+    write(to.id, text, modOnly = true, dox = false)(using UserId.lichessAsMe)
 
   def byId(id: String): Fu[Option[Note]] = coll.byId[Note](id)
 
@@ -106,10 +110,7 @@ final class NoteApi(userRepo: UserRepo, coll: Coll)(using
           coll
             .aggregateList(length, _.sec): framework =>
               import framework.*
-              Match(selector) -> {
-                List(Sort(Descending("date"))) :::
-                  List(Skip(offset), Limit(length))
-              }
+              Match(selector) -> List(Sort(Descending("date")), Skip(offset), Limit(length))
             .map:
               _.flatMap:
                 _.asOpt[Note]

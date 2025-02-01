@@ -112,7 +112,6 @@
   <string name="replayMode">გამეორების რეჟიმი</string>
   <string name="realtimeReplay">პირდაპირი</string>
   <string name="byCPL">CPL-ის მიერ</string>
-  <string name="openStudy">გახსენი სწავლება</string>
   <string name="enable">ჩართვა</string>
   <string name="bestMoveArrow">საუკეთესო სვლის ისარი</string>
   <string name="showVariationArrows">აჩვენე ისრიანი ვარიანტები</string>
@@ -122,7 +121,6 @@
   <string name="memory">მეხსიერება</string>
   <string name="infiniteAnalysis">უსასრულო ანალიზი</string>
   <string name="removesTheDepthLimit">აუქმებს სიღრმის ლიმიტს, ახურებს თქვენს კომპიუტერს(ანუ ბევრ რესურს იყენებს)</string>
-  <string name="engineManager">ძრავის მენეჯერი</string>
   <string name="blunder">უხეში შეცდომა</string>
   <string name="mistake">შეცდომა</string>
   <string name="inaccuracy">უზუსტობა</string>
@@ -130,13 +128,25 @@
     <item quantity="one">%s უხეში შეცდომა</item>
     <item quantity="other">%s უხეში შეცდომები</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="one">%s Უხეში შეცდომა</item>
+    <item quantity="other">%s Უხეში შეცდომები</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="one">%s შეცდომა</item>
     <item quantity="other">%s შეცდომები</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="one">%s Შეცდომა</item>
+    <item quantity="other">%s Შეცდომები</item>
+  </plurals>
   <plurals name="nbInaccuracies">
     <item quantity="one">%s უზუსტობა</item>
     <item quantity="other">%s უზუსტობები</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
+    <item quantity="one">%s Უზუსტობა</item>
+    <item quantity="other">%s Უზუსტობები</item>
   </plurals>
   <string name="moveTimes">სვლის დრო</string>
   <string name="flipBoard">დაფის შემობრუნება</string>
@@ -271,7 +281,6 @@
   <string name="playingRightNow">თამაშობს ამ დროს</string>
   <string name="eventInProgress">თამაშობს ამ დროს</string>
   <string name="finished">დამთავრებული</string>
-  <string name="finishesX">რჩება %s</string>
   <string name="abortGame">თამაშის შეწყვეტა</string>
   <string name="gameAborted">თამაში შეწყვეტილია</string>
   <string name="standard">სტანდარტი</string>
@@ -429,7 +438,6 @@
   <string name="block">დაბლოკვა</string>
   <string name="blocked">დაბლოკილი</string>
   <string name="unblock">ბლოკის მოხსნა</string>
-  <string name="followsYou">მოგყვება</string>
   <string name="xStartedFollowingY">%1$s დაიწყო მოყოლა %2$s</string>
   <plurals name="nbFollowers">
     <item quantity="one">%s მომყოლები</item>
@@ -461,9 +469,6 @@
   <string name="safeTournamentName">ტურნირისთვის შეარჩიეთ უსაფრთხო სახელი.</string>
   <string name="inappropriateNameWarning">ნებისმიერი, თუნდაც მცირედი, უტაქტობა გამოიწვევს თქვენი ანგარიშის დახურვას.</string>
   <string name="emptyTournamentName">დატოვეთ ცარიელი, თუ გნებავთ რომ ტურნირს დაერქვას შემთხვევითად შერჩეული ჭადრაკის დიდოსტატის სახელი.</string>
-  <string name="recommendNotTouching">გირჩევთ ამას არ შეეხოთ.</string>
-  <string name="fewerPlayers">თუ თქვენ შესვლის წინაპირობებს დააყენებთ, თქვენს ტურნირს უფრო ცოტა მოთამაშე ეყოლება.</string>
-  <string name="showAdvancedSettings">დამატებითი პარამეტრების ნახვა</string>
   <string name="makePrivateTournament">გახადე ტურნირი დახურული და შეუზღუდე ჭვდომა პაროლით</string>
   <string name="join">შეუერთდით</string>
   <string name="withdraw">გავარდნა</string>
@@ -502,8 +507,7 @@
   <string name="ifNoneLeaveEmpty">არარსებობის შემთხვევაში დატოვე ცარიელი</string>
   <string name="profile">პროფილი</string>
   <string name="editProfile">პროფილის განახლება</string>
-  <string name="firstName">სახელი</string>
-  <string name="lastName">გვარი</string>
+  <string name="flair">ემოჯი</string>
   <string name="biography">ბიოგრაფია</string>
   <string name="thankYou">გმადლობთ შეფასებისთვის!</string>
   <string name="socialMediaLinks">სოციალური მედიის ბმულები</string>
@@ -523,7 +527,6 @@
   <string name="automaticallyProceedToNextGameAfterMoving">სვლის გაკეთების შემდეგ მომდევნო თამაშზე ავტომატური გადასვლა</string>
   <string name="autoSwitch">ავტო გადართვა</string>
   <string name="puzzles">ეტიუდები</string>
-  <string name="tournamentWinners">ტურნირის გამარჯვებულნი</string>
   <string name="name">სახელი</string>
   <string name="description">აღწერა</string>
   <string name="descPrivate">პრივატული აღწერილობა</string>
@@ -546,11 +549,8 @@
   <string name="reason">მიზეზი</string>
   <string name="whatIsIheMatter">მიზეზი</string>
   <string name="cheat">ტყული</string>
-  <string name="insult">შეურაცხყოფა</string>
   <string name="troll">პროვოკაცია</string>
-  <string name="ratingManipulation">რეიტინგის მანიპულაცია</string>
   <string name="other">სხვა</string>
-  <string name="reportDescriptionHelp">ჩასვით თამაშ(ებ)ის ბმული და მიუთითეთ თუ რა არის საეჭვო მომხმარებლის ქცევაში.</string>
   <string name="error.provideOneCheatedGameLink">გთხოვთ მიუთითო სულ მცირე ერთი პარტიის ბმული სადაც თვლით რომ მოწინააღმდეგემ წესების დარღვევით ითამაშა.</string>
   <string name="by">%s-ის</string>
   <string name="importedByX">დააიმპორტა %s - მა</string>
@@ -770,9 +770,9 @@
   <string name="transparent">გამჭვირვალე</string>
   <string name="deviceTheme">მოწყობილობის თემა</string>
   <string name="backgroundImageUrl">ფონის სურათის მისამართი:</string>
-  <string name="boardGeometry">საჭადრაკო დაფის გეომეტრია</string>
-  <string name="boardTheme">ჭადრაკის დაფის ფონი</string>
-  <string name="boardSize">ჭადრაკის დაფის ზომა</string>
+  <string name="board">დაფა</string>
+  <string name="size">ზომა</string>
+  <string name="hue">ტონ</string>
   <string name="pieceSet">ფიგურების კომპლექტი</string>
   <string name="embedInYourWebsite">ჩააშენეთ თქვენს საიტში</string>
   <string name="usernameAlreadyUsed">ეს მომხმარებლის სახელი უკვე მოხმარებაშია, გთხოვთ სცადეთ სხვა სახელი.</string>
@@ -846,7 +846,6 @@
   </plurals>
   <string name="sorry">ბოდიში :(</string>
   <string name="weHadToTimeYouOutForAWhile">გარკვეული დროით უნდა შეგიჩეროთ თამაში.</string>
-  <string name="timeoutExpires">დროის ამოწურვა მთავრდება %s-ში.</string>
   <string name="why">რატომ?</string>
   <string name="pleasantChessExperience">ჩვენი მიზანია შევქმნათ სასიამოვნო გამოცდილება ჭადრაკის სათამაშოდ ყველასათვის.</string>
   <string name="goodPractice">ამიტომაც, ჩვენ უნდა დავრწმუნდეთ, რომ ყველა მოთამაშე იცავს თამაშის ეტიკეტს.</string>
@@ -918,8 +917,6 @@
   <string name="minimumRatedGames">მინიმალური რეიტინგული თამაშები</string>
   <string name="minimumRating">მაქსიმალური რეიტინგი</string>
   <string name="maximumWeeklyRating">მაქსიმალური კვირეული რეიტინგი</string>
-  <string name="onlyTitled">მხოლოდ ტიტულოვანი მოთამაშეები</string>
-  <string name="onlyTitledHelp">მოითხოვეთ ოფიციალური ტიტული ტურნირში შესასვლელად</string>
   <string name="positionInputHelp">ჩასვით მოქმედი FEN, რათა დაიწყოთ ყველა თამაში მოცემული პოზიციიდან.
 ის მუშაობს მხოლოდ სტანდარტულ თამაშებზე და არა ვარიანტებზე.
 შეგიძლიათ გამოიყენოთ %s FEN პოზიციის შესაქმნელად, შემდეგ ჩასვით აქ.
@@ -947,9 +944,6 @@
   <string name="focusChat">ფოკუსირება ჩატზე</string>
   <string name="showHelpDialog">დახმარების დიალოგის ჩვენება</string>
   <string name="reopenYourAccount">ხელახლა გახსენით თქვენი ექაუნთი</string>
-  <string name="closedAccountChangedMind">თუ დახურეთ თქვენი ექაუნთი, მაგრამ მას შემდეგ გადაიფიქრეთ, გექნებათ თქვენი ექაუნთის დაბრუნების ერთი შანსი.</string>
-  <string name="onlyWorksOnce">ეს მხოლოდ ერთხელ იმუშავებს.</string>
-  <string name="cantDoThisTwice">მეორედ თუ დახურავთ თქვენს ექაუნთს, აღდგენის შანსი აღარ გექნებათ.</string>
   <string name="emailAssociatedToaccount">ელფოსტის მისამართი, ასოცირებული ექაუნთთან</string>
   <string name="sentEmailWithLink">გამოგიგზავნეთ ელფოსტა ლინკით.</string>
   <string name="tournamentEntryCode">ტურნირში შესასვლელი კოდი</string>

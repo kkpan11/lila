@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="communityBlogs">Community-Blog</string>
+  <string name="friendBlogs">Blogs von Freunden</string>
+  <string name="likedBlogs">Gelikte Blogbeiträge</string>
+  <string name="blogTopics">Blog-Themen</string>
+  <plurals name="blogPosts">
+    <item quantity="one">%s Blog-Beitrag</item>
+    <item quantity="other">%s Blog-Beiträge</item>
+  </plurals>
+  <string name="lichessOfficialBlog">Offizieller Lichess-Blog</string>
+  <string name="continueReadingPost">Diesen Beitrag weiterlesen</string>
+  <string name="lichessBlogPostsFromXYear">Blogbeiträge von Lichess in %s</string>
+  <string name="previousBlogPosts">Frühere Blogeinträge</string>
   <string name="xBlog">Blog von %s</string>
   <string name="newPost">Neuer Beitrag</string>
   <string name="editYourBlogPost">Bearbeite deinen Blog-Beitrag</string>
@@ -13,6 +25,8 @@
   <string name="createBlogDiscussionHelp">Ein Forenthema wird für Leute erstellt, die deinen Beitrag kommentieren möchten</string>
   <string name="publishOnYourBlog">Veröffentliche in deinem Blog</string>
   <string name="publishHelp">Wenn aktiviert, wird der Beitrag in deinem Blog aufgelistet. Wenn nicht, wird er privat sein, in deinen Entwürfen</string>
+  <string name="stickyPost" comment="Label for the toggle that can make this blog post sticky.">Beitrag anheften</string>
+  <string name="stickyPostHelp">Falls ausgewählt, wird dieser Beitrag ganz oben auf deinem Profil bei den kürzlichen Veröffentlichungen und auf deinem Blog angezeigt.</string>
   <plurals name="publishedNbBlogPosts">
     <item quantity="one">Hat einen Blog-Beitrag veröffentlicht</item>
     <item quantity="other">Hat %s Blog-Beiträge veröffentlicht</item>
@@ -36,7 +50,6 @@
   <string name="imageAlt">Alternativer Bildtext</string>
   <string name="imageCredit">Bildherkunft</string>
   <string name="deleteBlog">Lösche diesen Blog-Beitrag unwiderruflich</string>
-  <string name="deleteImage">Lösche dieses Bild</string>
   <string name="safeToUseImages">Es ist sicher Bilder von den folgenden Webseiten zu verwenden: </string>
   <string name="selectPostTopics">Wähle die Themen deines Beitrags aus</string>
   <string name="useImagesYouMadeYourself">Du kannst auch Bilder verwenden, die du selbst erstellt oder geschossen hast, sowie Screenshots von Lichess... Alles, was nicht von jemand anderem urheberrechtlich geschützt ist.</string>
@@ -44,4 +57,5 @@
   <string name="inappropriateContentAccountClosed">Jegliche unangemessenen Inhalte können zur Schließung deines Benutzerkontos führen.</string>
   <string name="blogTips">Unsere einfachen Tipps, um tolle Blog-Beiträge zu schreiben</string>
   <string name="discussThisBlogPostInTheForum">Diesen Blog-Beitrag im Forum diskutieren</string>
+  <string name="youBlockedByBlogAuthor">Du wurdest vom Blog-Author gesperrt.</string>
 </resources>

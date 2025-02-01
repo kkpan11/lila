@@ -21,34 +21,34 @@ sealed trait ThemeObject:
 object Theme extends ThemeObject:
 
   val all = List(
-    new Theme("blue", "svg/blue.svg"),
-    new Theme("blue2", "blue2.jpg"),
-    new Theme("blue3", "blue3.jpg"),
-    new Theme("blue-marble", "blue-marble.jpg"),
-    new Theme("canvas", "canvas2.jpg"),
+    new Theme("brown", "brown.png"),
     new Theme("wood", "wood.jpg"),
     new Theme("wood2", "wood2.jpg"),
     new Theme("wood3", "wood3.jpg"),
     new Theme("wood4", "wood4.jpg"),
     new Theme("maple", "maple.jpg"),
     new Theme("maple2", "maple2.jpg"),
-    new Theme("brown", "svg/brown.svg"),
+    new Theme("horsey", "horsey.jpg"),
     new Theme("leather", "leather.jpg"),
-    new Theme("green", "svg/green.svg"),
+    new Theme("blue", "blue.png"),
+    new Theme("blue2", "blue2.jpg"),
+    new Theme("blue3", "blue3.jpg"),
+    new Theme("canvas", "canvas2.jpg"),
+    new Theme("blue-marble", "blue-marble.jpg"),
+    new Theme("ic", "ic.png"),
+    new Theme("green", "green.png"),
     new Theme("marble", "marble.jpg"),
     new Theme("green-plastic", "green-plastic.png"),
+    new Theme("olive", "olive.jpg"),
     new Theme("grey", "grey.jpg"),
     new Theme("metal", "metal.jpg"),
-    new Theme("olive", "olive.jpg"),
     new Theme("newspaper", "svg/newspaper.svg"),
-    new Theme("purple", "svg/purple.svg"),
+    new Theme("purple", "purple.png"),
     new Theme("purple-diag", "purple-diag.png"),
-    new Theme("pink", "pink-pyramid.png"),
-    new Theme("ic", "svg/ic.svg"),
-    new Theme("horsey", "horsey.jpg")
+    new Theme("pink", "pink-pyramid.png")
   )
 
-  val default = allByName get "brown" err "Can't find default theme D:"
+  val default = allByName.get("brown").err("Can't find default theme D:")
 
 object Theme3d extends ThemeObject:
 
@@ -74,4 +74,4 @@ object Theme3d extends ThemeObject:
     new Theme("Woodi", "Woodi.png")
   )
 
-  val default = allByName get "Woodi" err "Can't find default theme D:"
+  val default = allByName.get("Woodi").err("Can't find default theme D:")

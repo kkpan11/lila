@@ -2,10 +2,11 @@ package lila.streamer
 
 import akka.actor.*
 import com.softwaremill.macwire.*
-import lila.common.autoconfig.{ *, given }
 import play.api.{ ConfigLoader, Configuration }
 
-import lila.common.config.*
+import lila.common.autoconfig.{ *, given }
+import lila.common.config.{ *, given }
+import lila.core.config.*
 
 @Module
 private class StreamerConfig(
@@ -15,30 +16,27 @@ private class StreamerConfig(
     @ConfigName("streaming.google.api_key") val googleApiKey: Secret,
     @ConfigName("streaming.twitch") val twitchConfig: TwitchConfig
 )
-private class TwitchConfig(@ConfigName("client_id") val clientId: String, val secret: Secret)
+private class TwitchConfig(
+    val endpoint: String,
+    @ConfigName("client_id") val clientId: String,
+    val secret: Secret
+)
 
 @Module
-@annotation.nowarn("msg=unused")
 final class Env(
     appConfig: Configuration,
     ws: play.api.libs.ws.StandaloneWSClient,
     settingStore: lila.memo.SettingStore.Builder,
-    isOnline: lila.socket.IsOnline,
+    isOnline: lila.core.socket.IsOnline,
     cacheApi: lila.memo.CacheApi,
     picfitApi: lila.memo.PicfitApi,
-    notifyApi: lila.notify.NotifyApi,
-    userRepo: lila.user.UserRepo,
-    perfsRepo: lila.user.UserPerfsRepo,
-    userApi: lila.user.UserApi,
-    subsRepo: lila.relation.SubscriptionRepo,
-    prefApi: lila.pref.PrefApi,
+    notifyApi: lila.core.notify.NotifyApi,
+    userRepo: lila.core.user.UserRepo,
+    userApi: lila.core.user.UserApi,
+    subsRepo: lila.core.relation.SubscriptionRepo,
     db: lila.db.Db,
-    net: lila.common.config.NetConfig
-)(using
-    ec: Executor,
-    scheduler: Scheduler,
-    mat: akka.stream.Materializer
-):
+    net: lila.core.config.NetConfig
+)(using scheduler: Scheduler)(using Executor, akka.stream.Materializer):
 
   private given ConfigLoader[TwitchConfig]   = AutoConfig.loader[TwitchConfig]
   private given ConfigLoader[Stream.Keyword] = strLoader(Stream.Keyword.apply)
@@ -48,7 +46,7 @@ final class Env(
 
   lazy val alwaysFeaturedSetting =
     import lila.memo.SettingStore.UserIds.given
-    import lila.common.UserIds
+    import lila.core.data.UserIds
     settingStore[UserIds](
       "streamerAlwaysFeatured",
       default = UserIds(Nil),
@@ -81,12 +79,12 @@ final class Env(
   lazy val liveStreamApi = wire[LiveStreamApi]
 
   lila.common.Bus.subscribeFun("adjustCheater", "adjustBooster", "shadowban"):
-    case lila.hub.actorApi.mod.MarkCheater(userId, true) => api.demote(userId)
-    case lila.hub.actorApi.mod.MarkBooster(userId)       => api.demote(userId)
-    case lila.hub.actorApi.mod.Shadowban(userId, true)   => api.demote(userId)
-    case lila.hub.actorApi.mod.Shadowban(userId, false)  => api.unignore(userId)
+    case lila.core.mod.MarkCheater(userId, true) => api.demote(userId)
+    case lila.core.mod.MarkBooster(userId)       => api.demote(userId)
+    case lila.core.mod.Shadowban(userId, true)   => api.demote(userId)
+    case lila.core.mod.Shadowban(userId, false)  => api.unignore(userId)
 
-  scheduler.scheduleWithFixedDelay(1 hour, 1 day): () =>
+  scheduler.scheduleWithFixedDelay(1.hour, 1.day): () =>
     api.autoDemoteFakes
-  scheduler.scheduleWithFixedDelay(21 minutes, 8 days): () =>
+  scheduler.scheduleWithFixedDelay(21.minutes, 8.days): () =>
     ytApi.subscribeAll

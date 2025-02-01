@@ -1,15 +1,10 @@
-package views.html
-package appeal
+package views.appeal
 
-import controllers.routes
-import controllers.appeal.routes.{ Appeal as appealRoutes }
-
-import lila.app.templating.Environment.{ given, * }
-import lila.app.ui.ScalatagsTemplate.{ *, given }
+import lila.app.UiEnv.{ *, given }
 import lila.appeal.Appeal
-import Appeal.Filter
+import lila.appeal.Appeal.Filter
+import lila.mod.ui.PendingCounts
 import lila.report.Report.Inquiry
-import lila.user.UserMark
 
 object queue:
 
@@ -19,16 +14,15 @@ object queue:
       filter: Option[Filter],
       markedByMe: Set[UserId],
       scores: lila.report.Room.Scores,
-      streamers: Int,
-      nbAppeals: Int
-  )(using PageContext) =
-    views.html.report.list.layout("appeal", scores, streamers, nbAppeals)(
+      pending: PendingCounts
+  )(using Context) =
+    views.report.layout("appeal", scores, pending):
       table(cls := "slist slist-pad see appeal-queue")(
         thead(
           tr(
             th("By"),
             th(filterMarks(filter)),
-            th(isGranted(_.Presets) option a(href := routes.Mod.presets("appeal"))("Presets"))
+            th(isGranted(_.Presets).option(a(href := routes.Mod.presets("appeal"))("Presets")))
           )
         ),
         tbody(
@@ -37,11 +31,15 @@ object queue:
               td(
                 userIdLink(appeal.id.some, params = "?mod"),
                 br,
-                markedByMe.contains(appeal.userId) option span(
-                  dataIcon := licon.CautionTriangle,
-                  cls      := "marked-by-me text"
-                )("My mark"),
-                views.html.user.mod.userMarks(user, None)
+                markedByMe
+                  .contains(appeal.userId)
+                  .option(
+                    span(
+                      dataIcon := Icon.CautionTriangle,
+                      cls      := "marked-by-me text"
+                    )("My mark")
+                  ),
+                views.mod.user.userMarks(user, None)
               ),
               td(appeal.msgs.lastOption.map: msg =>
                 frag(
@@ -51,8 +49,8 @@ object queue:
                   p(shorten(msg.text, 200))
                 )),
               td(
-                a(href := appealRoutes.show(appeal.id), cls := "button button-empty")("View"),
-                inquiries.get(appeal.userId) map { i =>
+                a(href := routes.Appeal.show(appeal.userId), cls := "button button-empty")("View"),
+                inquiries.get(appeal.userId).map { i =>
                   frag(userIdLink(i.mod.some), nbsp, "is handling this")
                 }
               )
@@ -60,14 +58,13 @@ object queue:
           }
         )
       )
-    )
 
   private def filterMarks(current: Option[Filter]) =
     span(cls := "appeal-filters btn-rack"):
       Filter.allWithIcon.map: (filter, icon) =>
         a(
           cls := List("btn-rack__btn" -> true, "active" -> current.has(filter)),
-          href := appealRoutes.queue(
+          href := routes.Appeal.queue(
             current.fold(filter.some)(_.toggle(filter)).fold("reset")(_.key).some
           ),
           dataIcon := icon.left.toOption

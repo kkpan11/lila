@@ -1,24 +1,25 @@
-import { lastStep } from './round';
-import RoundController from './ctrl';
-import { ApiMove, RoundData } from './interfaces';
-import * as xhr from 'common/xhr';
+import { lastStep } from './util';
+import type RoundController from './ctrl';
+import type { ApiMove, RoundData } from './interfaces';
+import { text as xhrText } from 'common/xhr';
+import { storage } from 'common/storage';
 
 let found = false;
 
-const truncateFen = (fen: Fen): string => fen.split(' ')[0];
+const truncateFen = (fen: FEN): FEN => fen.split(' ')[0];
 
 export function subscribe(ctrl: RoundController): void {
   // allow everyone to cheat against the AI
   if (ctrl.data.opponent.ai) return;
   // bots can cheat alright
-  if (ctrl.data.player.user?.title == 'BOT') return;
+  if (ctrl.data.player.user?.title === 'BOT') return;
 
   // Notify tabs to disable ceval. Unless this game is loaded directly on a
   // position being analysed, there is plenty of time (7 moves, in most cases)
   // for this to take effect.
-  lichess.storage.fire('ceval.disable');
+  storage.fire('ceval.disable');
 
-  lichess.storage.make('ceval.fen').listen(e => {
+  storage.make('ceval.fen').listen(e => {
     const d = ctrl.data,
       step = lastStep(ctrl.data);
     if (
@@ -28,12 +29,12 @@ export function subscribe(ctrl: RoundController): void {
       e.value &&
       truncateFen(step.fen) === truncateFen(e.value)
     ) {
-      xhr.text(`/jslog/${d.game.id}${d.player.id}?n=ceval`, { method: 'post' });
+      xhrText(`/jslog/${d.game.id}${d.player.id}?n=ceval`, { method: 'post' });
       found = true;
     }
   });
 }
 
-export function publish(d: RoundData, move: ApiMove) {
-  if (d.opponent.ai) lichess.storage.fire('ceval.fen', move.fen);
+export function publish(d: RoundData, move: ApiMove): void {
+  if (d.opponent.ai) storage.fire('ceval.fen', move.fen);
 }

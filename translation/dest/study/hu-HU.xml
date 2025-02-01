@@ -4,7 +4,7 @@
   <string name="myStudies">Tanulmányaim</string>
   <string name="studiesIContributeTo">Tanulmányaim szerkesztőként</string>
   <string name="myPublicStudies">Nyilvános tanulmányaim</string>
-  <string name="myPrivateStudies">Privát tanulmányaim</string>
+  <string name="myPrivateStudies">Saját tanulmányaim</string>
   <string name="myFavoriteStudies">Kedvenc tanulmányaim</string>
   <string name="whatAreStudies">Mik azok a tanulmányok?</string>
   <string name="allStudies">Összes tanulmány</string>
@@ -63,7 +63,6 @@
   <string name="downloadAllGames">Az összes játszma letöltése</string>
   <string name="chapterPgn">PGN a fejezetről</string>
   <string name="copyChapterPgn">PGN másolása</string>
-  <string name="copyChapterPgnDescription">Fejezet másolása a vágólapra PGN formátumban.</string>
   <string name="downloadGame">Játszma letöltése</string>
   <string name="studyUrl">Tanulmány URL</string>
   <string name="currentChapterUrl">URL erre a fejezetre</string>

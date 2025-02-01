@@ -1,9 +1,11 @@
 package lila.fishnet
 
 import com.gilt.gfc.semver.SemVer
-import lila.common.IpAddress
+import scalalib.SecureRandom
+
 import scala.util.{ Failure, Success, Try }
-import ornicar.scalalib.SecureRandom
+
+import lila.core.net.IpAddress
 
 case class Client(
     _id: Client.Key,                   // API key used to authenticate and assign move or analysis
@@ -19,11 +21,11 @@ case class Client(
   def fullId = s"$userId:$key"
 
   def updateInstance(i: Client.Instance): Option[Client] =
-    instance.fold(i.some)(_ update i) map { newInstance =>
+    instance.fold(i.some)(_.update(i)).map { newInstance =>
       copy(instance = newInstance.some)
     }
 
-  def lichess = this is lila.user.User.lichessId
+  def lichess = this.is(UserId.lichess)
 
   def offline = key == Client.offline.key
 
@@ -48,18 +50,16 @@ object Client:
   object Key extends OpaqueString[Key]
   opaque type Version = String
   object Version extends OpaqueString[Version]
-  opaque type Python = String
-  object Python extends OpaqueString[Python]
 
   case class Instance(version: Version, ip: IpAddress, seenAt: Instant):
 
     def update(i: Instance): Option[Instance] =
       if i.version != version then i.some
       else if i.ip != ip then i.some
-      else if i.seenAt isAfter seenAt.plusMinutes(5) then i.some
+      else if i.seenAt.isAfter(seenAt.plusMinutes(5)) then i.some
       else none
 
-    def seenRecently = seenAt isAfter Instance.recentSince
+    def seenRecently = seenAt.isAfter(Instance.recentSince)
 
   object Instance:
 

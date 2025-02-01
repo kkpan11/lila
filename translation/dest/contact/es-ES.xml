@@ -48,16 +48,14 @@
   <string name="tryCastling">Prueba este pequeño tutorial interactivo para practicar el enroque en el ajedrez</string>
   <string name="castlingImported">Si has importado una partida o una posición inicial, asegúrate de establecer correctamente los derechos del enroque.</string>
   <string name="insufficientMaterial">Material insuficiente para dar mate</string>
-  <string name="fideMate">Según las reglas FIDE §6.9, si un jaque mate es posible con cualquier secuencia legal de movimientos, entonces el juego no es un empate</string>
+  <string name="fideMate">Según las reglas FIDE §6.9, si un jaque mate es posible con cualquier secuencia legal de movimientos, entonces la partida no es tablas</string>
   <string name="knightMate">Puedes hacer jaque mate con sólo un caballo o un alfil, si el oponente tiene más que un rey en el tablero.</string>
   <string name="noRatingPoints">No se otorgaron puntos</string>
   <string name="ratedGame">Asegúrate de haber jugado una partida por puntuación. Las partidas amistosas no afectan a las puntuaciones de los jugadores.</string>
   <string name="botRatingAbuse">Al jugar contra una cuenta de bot, puede que una partida por puntos no se contabilice si se determina que el jugador abusa del bot para conseguir puntos.</string>
   <string name="errorPage">Página de error</string>
   <string name="reportErrorPage">Si una página te da error, puedes reportarla:</string>
-  <string name="wantBroadcastTournament">Quiero transmitir un torneo</string>
   <string name="learnHowToMakeBroadcasts">Aprende cómo hacer tus propias emisiones en Lichess</string>
-  <string name="contactAboutOfficialBroadcasts">También puedes ponerte en contacto con el equipo de emisiones acerca de las emisiones oficiales.</string>
   <string name="banAppeal">Apelar por un bloqueo o una restricción de IP</string>
   <string name="engineAppeal">Motor o marca de trampa</string>
   <string name="sendAppealTo">Puedes enviar una apelación a %s.</string>

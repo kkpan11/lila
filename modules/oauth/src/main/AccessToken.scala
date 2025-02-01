@@ -1,9 +1,9 @@
 package lila.oauth
 
-import reactivemongo.api.bson.*
 import com.roundeights.hasher.Algo
+import reactivemongo.api.bson.*
 
-import lila.common.Bearer
+import lila.core.net.Bearer
 
 case class AccessToken(
     id: AccessToken.Id,
@@ -72,10 +72,10 @@ object AccessToken:
         plain = r.get[Bearer](plain),
         userId = r.get[UserId](userId),
         createdAt = r.getO[Instant](createdAt),
-        description = r strO description,
+        description = r.strO(description),
         usedAt = r.getO[Instant](usedAt),
         scopes = r.get[TokenScopes](scopes),
-        clientOrigin = r strO clientOrigin,
+        clientOrigin = r.strO(clientOrigin),
         expires = r.getO[Instant](expires)
       )
 

@@ -1,13 +1,11 @@
 package lila.insight
 
-import chess.{ Centis, ByColor }
+import chess.{ ByColor, Centis }
 import reactivemongo.api.bson.*
 
-import lila.common.config
+import lila.core.perf.PerfId
 import lila.db.dsl.{ *, given }
-import lila.game.Game
-import lila.rating.{ Perf, PerfType }
-import lila.user.User
+import lila.rating.PerfType
 
 case class InsightPerfStats(
     rating: MeanRating,
@@ -29,12 +27,12 @@ final class InsightPerfStatsApi(
   def apply(
       user: User,
       perfTypes: List[PerfType],
-      gameIdsPerPerf: config.Max
+      gameIdsPerPerf: Max
   ): Fu[Map[PerfType, InsightPerfStats.WithGameIds]] =
     storage.coll:
       _.aggregateList(perfTypes.size): framework =>
         import framework.*
-        import InsightEntry.{ BSONFields as F }
+        import InsightEntry.BSONFields as F
         val filters = List(lila.insight.Filter(InsightDimension.Perf, perfTypes))
         Match(InsightStorage.selectUserId(user.id) ++ pipeline.gameMatcher(filters)) -> List(
           Sort(Descending(F.date)),
@@ -63,19 +61,19 @@ final class InsightPerfStatsApi(
               "ids"   -> $doc("$slice" -> $arr("$ids", gameIdsPerPerf.value))
             )
           ),
-          Match($doc("total" $gte 5))
+          Match($doc("total".$gte(5)))
         )
       .map: docs =>
         for
           doc <- docs
-          id  <- doc.getAsOpt[Perf.Id]("_id")
+          id  <- doc.getAsOpt[PerfId]("_id")
           pt  <- PerfType(id)
-          ra  <- doc double "r"
+          ra  <- doc.double("r")
           nw = ~doc.int("nw")
           nb = ~doc.int("nb")
           t   <- doc.getAsOpt[Centis]("t")
           ids <- doc.getAsOpt[List[String]]("ids")
-          gameIds = ids map GameId.take
+          gameIds = ids.map(GameId.take)
           interval = for
             start <- doc.getAsOpt[Instant]("from")
             end   <- doc.getAsOpt[Instant]("to")

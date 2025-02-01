@@ -106,7 +106,6 @@
   <string name="replayMode">Mode sa pagbalik-balik</string>
   <string name="realtimeReplay">Tinoud nga oras</string>
   <string name="byCPL">Gikan sa CPL</string>
-  <string name="openStudy">Abli nga Pagtoun</string>
   <string name="enable">Gipagana</string>
   <string name="bestMoveArrow">Pinakanindot nga lihok nga arrow</string>
   <string name="showVariationArrows">Ipakita ang arrows sa variation</string>
@@ -116,7 +115,6 @@
   <string name="memory">Nahinumdoman</string>
   <string name="infiniteAnalysis">Walay katapusan ng pagtuki</string>
   <string name="removesTheDepthLimit">Kwaa ang nagpugong sa kalawmon, ug ipabilin ng init imong kompyuter</string>
-  <string name="engineManager">Engine manager</string>
   <string name="blunder">Kasaypanan</string>
   <string name="mistake">Sayup</string>
   <string name="inaccuracy">Dli sakto</string>
@@ -124,9 +122,17 @@
     <item quantity="one">%s Sayop</item>
     <item quantity="other">%s Mga sayop</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="one">%s Sayop</item>
+    <item quantity="other">%s Mga sayop</item>
+  </plurals>
   <plurals name="nbInaccuracies">
     <item quantity="one">%s dili sakto</item>
     <item quantity="other">%s mga dili sakto</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
+    <item quantity="one">%s Dili sakto</item>
+    <item quantity="other">%s Mga dili sakto</item>
   </plurals>
   <string name="moveTimes">Kadaghan sa mga paglihok</string>
   <string name="flipBoard">Baliha ang board</string>

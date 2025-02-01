@@ -1,16 +1,16 @@
 package lila.insight
 
-import chess.Color
+import chess.IntRating
+import chess.rating.IntRatingDiff
 
 import lila.common.SimpleOpening
-import lila.game.Pov
-import lila.rating.PerfType
+import lila.core.game.Source
 
 case class InsightEntry(
     id: String, // gameId + w/b
     userId: UserId,
     color: Color,
-    perf: PerfType,
+    perf: PerfKey,
     opening: Option[SimpleOpening],
     myCastling: Castling,
     rating: Option[IntRating],         // stable rating only
@@ -24,6 +24,7 @@ case class InsightEntry(
     ratingDiff: IntRatingDiff,
     analysed: Boolean,
     provisional: Boolean,
+    source: Option[Source],
     date: Instant
 )
 
@@ -52,4 +53,5 @@ case object InsightEntry:
     val ratingDiff               = "rd"
     val analysed                 = "a"
     val provisional              = "pr"
+    val source                   = "so"
     val date                     = "d"

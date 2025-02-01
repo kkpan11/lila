@@ -37,3 +37,16 @@ bad {
   text-align: center;
   margin: 10px auto;
 }
+
+.drop-target {
+  border: 2px dashed $c-font;
+  height: min-content;
+}
+
+.icon-flair {
+  @include prevent-select;
+  height: 1.1em;
+  vertical-align: middle;
+  margin-right: 0.5ch;
+  transform: translateY(-0.1em);
+}

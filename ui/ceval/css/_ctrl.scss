@@ -15,7 +15,7 @@
   .switch {
     @extend %flex-center;
     flex: 0 0 40px;
-    margin-#{$start-direction}: 6px;
+    margin-inline-start: 6px;
   }
 
   pearl {
@@ -44,9 +44,9 @@
     .cloud,
     .infinite {
       @extend %roboto, %box-radius;
-      margin-#{$start-direction}: 4px;
+      margin-inline-start: 4px;
       background: $c-secondary-dim;
-      color: $c-secondary-over;
+      color: $c-over;
       padding: 1px 3px;
       text-transform: uppercase;
       font-size: 11px;
@@ -58,7 +58,7 @@
 
     .deeper {
       color: $c-primary;
-      margin-#{$end-direction}: 4px;
+      margin-inline-end: 4px;
 
       &::before {
         vertical-align: top;
@@ -71,12 +71,13 @@
     flex: 0 0 18px;
     color: $c-font-dim;
     font-size: 16px;
+    margin-top: -3px; // bar
     overflow: hidden;
     visibility: hidden;
 
     &:hover:not(.hidden),
     &.active {
-      color: $c-red;
+      color: $c-bad;
     }
 
     &.hidden {
@@ -90,45 +91,8 @@
     color: $c-font-dim;
     font-size: 16px;
     padding: 0 6px;
-    margin-#{$end-direction}: 6px;
-
-    &:hover {
-      color: $c-font;
-    }
-
-    &.active {
-      color: white;
-      background-color: $c-primary;
-    }
-  }
-
-  .show-threat {
-    @extend %button-none;
-    flex: 0 0 18px;
-    color: $c-font-dim;
-    font-size: 16px;
+    margin-inline-end: 6px;
     margin-top: -3px; // bar
-    overflow: hidden;
-    visibility: hidden;
-
-    &:hover:not(.hidden),
-    &.active {
-      color: $c-red;
-    }
-
-    &.hidden {
-      opacity: 0.3;
-      cursor: default;
-    }
-  }
-
-  .settings-gear {
-    @extend %button-none;
-    color: $c-font-dim;
-    font-size: 16px;
-    padding: 0 6px;
-    margin-top: -3px; // bar
-    margin-#{$end-direction}: 6px;
 
     &:hover {
       color: $c-font;
@@ -141,7 +105,7 @@
   }
 
   .technology {
-    margin-#{$start-direction}: 5px;
+    margin-inline-start: 5px;
 
     &.good {
       color: $c-good;
@@ -191,16 +155,16 @@
   text-align: left;
   max-width: 60vw;
 
-  @media (max-width: $mq-width-medium) {
+  @media (max-width: at-most($medium)) {
     max-width: 80vw;
   }
-  @media (max-width: $mq-width-xx-small) {
+  @media (max-width: at-most($xx-small)) {
     max-width: unset;
     width: 96vw;
   }
 
   h2 {
-    font-family: 'Noto Sans';
+    @extend %base-font;
     font-size: 1.3em;
   }
   li {

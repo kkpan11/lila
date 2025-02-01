@@ -2,33 +2,29 @@ package lila.appeal
 
 import reactivemongo.api.bson.Macros.Annotations.Key
 
-import lila.user.{ User, UserMark }
-import lila.common.licon
+import lila.core.id.AppealId
+import lila.core.user.UserMark
+import lila.ui.Icon
 
 case class Appeal(
-    @Key("_id") id: Appeal.Id,
-    msgs: Vector[AppealMsg],
-    status: Appeal.Status, // from the moderators POV
+    @Key("_id") id: AppealId,
+    msgs: Vector[AppealMsg], // chronological order, oldest first
+    status: Appeal.Status,   // from the moderators POV
     createdAt: Instant,
     updatedAt: Instant,
     // date of first player message without a mod reply
     // https://github.com/lichess-org/lila/issues/7564
     firstUnrepliedAt: Instant
 ):
+  def userId: UserId = id.into(UserId)
+  def isRead         = status == Appeal.Status.Read
+  def isMuted        = status == Appeal.Status.Muted
+  def isUnread       = status == Appeal.Status.Unread
 
-  def userId   = id.userId
-  def isRead   = status == Appeal.Status.Read
-  def isMuted  = status == Appeal.Status.Muted
-  def isUnread = status == Appeal.Status.Unread
+  def isAbout(userId: UserId) = id.is(userId)
 
-  def isAbout(userId: UserId) = id is userId
-
-  def post(text: String, by: User) =
-    val msg = AppealMsg(
-      by = by.id,
-      text = text,
-      at = nowInstant
-    )
+  def post(text: String, by: UserId) =
+    val msg = AppealMsg(by, text, nowInstant)
     copy(
       msgs = msgs :+ msg,
       updatedAt = nowInstant,
@@ -43,9 +39,9 @@ case class Appeal(
 
   def canAddMsg: Boolean =
     val recentWithoutMod = msgs.foldLeft(Vector.empty[AppealMsg]):
-      case (_, msg) if isByMod(msg)                              => Vector.empty
-      case (acc, msg) if msg.at isAfter nowInstant.minusWeeks(1) => acc :+ msg
-      case (acc, _)                                              => acc
+      case (_, msg) if isByMod(msg)                               => Vector.empty
+      case (acc, msg) if msg.at.isAfter(nowInstant.minusWeeks(1)) => acc :+ msg
+      case (acc, _)                                               => acc
 
     val recentSize = recentWithoutMod.foldLeft(0)(_ + _.text.size)
     recentSize < Appeal.maxLength
@@ -54,12 +50,12 @@ case class Appeal(
   def read       = copy(status = Appeal.Status.Read)
   def toggleMute = if isMuted then read else copy(status = Appeal.Status.Muted)
 
+  lazy val mutedSince: Option[Instant] = isMuted.so:
+    msgs.reverse.takeWhile(m => !isByMod(m)).lastOption.map(_.at)
+
   def isByMod(msg: AppealMsg) = msg.by != id
 
 object Appeal:
-
-  opaque type Id = String
-  object Id extends OpaqueUserId[Id]
 
   given UserIdOf[Appeal] = _.id.userId
 
@@ -86,26 +82,26 @@ object Appeal:
       "process" -> boolean
     )
 
-  private[appeal] case class SnoozeKey(snoozerId: UserId, appealId: Appeal.Id)
+  private[appeal] case class SnoozeKey(snoozerId: UserId, appealId: AppealId)
   private[appeal] given UserIdOf[SnoozeKey] = _.snoozerId
 
   opaque type Filter = Option[UserMark]
   object Filter extends TotalWrapper[Filter, Option[UserMark]]:
     given Eq[Filter] = Eq.fromUniversalEquals
     extension (filter: Filter)
-      def toggle(to: Filter) = to != filter option to
+      def toggle(to: Filter) = (to != filter).option(to)
       def is(mark: UserMark) = filter.contains(mark)
       def key                = filter.fold("clean")(_.key)
 
-    val allWithIcon = List[(Filter, Either[licon.Icon, String])](
-      UserMark.Troll.some  -> Left(licon.BubbleSpeech),
-      UserMark.Boost.some  -> Left(licon.LineGraph),
-      UserMark.Engine.some -> Left(licon.Cogs),
-      UserMark.Alt.some    -> Right("A"),
-      none                 -> Left(licon.User)
+    val allWithIcon = List[(Filter, Either[Icon, String])](
+      UserMark.troll.some  -> Left(Icon.BubbleSpeech),
+      UserMark.boost.some  -> Left(Icon.LineGraph),
+      UserMark.engine.some -> Left(Icon.Cogs),
+      UserMark.alt.some    -> Right("A"),
+      none                 -> Left(Icon.User)
     )
     val byName: Map[String, Filter] =
-      UserMark.byKey.mapValues(userMark => Filter(userMark.some)).toMap + ("clean" -> Filter(none))
+      UserMark.byKey.view.mapValues(userMark => Filter(userMark.some)).toMap + ("clean" -> Filter(none))
 
 case class AppealMsg(
     by: UserId,

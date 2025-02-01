@@ -97,13 +97,25 @@
     <item quantity="one">%s qopal qáte</item>
     <item quantity="other">%s qopal qáte</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="one">%s Qopal qáte</item>
+    <item quantity="other">%s Qopal qáte</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="one">%s qáte</item>
     <item quantity="other">%s qáte</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="one">%s Qáte</item>
+    <item quantity="other">%s Qáte</item>
+  </plurals>
   <plurals name="nbInaccuracies">
     <item quantity="one">%s túsiniksizlik</item>
     <item quantity="other">%s túsiniksizlik</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
+    <item quantity="one">%s Túsiniksizlik</item>
+    <item quantity="other">%s Túsiniksizlik</item>
   </plurals>
   <string name="offerDraw">Pattı usınıs etiw</string>
   <string name="draw">Pat</string>
@@ -236,7 +248,6 @@
   <string name="block">Bloklaw</string>
   <string name="blocked">Bloklanǵan</string>
   <string name="unblock">Bloktan shıǵarıw</string>
-  <string name="followsYou">Sizge jazılǵan</string>
   <plurals name="nbFollowers">
     <item quantity="one">%s jazılıwshı</item>
     <item quantity="other">%s jazılıwshı</item>
@@ -259,7 +270,6 @@
   <string name="tournamentCalendar">Turnir kalendarı</string>
   <string name="conditionOfEntry">Qatnasıw shártleri:</string>
   <string name="advancedSettings">Qosımsha sazlawlar</string>
-  <string name="showAdvancedSettings">Qosımsha sazlawlardı kórsetiw</string>
   <string name="join">Qosılıw</string>
   <string name="withdraw">Oyınnan shıǵıw</string>
   <string name="wins">Jeńis</string>
@@ -272,7 +282,6 @@
   <string name="draws">Patlar</string>
   <string name="nextXTournament">Keyingi %s turnir:</string>
   <string name="profile">Profil</string>
-  <string name="tournamentWinners">Turnir jeńimpazları</string>
   <string name="name">Atı</string>
   <string name="description">Táriypi</string>
   <string name="descPrivate">Jeke táriyp</string>

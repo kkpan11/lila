@@ -1,11 +1,12 @@
 package lila.irwin
 
-import lila.memo.SettingStore.{ Formable, StringReader }
 import play.api.data.Form
 import play.api.data.Forms.{ single, text }
-import lila.common.Ints
 import reactivemongo.api.bson.BSONHandler
-import lila.common.Iso
+import scalalib.Iso
+
+import lila.core.data.Ints
+import lila.memo.SettingStore.{ Formable, StringReader }
 
 case class IrwinThresholds(report: Int, mark: Int)
 
@@ -13,7 +14,7 @@ private object IrwinThresholds:
 
   private val defaultThresholds = IrwinThresholds(101, 101)
 
-  given iso: Iso.StringIso[IrwinThresholds] = Iso
+  given iso: Iso.StringIso[IrwinThresholds] = lila.common.Iso
     .ints(",")
     .map[IrwinThresholds](
       {
@@ -25,7 +26,7 @@ private object IrwinThresholds:
 
   given BSONHandler[IrwinThresholds]  = lila.db.dsl.isoHandler
   given StringReader[IrwinThresholds] = StringReader.fromIso
-  given Formable[IrwinThresholds]     = new Formable(t => Form(single("v" -> text)) fill iso.to(t))
+  given Formable[IrwinThresholds]     = new Formable(t => Form(single("v" -> text)).fill(iso.to(t)))
 
   def makeSetting(name: String, store: lila.memo.SettingStore.Builder) =
     store[IrwinThresholds](

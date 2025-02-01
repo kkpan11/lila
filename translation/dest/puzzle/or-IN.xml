@@ -6,16 +6,16 @@
   <string name="advanced">ବିକଶିତ</string>
   <string name="origin">ଉତ୍ପତ୍ତି</string>
   <string name="didYouLikeThisPuzzle">ଆପଣଙ୍କୁ ଏହି ପ୍ରହେଳିକା ଭଲ ଲାଗିଲା କି?</string>
-  <string name="puzzleId" comment="%s is the ID of the puzzle, something like #a1b2c3.">ପ୍ରହେଳିକା %s</string>
+  <string name="puzzleId">ପ୍ରହେଳିକା %s</string>
   <string name="puzzleOfTheDay">ଆଜିର ପ୍ରହେଳିକା</string>
   <string name="puzzleSuccess">ସଫଳତା!</string>
   <string name="puzzleComplete">ପ୍ରହେଳିକା ସଂପୂର୍ଣ୍ଣ ହେଲା!</string>
-  <string name="hidden" comment="Puzzle rating: hidden&#10;&#10;Appears while solving puzzles. Lichess only displays the rating of the puzzle after you have solved it or asked to see the solution.">ଲୁକ୍କାୟିତ</string>
+  <string name="hidden">ଲୁକ୍କାୟିତ</string>
   <string name="continueTraining">ତାଲିମ୍ ଜାରି ରଖିବା</string>
   <string name="puzzleDashboard">ପ୍ରହେଳିକା ଡ୍ୟାସବୋର୍ଡ</string>
   <string name="history">ପ୍ରହେଳିକା ଇତିବୃତ୍ତି</string>
   <string name="solved">ସମାଧାନ ହୋଇଛି</string>
-  <string name="failed">ବିଫଳ</string>
+  <string name="failed" comment="In the list of previously attempted puzzles, a tag indicating that the puzzle has been failed.&#10;&#10;The text will be automatically capitalised. If you have different ways to translate it, we suggest keeping it short.&#10;&#10;NOTE: This string previously said 'failed', but was changed to 'incorrect' to be more encouraging (https://github.com/lichess-org/lila/issues/11068)">ବିଫଳ</string>
   <string name="lookupOfPlayer">ଜଣେ ଖେଳାଳିଙ୍କ ଖେଳରୁ ପ୍ରହେଳିକା ଦେଖନ୍ତୁ</string>
   <string name="fromXGames">%sଙ୍କ ଖେଳରୁ ପ୍ରହେଳିକା</string>
   <string name="searchPuzzles">ପ୍ରହେଳିକା ଖୋଜନ୍ତୁ</string>

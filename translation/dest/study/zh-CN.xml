@@ -50,6 +50,8 @@
   <string name="allSyncMembersRemainOnTheSamePosition">SYNC 中所有成员处于相同局面</string>
   <string name="shareChanges">与旁观者共享更改并云端保存</string>
   <string name="playing">正在对局</string>
+  <string name="showResults">结果</string>
+  <string name="showEvalBar">评估条</string>
   <string name="first">首页</string>
   <string name="previous">上一页</string>
   <string name="next">下一页</string>
@@ -60,7 +62,6 @@
   <string name="downloadAllGames">下载所有棋局</string>
   <string name="chapterPgn">章节PGN</string>
   <string name="copyChapterPgn">复制PGN</string>
-  <string name="copyChapterPgnDescription">复制章节PGN到剪贴板。</string>
   <string name="downloadGame">下载棋局</string>
   <string name="studyUrl">研究链接</string>
   <string name="currentChapterUrl">当前章节链接</string>
@@ -80,7 +81,7 @@
   <string name="analysisMode">分析模式</string>
   <string name="pinnedChapterComment">置顶评论</string>
   <string name="saveChapter">保存章节</string>
-  <string name="clearAnnotations">清除注解</string>
+  <string name="clearAnnotations">清除注释</string>
   <string name="clearVariations">清除变着</string>
   <string name="deleteChapter">删除章节</string>
   <string name="deleteThisChapter">删除本章节？本操作无法撤销！</string>
@@ -163,4 +164,5 @@
   <string name="playAgain">重玩</string>
   <string name="whatWouldYouPlay">你会在这个位置上怎么走？</string>
   <string name="youCompletedThisLesson">恭喜！你完成了这个课程！</string>
+  <string name="perPage">%s 每页</string>
 </resources>

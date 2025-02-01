@@ -1,153 +1,90 @@
-package views.html.lobby
+package views.lobby
 
-import controllers.routes
-
-import lila.app.templating.Environment.{ given, * }
-import lila.app.ui.ScalatagsTemplate.{ *, given }
-import lila.ublog.UblogPost
+import lila.app.UiEnv.{ *, given }
 
 object bits:
 
   val lobbyApp = div(cls := "lobby__app")(
     div(cls := "tabs-horiz")(span(nbsp)),
-    div(cls := "lobby__app__content")
+    div(cls := "lobby__app__content lpools")
   )
 
   def underboards(
       tours: List[lila.tournament.Tournament],
-      simuls: List[lila.simul.Simul],
-      leaderboard: List[lila.user.User.LightPerf],
-      tournamentWinners: List[lila.tournament.Winner]
+      simuls: List[lila.simul.Simul]
   )(using ctx: Context) =
     frag(
-      ctx.pref.showRatings option div(cls := "lobby__leaderboard lobby__box")(
-        div(cls := "lobby__box__top")(
-          h2(cls := "title text", dataIcon := licon.CrownElite)(trans.leaderboard()),
-          a(cls := "more", href := routes.User.list)(trans.more(), " »")
-        ),
-        div(cls := "lobby__box__content"):
-          table:
-            tbody:
-              leaderboard.map: l =>
-                tr(
-                  td(lightUserLink(l.user)),
-                  lila.rating.PerfType(l.perfKey) map { pt =>
-                    td(cls := "text", dataIcon := pt.icon)(l.rating)
-                  },
-                  td(ratingProgress(l.progress))
-                )
-      ),
-      div(cls := s"lobby__box ${if ctx.pref.showRatings then "lobby__winners" else "lobby__wide-winners"}")(
-        div(cls := "lobby__box__top")(
-          h2(cls := "title text", dataIcon := licon.Trophy)(trans.tournamentWinners()),
-          a(cls := "more", href := routes.Tournament.leaderboard)(trans.more(), " »")
-        ),
-        div(cls := "lobby__box__content"):
-          table:
-            tbody:
-              tournamentWinners take 10 map: w =>
-                tr(
-                  td(userIdLink(w.userId.some)),
-                  td:
-                    a(title := w.tourName, href := routes.Tournament.show(w.tourId)):
-                      scheduledTournamentNameShortHtml(w.tourName)
-                )
-      ),
       div(cls := "lobby__tournaments-simuls")(
         div(cls := "lobby__tournaments lobby__box")(
           a(cls := "lobby__box__top", href := routes.Tournament.home)(
-            h2(cls := "title text", dataIcon := licon.Trophy)(trans.openTournaments()),
-            span(cls := "more")(trans.more(), " »")
+            h2(cls := "title text", dataIcon := Icon.Trophy)(trans.site.openTournaments()),
+            span(cls := "more")(trans.site.more(), " »")
           ),
-          div(cls := "enterable_list lobby__box__content"):
-            views.html.tournament.bits.enterable(tours)
+          div(cls := "lobby__box__content"):
+            views.tournament.ui.enterable(tours)
         ),
-        simuls.nonEmpty option div(cls := "lobby__simuls lobby__box")(
-          a(cls := "lobby__box__top", href := routes.Simul.home)(
-            h2(cls := "title text", dataIcon := licon.Group)(trans.simultaneousExhibitions()),
-            span(cls := "more")(trans.more(), " »")
-          ),
-          div(cls := "enterable_list lobby__box__content"):
-            views.html.simul.bits.allCreated(simuls, withName = false)
+        simuls.nonEmpty.option(
+          div(cls := "lobby__simuls lobby__box")(
+            a(cls := "lobby__box__top", href := routes.Simul.home)(
+              h2(cls := "title text", dataIcon := Icon.Group)(trans.site.simultaneousExhibitions()),
+              span(cls := "more")(trans.site.more(), " »")
+            ),
+            div(cls := "lobby__box__content"):
+              views.simul.ui.allCreated(simuls, withName = false)
+          )
         )
       )
-    )
-
-  def lastPosts(
-      lichess: Option[lila.blog.MiniPost],
-      uposts: List[lila.ublog.UblogPost.PreviewPost]
-  )(using ctx: Context): Frag =
-    div(cls := "lobby__blog ublog-post-cards")(
-      lichess
-        .filter(_.forKids || ctx.kid.no)
-        .map: post =>
-          val imgSize = UblogPost.thumbnail.Size.Small
-          a(cls := "ublog-post-card ublog-post-card--link", href := routes.Blog.show(post.id, post.slug))(
-            img(
-              src     := post.image,
-              cls     := "ublog-post-card__image",
-              widthA  := imgSize.width,
-              heightA := imgSize.height
-            ),
-            span(cls := "ublog-post-card__content")(
-              h2(cls := "ublog-post-card__title")(post.title),
-              semanticDate(post.date)(using ctx.lang)(cls := "ublog-post-card__over-image")
-            )
-          )
-      ,
-      ctx.kid.no option uposts.map:
-        views.html.ublog.post.card(_, showAuthor = views.html.ublog.post.ShowAt.bottom, showIntro = false)
     )
 
   def showUnreadLichessMessage(using Context) =
     nopeInfo(
       cls := "unread-lichess-message",
-      p(trans.showUnreadLichessMessage()),
+      p(trans.site.showUnreadLichessMessage()),
       p:
-        a(cls := "button button-big", href := routes.Msg.convo(lila.user.User.lichessId)):
-          trans.clickHereToReadIt()
+        a(cls := "button button-big", href := routes.Msg.convo(UserId.lichess)):
+          trans.site.clickHereToReadIt()
     )
 
   def playbanInfo(ban: lila.playban.TempBan)(using Context) =
     nopeInfo(
-      h1(trans.sorry()),
-      p(trans.weHadToTimeYouOutForAWhile()),
+      h1(trans.site.sorry()),
+      p(trans.site.weHadToTimeYouOutForAWhile()),
       p(strong(timeRemaining(ban.endsAt))),
-      h2(trans.why()),
+      h2(trans.site.why()),
       p(
-        trans.pleasantChessExperience(),
+        trans.site.pleasantChessExperience(),
         br,
-        trans.goodPractice(),
+        trans.site.goodPractice(),
         br,
-        trans.potentialProblem()
+        trans.site.potentialProblem()
       ),
-      h2(trans.howToAvoidThis()),
+      h2(trans.site.howToAvoidThis()),
       ul(
-        li(trans.playEveryGame()),
-        li(trans.tryToWin()),
-        li(trans.resignLostGames())
+        li(trans.site.playEveryGame()),
+        li(trans.site.tryToWin()),
+        li(trans.site.resignLostGames())
       ),
       p(
-        trans.temporaryInconvenience(),
+        trans.site.temporaryInconvenience(),
         br,
-        trans.wishYouGreatGames(),
+        trans.site.wishYouGreatGames(),
         br,
-        trans.thankYouForReading()
+        trans.site.thankYouForReading()
       )
     )
 
   def currentGameInfo(current: lila.app.mashup.Preload.CurrentGame)(using Context) =
     nopeInfo(
-      h1(trans.hangOn()),
-      p(trans.gameInProgress(strong(current.opponent))),
+      h1(trans.site.hangOn()),
+      p(trans.site.gameInProgress(strong(current.opponent))),
       br,
       br,
       a(
         cls      := "text button button-fat",
-        dataIcon := licon.PlayTriangle,
+        dataIcon := Icon.PlayTriangle,
         href     := routes.Round.player(current.pov.fullId)
       )(
-        trans.joinTheGame()
+        trans.site.joinTheGame()
       ),
       br,
       br,
@@ -155,12 +92,11 @@ object bits:
       br,
       br,
       postForm(action := routes.Round.resign(current.pov.fullId))(
-        button(cls := "text button button-red", dataIcon := licon.X)(
-          if current.pov.game.abortableByUser then trans.abortTheGame() else trans.resignTheGame()
-        )
+        button(cls := "text button button-red", dataIcon := Icon.X):
+          if current.pov.game.abortableByUser then trans.site.abortTheGame() else trans.site.resignTheGame()
       ),
       br,
-      p(trans.youCantStartNewGame())
+      p(trans.site.youCantStartNewGame())
     )
 
   def nopeInfo(content: Modifier*) =
@@ -178,11 +114,11 @@ object bits:
         "invert"                                     -> e.isNowOrSoon
       )
     )(
-      views.html.event.iconOf(e),
+      views.event.iconOf(e),
       span(cls := "content")(
         span(cls := "name")(e.title),
         span(cls := "headline")(e.headline),
         span(cls := "more"):
-          if e.isNow then trans.eventInProgress() else momentFromNow(e.startsAt)
+          if e.isNow then trans.site.eventInProgress() else momentFromNow(e.startsAt)
       )
     )

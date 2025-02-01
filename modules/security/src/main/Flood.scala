@@ -2,7 +2,9 @@ package lila.security
 
 import com.github.blemale.scaffeine.Cache
 
-final class Flood:
+import lila.core.security.FloodSource as Source
+
+final class Flood(using Executor) extends lila.core.security.FloodApi:
 
   import Flood.*
 
@@ -20,12 +22,9 @@ final class Flood:
     ok
 
   private def quickPost(msg: Message, msgs: Messages): Boolean =
-    msgs.lift(floodNumber).exists(_.date isAfter msg.date.minusSeconds(10))
+    msgs.lift(floodNumber).exists(_.date.isAfter(msg.date.minusSeconds(10)))
 
 object Flood:
-
-  opaque type Source = String
-  object Source extends OpaqueString[Source]
 
   // ui/chat/src/preset.ts
   private val passList = Set(
@@ -50,4 +49,4 @@ object Flood:
         similar(m2.text, msg.text)
 
   private def similar(s1: String, s2: String): Boolean =
-    Levenshtein.isDistanceLessThan(s1, s2, (s1.length.min(s2.length) >> 3) atLeast 2)
+    scalalib.Levenshtein.isDistanceLessThan(s1, s2, (s1.length.min(s2.length) >> 3).atLeast(2))

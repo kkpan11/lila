@@ -1,31 +1,20 @@
 package lila.notify
 
 import reactivemongo.api.bson.*
-import NotificationPref.*
-import alleycats.Zero
 
-opaque type Allows = Int
-object Allows extends OpaqueInt[Allows]:
-  extension (e: Allows)
-    def push: Boolean   = (e & PUSH) != 0
-    def web: Boolean    = (e & WEB) != 0
-    def device: Boolean = (e & DEVICE) != 0
-    def bell: Boolean   = (e & BELL) != 0
-    def any: Boolean    = e != 0
+import lila.core.notify.{ Allows, PrefEvent }
+import lila.core.notify as core
 
-  given Zero[Allows] = Zero(Allows(0))
+object Allows:
+  import NotificationPref.*
 
   def fromForm(bell: Boolean, push: Boolean): Allows =
-    Allows((bell so BELL) | (push so PUSH))
+    core.Allows((bell.so(BELL)) | (push.so(PUSH)))
 
   def toForm(allows: Allows): Some[(Boolean, Boolean)] =
     Some((allows.bell, allows.push))
 
-  val all = Allows(BELL | WEB | DEVICE | PUSH)
-
-case class NotifyAllows(userId: UserId, allows: Allows)
-
-// take care with NotificationPref field names - they map directly to db and ws channels
+  val all = core.Allows(BELL | WEB | DEVICE | PUSH)
 
 case class NotificationPref(
     privateMessage: Allows,
@@ -35,49 +24,33 @@ case class NotificationPref(
     tournamentSoon: Allows,
     gameEvent: Allows,
     invitedStudy: Allows,
+    broadcastRound: Allows = NotificationPref.default.broadcastRound,
     correspondenceEmail: Boolean
 ):
-  // def allows(key: String): Allows =
-  //   NotificationPref.Event.byKey.get(key) so allows
-  def allows(event: Event): Allows = event match
-    case PrivateMessage => privateMessage
-    case Challenge      => challenge
-    case Mention        => mention
-    case StreamStart    => streamStart
-    case TournamentSoon => tournamentSoon
-    case GameEvent      => gameEvent
-    case InvitedStudy   => invitedStudy
+  def allows(event: PrefEvent): Allows = event match
+    case PrefEvent.privateMessage => privateMessage
+    case PrefEvent.challenge      => challenge
+    case PrefEvent.mention        => mention
+    case PrefEvent.streamStart    => streamStart
+    case PrefEvent.tournamentSoon => tournamentSoon
+    case PrefEvent.gameEvent      => gameEvent
+    case PrefEvent.invitedStudy   => invitedStudy
+    case PrefEvent.broadcastRound => broadcastRound
 
 object NotificationPref:
-  val BELL   = 1
-  val WEB    = 2
-  val DEVICE = 4
-  val PUSH   = WEB | DEVICE
+  export lila.core.notify.NotificationPref.*
 
-  enum Event:
-    case PrivateMessage
-    case Challenge
-    case Mention
-    case StreamStart
-    case TournamentSoon
-    case GameEvent
-    case InvitedStudy
-
-    def key = lila.common.String.lcfirst(this.toString)
-
-  object Event:
-    val byKey = values.mapBy(_.key)
-
-  export Event.*
+  val events = PrefEvent.values.mapBy(_.key)
 
   val default: NotificationPref = NotificationPref(
-    privateMessage = Allows(BELL | PUSH),
-    challenge = Allows(BELL | PUSH),
-    mention = Allows(BELL | PUSH),
-    streamStart = Allows(BELL | PUSH),
-    tournamentSoon = Allows(PUSH),
-    gameEvent = Allows(PUSH),
-    invitedStudy = Allows(BELL | PUSH),
+    privateMessage = core.Allows(BELL | PUSH),
+    challenge = core.Allows(BELL | PUSH),
+    mention = core.Allows(BELL | PUSH),
+    streamStart = core.Allows(BELL | PUSH),
+    tournamentSoon = core.Allows(PUSH),
+    gameEvent = core.Allows(PUSH),
+    invitedStudy = core.Allows(BELL | PUSH),
+    broadcastRound = core.Allows(BELL | PUSH),
     correspondenceEmail = false
   )
 
@@ -97,11 +70,12 @@ object NotificationPref:
         "tournamentSoon"      -> allowsMapping,
         "gameEvent"           -> allowsMapping,
         "invitedStudy"        -> allowsMapping,
+        "broadcastRound"      -> allowsMapping,
         "correspondenceEmail" -> boolean
       )(NotificationPref.apply)(lila.notify.unapply)
     )
 
-  import lila.db.dsl.opaqueHandler
+  import lila.db.dsl.given
   given BSONDocumentHandler[NotificationPref] = Macros.handler
 
   import play.api.libs.json.{ Json, Writes, OWrites }
@@ -109,7 +83,7 @@ object NotificationPref:
   given OWrites[NotificationPref] = Json.writes[NotificationPref]
 
   private given Writes[Allows] = Writes { a =>
-    Json.toJson(List(BELL -> "bell", PUSH -> "push") collect {
+    Json.toJson(List(BELL -> "bell", PUSH -> "push").collect {
       case (tpe, str) if (a.value & tpe) != 0 => str
     })
   }

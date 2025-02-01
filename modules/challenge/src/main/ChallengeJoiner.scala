@@ -2,27 +2,29 @@ package lila.challenge
 
 import chess.format.Fen
 import chess.variant.Variant
-import chess.{ Mode, Situation, ByColor }
-import scala.util.chaining.*
+import chess.{ ByColor, Mode, Situation }
 
-import lila.game.{ Game, Player, Pov, Source }
-import lila.user.GameUser
+import lila.core.user.GameUser
 
 final private class ChallengeJoiner(
     gameRepo: lila.game.GameRepo,
-    userApi: lila.user.UserApi,
-    onStart: lila.round.OnStart
+    userApi: lila.core.user.UserApi,
+    onStart: lila.core.game.OnStart
 )(using Executor):
 
   def apply(c: Challenge, destUser: GameUser): Fu[Either[String, Pov]] =
-    gameRepo exists c.id.into(GameId) flatMap {
+    gameRepo.exists(c.gameId).flatMap {
       if _ then fuccess(Left("The challenge has already been accepted"))
       else
-        c.challengerUserId.so(userApi.withPerf(_, c.perfType)) flatMap { origUser =>
-          val game = ChallengeJoiner.createGame(c, origUser, destUser)
-          (gameRepo insertDenormalized game) andDo onStart(game.id) inject
-            Right(Pov(game, !c.finalColor))
-        }
+        c.challengerUserId
+          .so(userApi.byIdWithPerf(_, c.perfType))
+          .flatMap: origUser =>
+            val game = ChallengeJoiner.createGame(c, origUser, destUser)
+            gameRepo
+              .insertDenormalized(game)
+              .inject:
+                onStart.exec(game.id)
+                Right(Pov(game, !c.finalColor))
     }
 
 private object ChallengeJoiner:
@@ -33,31 +35,31 @@ private object ChallengeJoiner:
       destUser: GameUser
   ): Game =
     val (chessGame, state) = gameSetup(c.variant, c.timeControl, c.initialFen)
-    Game
-      .make(
+    lila.core.game
+      .newGame(
         chess = chessGame,
         players = ByColor: color =>
-          Player.make(color, if c.finalColor == color then origUser else destUser),
+          lila.game.Player.make(color, if c.finalColor == color then origUser else destUser),
         mode = if chessGame.board.variant.fromPosition then Mode.Casual else c.mode,
-        source = Source.Friend,
+        source = lila.core.game.Source.Friend,
         daysPerTurn = c.daysPerTurn,
         pgnImport = None,
         rules = c.rules
       )
-      .withId(c.id into GameId)
+      .withId(c.gameId)
       .pipe(addGameHistory(state))
       .start
 
   def gameSetup(
       variant: Variant,
       tc: Challenge.TimeControl,
-      initialFen: Option[Fen.Epd]
+      initialFen: Option[Fen.Full]
   ): (chess.Game, Option[Situation.AndFullMoveNumber]) =
 
     def makeChess(variant: Variant): chess.Game =
       chess.Game(situation = Situation(variant), clock = tc.realTime.map(_.toClock))
 
-    val baseState = initialFen.ifTrue(variant.fromPosition || variant.chess960) flatMap {
+    val baseState = initialFen.ifTrue(variant.fromPosition || variant.chess960).flatMap {
       Fen.readWithMoveNumber(variant, _)
     }
 

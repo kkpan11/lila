@@ -53,6 +53,7 @@
   <string name="allSyncMembersRemainOnTheSamePosition">All SYNC Memberen gesinn déi selwecht Positioun</string>
   <string name="shareChanges">Deel Ännerungen mat den Zuschauer an späicher se um Server</string>
   <string name="playing">Lafend Partie</string>
+  <string name="showResults">Resultater</string>
   <string name="first">Éischt Säit</string>
   <string name="previous">Zeréck</string>
   <string name="next">Weider</string>
@@ -63,7 +64,6 @@
   <string name="downloadAllGames">All Partien eroflueden</string>
   <string name="chapterPgn">Kapitel PGN</string>
   <string name="copyChapterPgn">PGN kopéieren</string>
-  <string name="copyChapterPgnDescription">Kapitel-PGN an d\'Zwëschenoflag kopéieren.</string>
   <string name="downloadGame">Partie eroflueden</string>
   <string name="studyUrl">Etüden URL</string>
   <string name="currentChapterUrl">Aktuellt Kapitel URL</string>
@@ -84,7 +84,7 @@
   <string name="pinnedChapterComment">Ugepinnten Kapitelkommentar</string>
   <string name="saveChapter">Kapitel späicheren</string>
   <string name="clearAnnotations">Annotatiounen läschen</string>
-  <string name="clearVariations">Variatiounen läschen</string>
+  <string name="clearVariations">Variante läschen</string>
   <string name="deleteChapter">Kapitel läschen</string>
   <string name="deleteThisChapter">Kapitel läschen? Et gëtt keen zeréck!</string>
   <string name="clearAllCommentsInThisChapter">All Kommentarer, Symboler an Zeechnungsformen an dësem Kapitel läschen?</string>
@@ -167,4 +167,5 @@
   <string name="playAgain">Nach eng Kéier spillen</string>
   <string name="whatWouldYouPlay">Wat géifs du an dëser Positioun spillen?</string>
   <string name="youCompletedThisLesson">Gudd gemaach! Du hues dës Übung ofgeschloss.</string>
+  <string name="perPage">%s pro Säit</string>
 </resources>

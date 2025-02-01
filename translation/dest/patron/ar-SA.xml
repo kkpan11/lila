@@ -69,6 +69,7 @@
   <string name="nextPayment">الدفعة القادمة</string>
   <string name="youWillBeChargedXOnY">سيتم خصم %1$s في %2$s.</string>
   <string name="makeAdditionalDonation">قم بتبرع إضافي الآن</string>
+  <string name="giftPatronWingsShort">امنح أجنحة الراعي</string>
   <string name="giftPatronWings">يتم إعطاء المتبرع شعار الجناح كهدية</string>
   <string name="update">تحديث</string>
   <string name="changeMonthlyAmount">تغيير المبلغ الشهري (%s)</string>
@@ -88,4 +89,7 @@
   <string name="nowOneMonth">أنت الآن راعي ليتشس لمدة شهر واحد!</string>
   <string name="downgradeNextMonth">في شهر واحد، لن يتم تحميل رسوم مرة أخرى، وحساب Lichess الخاص بك سيصبح حساب عادي.</string>
   <string name="changeCurrency">غير العملة</string>
+  <string name="paymentDetails">تفاصيل الدفع</string>
+  <string name="updatePaymentMethod">تحديث طريقة الدفع</string>
+  <string name="stripeManageSub">إدارة الاشتراك وتنزيل الفواتير والإيصالات الخاصة بك</string>
 </resources>

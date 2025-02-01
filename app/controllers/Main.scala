@@ -1,70 +1,53 @@
 package controllers
-
-import akka.pattern.ask
-import play.api.data.*, Forms.*
 import play.api.libs.json.*
 import play.api.mvc.*
-import views.*
 
 import lila.app.{ *, given }
-import lila.hub.actorApi.captcha.ValidCaptcha
 import lila.common.HTTPRequest
+import lila.core.id.GameFullId
+import lila.web.{ StaticContent, WebForms }
 
 final class Main(
     env: Env,
-    prismicC: Prismic,
     assetsC: ExternalAssets
 ) extends LilaController(env):
 
-  private lazy val blindForm = Form:
-    tuple(
-      "enable"   -> nonEmptyText,
-      "redirect" -> nonEmptyText
+  def toggleBlindMode = OpenBody:
+    bindForm(WebForms.blind)(
+      _ => BadRequest,
+      (enable, redirect) =>
+        Redirect(redirect).withCookies:
+          lila.web.WebConfig.blindCookie.make(env.security.lilaCookie)(enable != "0")
     )
 
-  def toggleBlindMode = OpenBody:
-    blindForm
-      .bindFromRequest()
-      .fold(
-        _ => BadRequest,
-        (enable, redirect) =>
-          Redirect(redirect).withCookies:
-            lila.api.ApiConfig.blindCookie.make(env.lilaCookie)(enable != "0")
-      )
-
-  def handlerNotFound(using RequestHeader) =
+  def handlerNotFound(msg: Option[String])(using RequestHeader) =
     makeContext.flatMap:
-      keyPages.notFound(using _)
+      keyPages.notFound(msg)(using _)
 
-  def captchaCheck(id: GameId) = Open:
-    import makeTimeout.long
-    env.hub.captcher.actor ? ValidCaptcha(id, ~get("solution")) map { case valid: Boolean =>
+  def captchaCheck(id: GameId) = Anon:
+    env.game.captcha.validate(id, ~get("solution")).map { valid =>
       Ok(if valid then 1 else 0)
     }
 
   def webmasters = Open:
-    Ok.page(html.site.page.webmasters)
+    Ok.page(views.site.page.webmasters)
 
   def lag = Open:
-    Ok.page(html.site.lag())
+    Ok.page(views.site.ui.lag)
 
   def mobile     = Open(serveMobile)
   def mobileLang = LangPage(routes.Main.mobile)(serveMobile)
 
   def redirectToAppStore = Anon:
     pageHit
-    Redirect:
-      if HTTPRequest.isAndroid(req)
-      then "https://play.google.com/store/apps/details?id=org.lichess.mobileapp"
-      else "https://apps.apple.com/us/app/lichess-online-chess/id968371784"
+    Redirect(StaticContent.appStoreUrl)
 
   private def serveMobile(using Context) =
     pageHit
-    FoundPage(prismicC getBookmark "mobile-apk"): (doc, resolver) =>
-      html.mobile(doc, resolver)
+    FoundPage(env.cms.renderKey("mobile-apk"))(views.mobile)
 
   def dailyPuzzleSlackApp = Open:
-    Ok.page(html.site.dailyPuzzleSlackApp())
+    Ok.page(views.site.ui.dailyPuzzleSlackApp)
 
   def jslog(id: GameFullId) = Open:
     env.round.selfReport(
@@ -78,16 +61,16 @@ final class Main(
   val robots = Anon:
     Ok:
       if env.net.crawlable && req.domain == env.net.domain.value && env.net.isProd
-      then lila.api.StaticContent.robotsTxt
+      then StaticContent.robotsTxt
       else "User-agent: *\nDisallow: /"
 
   def manifest = Anon:
     JsonOk:
-      lila.api.StaticContent.manifest(env.net)
+      StaticContent.manifest(env.net)
 
   def getFishnet = Open:
     pageHit
-    Ok.page(html.site.bits.getFishnet())
+    Ok.page(views.site.ui.getFishnet())
 
   def costs = Anon:
     pageHit
@@ -101,27 +84,22 @@ final class Main(
 
   def contact = Open:
     pageHit
-    Ok.page(html.site.contact())
+    Ok.page(views.site.page.contact)
 
   def faq = Open:
     pageHit
-    Ok.page(html.site.faq())
+    Ok.page(views.site.page.faq.apply)
 
-  def temporarilyDisabled = Open:
+  def temporarilyDisabled(path: String) = Open:
     pageHit
-    NotImplemented.page(html.site.message.temporarilyDisabled)
+    NotImplemented.page(views.site.message.temporarilyDisabled)
 
-  def analyseVariationArrowHelp = Open:
-    Ok.page(html.site.help.analyseVariationArrow)
-
-  def keyboardMoveHelp = Open:
-    Ok.page(html.site.help.keyboardMove)
-
-  def voiceHelp(module: String) = Open:
-    module match
-      case "move"   => Ok.page(html.site.help.voiceMove)
-      case "coords" => Ok.page(html.site.help.voiceCoords)
-      case _        => NotFound(s"Unknown voice help module: $module")
+  def helpPath(path: String) = Open:
+    path match
+      case "keyboard-move" => Ok.snip(lila.web.ui.help.keyboardMove)
+      case "voice/move"    => Ok.snip(lila.web.ui.help.voiceMove)
+      case "master"        => Redirect(routes.TitleVerify.index.url)
+      case _               => notFound
 
   def movedPermanently(to: String) = Anon:
     MovedPermanently(to)
@@ -131,46 +109,42 @@ final class Main(
     if ctx.isAuth then Redirect(routes.Lobby.home)
     else
       Redirect(s"${routes.Lobby.home}#pool/10+0").withCookies:
-        env.lilaCookie.withSession(remember = true): s =>
+        env.security.lilaCookie.withSession(remember = true): s =>
           s + ("theme" -> "ic") + ("pieceSet" -> "icpieces")
 
-  def legacyQaQuestion(id: Int, slug: String) = Open:
+  def prometheusMetrics(key: String) = Anon:
+    if key == env.web.config.prometheusKey
+    then
+      lila.web.PrometheusReporter
+        .latestScrapeData()
+        .fold(NotFound("No metrics found")): data =>
+          lila.mon.prometheus.lines.update(data.lines.count.toDouble)
+          Ok(data)
+    else NotFound("Invalid prometheus key")
+
+  def legacyQaQuestion(id: Int, _slug: String) = Anon:
     MovedPermanently:
-      val faq = routes.Main.faq.url
-      id match
-        case 103  => s"$faq#acpl"
-        case 258  => s"$faq#marks"
-        case 13   => s"$faq#titles"
-        case 87   => routes.User.ratingDistribution("blitz").url
-        case 110  => s"$faq#name"
-        case 29   => s"$faq#titles"
-        case 4811 => s"$faq#lm"
-        case 216  => routes.Main.mobile.url
-        case 340  => s"$faq#trophies"
-        case 6    => s"$faq#ratings"
-        case 207  => s"$faq#hide-ratings"
-        case 547  => s"$faq#leaving"
-        case 259  => s"$faq#trophies"
-        case 342  => s"$faq#provisional"
-        case 50   => routes.ContentPage.help.url
-        case 46   => s"$faq#name"
-        case 122  => s"$faq#marks"
-        case _    => faq
+      StaticContent.legacyQaQuestion(id)
 
   def devAsset(v: String, path: String, file: String) = assetsC.at(path, file)
 
-  private val ImageUploadRateLimitPerIp = lila.memo.RateLimit.composite[lila.common.IpAddress](
-    key = "image.upload.ip"
-  )(
-    ("fast", 10, 2.minutes),
-    ("slow", 60, 1.day)
-  )
+  private val externalMonitorOnce = scalalib.cache.OnceEvery.hashCode[String](10.minutes)
+  def externalLink(tag: String) = Open:
+    StaticContent.externalLinks
+      .get(tag)
+      .so: url =>
+        if HTTPRequest.isCrawler(ctx.req).no && externalMonitorOnce(s"$tag/${ctx.ip}")
+        then lila.mon.link.external(tag, ctx.isAuth).increment()
+        Redirect(url)
 
-  def uploadImage(rel: String) = AuthBody(parse.multipartFormData) { ctx ?=> me ?=>
+  def uploadImage(rel: String) = AuthBody(parse.multipartFormData) { ctx ?=> _ ?=>
     ctx.body.body.file("image") match
       case Some(image) =>
-        env.memo.picfitApi.bodyImage
-          .upload(rel = rel, image = image, me = me, ip = ctx.ip)
-          .map(url => JsonOk(Json.obj("imageUrl" -> url)))
+        limit.imageUpload(ctx.ip, rateLimited):
+          env.memo.picfitApi.bodyImage
+            .upload(rel, image)
+            .map(url => JsonOk(Json.obj("imageUrl" -> url)))
+            .recover:
+              case e: Exception => JsonBadRequest(jsonError(e.getMessage))
       case None => JsonBadRequest(jsonError("Image content only"))
   }

@@ -4,21 +4,18 @@ import akka.actor.*
 import com.softwaremill.macwire.*
 import com.softwaremill.tagging.*
 import io.lettuce.core.*
-import lila.common.autoconfig.{ *, given }
 import play.api.Configuration
 import play.api.libs.ws.StandaloneWSClient
 
 import lila.common.Bus
-import lila.common.config.*
+import lila.common.autoconfig.{ *, given }
+import lila.core.config.*
 
 @Module
 private class FishnetConfig(
     @ConfigName("collection.analysis") val analysisColl: CollName,
     @ConfigName("collection.client") val clientColl: CollName,
-    @ConfigName("actor.name") val actorName: String,
     @ConfigName("offline_mode") val offlineMode: Boolean,
-    @ConfigName("analysis.nodes") val analysisNodes: Int,
-    @ConfigName("move.plies") val movePlies: Int,
     @ConfigName("client_min_version") val clientMinVersion: String,
     @ConfigName("redis.uri") val redisUri: String,
     val explorerEndpoint: String
@@ -27,31 +24,27 @@ private class FishnetConfig(
 @Module
 final class Env(
     appConfig: Configuration,
-    uciMemo: lila.game.UciMemo,
+    uciMemo: lila.core.game.UciMemo,
     requesterApi: lila.analyse.RequesterApi,
-    evalCacheApi: lila.evalCache.EvalCacheApi,
-    gameRepo: lila.game.GameRepo,
+    getSinglePvEval: lila.tree.CloudEval.GetSinglePvEval,
+    gameRepo: lila.core.game.GameRepo,
+    gameApi: lila.core.game.GameApi,
     analysisRepo: lila.analyse.AnalysisRepo,
+    userApi: lila.core.user.UserApi,
     db: lila.db.Db,
     cacheApi: lila.memo.CacheApi,
     settingStore: lila.memo.SettingStore.Builder,
     ws: StandaloneWSClient,
     sink: lila.analyse.Analyser,
-    userRepo: lila.user.UserRepo,
     shutdown: akka.actor.CoordinatedShutdown
-)(using
-    ec: Executor,
-    system: ActorSystem,
-    scheduler: Scheduler,
-    materializer: akka.stream.Materializer
-):
+)(using Executor, ActorSystem, Scheduler, akka.stream.Materializer, lila.core.config.RateLimit):
 
   private val config = appConfig.get[FishnetConfig]("fishnet")(AutoConfig.loader)
 
   private lazy val analysisColl = db(config.analysisColl)
 
   private lazy val redis = FishnetRedis(
-    RedisClient create RedisURI.create(config.redisUri),
+    RedisClient.create(RedisURI.create(config.redisUri)),
     "fishnet-in",
     "fishnet-out",
     shutdown
@@ -71,13 +64,10 @@ final class Env(
 
   private lazy val analysisBuilder = wire[AnalysisBuilder]
 
-  private lazy val apiConfig = FishnetApi.Config(
-    offlineMode = config.offlineMode,
-    analysisNodes = config.analysisNodes
-  )
+  private lazy val apiConfig = FishnetApi.Config(offlineMode = config.offlineMode)
 
   private lazy val socketExists: GameId => Fu[Boolean] = id =>
-    Bus.ask[Boolean]("roundSocket")(lila.hub.actorApi.map.Exists(id.value, _))
+    Bus.ask[Boolean]("roundSocket")(lila.core.misc.map.Exists(id.value, _))
 
   lazy val api: FishnetApi = wire[FishnetApi]
 
@@ -89,9 +79,7 @@ final class Env(
 
   private lazy val openingBook: FishnetOpeningBook = wire[FishnetOpeningBook]
 
-  lazy val player =
-    def mk = (plies: Int) => wire[FishnetPlayer]
-    mk(config.movePlies)
+  lazy val player = wire[FishnetPlayer]
 
   private val limiter = wire[FishnetLimiter]
 
@@ -101,40 +89,35 @@ final class Env(
 
   wire[Cleaner]
 
-  // api actor
-  system.actorOf(
-    Props(
-      new Actor:
-        def receive =
-          case lila.hub.actorApi.fishnet.AutoAnalyse(gameId) =>
-            val sender = Work.Sender(userId = lila.user.User.lichessId, ip = none, mod = false, system = true)
-            analyser(gameId, sender)
-          case req: lila.hub.actorApi.fishnet.StudyChapterRequest => analyser.study(req)
-    ),
-    name = config.actorName
-  )
-
   private def disable(keyOrUser: String) =
-    repo toKey keyOrUser flatMap { repo.enableClient(_, v = false) }
+    repo.toKey(keyOrUser).flatMap { repo.enableClient(_, v = false) }
 
   def cli = new lila.common.Cli:
     def process =
       case "fishnet" :: "client" :: "create" :: name :: Nil =>
-        userRepo.enabledById(UserStr(name)).map(_.exists(_.marks.clean)) flatMap {
+        userApi.enabledById(UserStr(name)).map(_.exists(_.marks.clean)).flatMap {
           if _ then
-            api.createClient(UserStr(name).id) map { client =>
-              Bus.publish(lila.hub.actorApi.fishnet.NewKey(client.userId, client.key.value), "fishnet")
+            api.createClient(UserStr(name).id).map { client =>
+              Bus.publish(lila.core.fishnet.NewKey(client.userId, client.key.value), "fishnet")
               s"Created key: ${client.key.value} for: $name"
             }
           else fuccess("User missing, closed, or banned")
         }
       case "fishnet" :: "client" :: "delete" :: key :: Nil =>
-        repo toKey key flatMap repo.deleteClient inject "done!"
+        repo.toKey(key).flatMap(repo.deleteClient).inject("done!")
       case "fishnet" :: "client" :: "enable" :: key :: Nil =>
-        repo toKey key flatMap { repo.enableClient(_, v = true) } inject "done!"
-      case "fishnet" :: "client" :: "disable" :: key :: Nil => disable(key) inject "done!"
+        repo.toKey(key).flatMap { repo.enableClient(_, v = true) }.inject("done!")
+      case "fishnet" :: "client" :: "disable" :: key :: Nil => disable(key).inject("done!")
 
   Bus.subscribeFun("adjustCheater", "adjustBooster", "shadowban"):
-    case lila.hub.actorApi.mod.MarkCheater(userId, true) => disable(userId.value)
-    case lila.hub.actorApi.mod.MarkBooster(userId)       => disable(userId.value)
-    case lila.hub.actorApi.mod.Shadowban(userId, true)   => disable(userId.value)
+    case lila.core.mod.MarkCheater(userId, true) => disable(userId.value)
+    case lila.core.mod.MarkBooster(userId)       => disable(userId.value)
+    case lila.core.mod.Shadowban(userId, true)   => disable(userId.value)
+
+  Bus.sub[lila.core.fishnet.Bus]:
+    case lila.core.fishnet.Bus.GameRequest(id) =>
+      analyser(id, Work.Sender(userId = UserId.lichess, ip = none, mod = false, system = true))
+    case req: lila.core.fishnet.Bus.StudyChapterRequest => analyser.study(req)
+
+  Bus.subscribeFun("fishnetPlay"):
+    case game: Game => player(game)

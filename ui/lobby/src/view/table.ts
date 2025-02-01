@@ -1,12 +1,12 @@
 import { h, thunk } from 'snabbdom';
 import { bind, onInsert } from 'common/snabbdom';
-import LobbyController from '../ctrl';
-import { GameType } from '../interfaces';
+import type LobbyController from '../ctrl';
+import type { GameType } from '../interfaces';
 import renderSetupModal from './setup/modal';
 import { numberFormat } from 'common/number';
 
 export default function table(ctrl: LobbyController) {
-  const { data, trans, opts } = ctrl;
+  const { data, opts } = ctrl;
   const hasOngoingRealTimeGame = ctrl.hasOngoingRealTimeGame();
   const hookDisabled =
     opts.playban || opts.hasUnreadLichessMessage || ctrl.me?.isBot || hasOngoingRealTimeGame;
@@ -14,26 +14,20 @@ export default function table(ctrl: LobbyController) {
   return h('div.lobby__table', [
     h(
       'div.lobby__start',
-      (lichess.blindMode ? [h('h2', 'Play')] : []).concat(
+      (site.blindMode ? [h('h2', 'Play')] : []).concat(
         [
-          ['hook', 'createAGame', hookDisabled],
-          ['friend', 'playWithAFriend', hasOngoingRealTimeGame],
-          ['ai', 'playWithTheMachine', hasOngoingRealTimeGame],
-        ].map(([gameType, transKey, disabled]: [GameType, string, boolean]) =>
+          ['hook', i18n.site.createAGame, hookDisabled],
+          ['friend', i18n.site.playWithAFriend, hasOngoingRealTimeGame],
+          ['ai', i18n.site.playWithTheMachine, hasOngoingRealTimeGame],
+        ].map(([gameType, text, disabled]: [Exclude<GameType, 'local'>, string, boolean]) =>
           h(
             `button.button.button-metal.config_${gameType}`,
             {
               class: { active: ctrl.setupCtrl.gameType === gameType, disabled },
               attrs: { type: 'button' },
-              hook: disabled
-                ? {}
-                : bind(
-                    lichess.blindMode ? 'click' : 'mousedown',
-                    () => ctrl.setupCtrl.openModal(gameType),
-                    ctrl.redraw,
-                  ),
+              hook: disabled ? {} : bind('click', () => ctrl.setupCtrl.openModal(gameType), ctrl.redraw),
             },
-            trans(transKey),
+            text,
           ),
         ),
       ),
@@ -44,12 +38,11 @@ export default function table(ctrl: LobbyController) {
       'div.lobby__counters',
       () =>
         h('div.lobby__counters', [
-          lichess.blindMode ? h('h2', 'Counters') : null,
+          site.blindMode ? h('h2', 'Counters') : null,
           h(
             'a',
-            { attrs: lichess.blindMode ? {} : { href: '/player' } },
-            trans.vdomPlural(
-              'nbPlayers',
+            { attrs: site.blindMode ? {} : { href: '/player' } },
+            i18n.site.nbPlayers.asArray(
               members,
               h(
                 'strong',
@@ -65,9 +58,8 @@ export default function table(ctrl: LobbyController) {
           ),
           h(
             'a',
-            lichess.blindMode ? {} : { attrs: { href: '/games' } },
-            trans.vdomPlural(
-              'nbGamesInPlay',
+            site.blindMode ? {} : { attrs: { href: '/games' } },
+            i18n.site.nbGamesInPlay.asArray(
               rounds,
               h(
                 'strong',

@@ -74,13 +74,25 @@
     <item quantity="one">%s fahadisoana goavana</item>
     <item quantity="other">%s fahadisoana goavana</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="one">%s Fahadisoana goavana</item>
+    <item quantity="other">%s Fahadisoana goavana</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="one">%s fahadisoana</item>
     <item quantity="other">%s fahadisoana</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="one">%s Fahadisoana</item>
+    <item quantity="other">%s Fahadisoana</item>
+  </plurals>
   <plurals name="nbInaccuracies">
     <item quantity="one">%s tsy fahatomombanana</item>
     <item quantity="other">%s tsy fahatomombanana</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
+    <item quantity="one">%s Tsy fahatomombanana</item>
+    <item quantity="other">%s Tsy fahatomombanana</item>
   </plurals>
   <string name="moveTimes">Fotoana nihetsehana</string>
   <string name="flipBoard">Atsimbadiho ny échiquier</string>
@@ -166,7 +178,6 @@
   <string name="playingRightNow">Milalao amin\'izao fotoana</string>
   <string name="eventInProgress">Milalao amin\'izao fotoana</string>
   <string name="finished">Vita</string>
-  <string name="finishesX">tapitra afaka %s</string>
   <string name="abortGame">Ajanona ny lalao</string>
   <string name="gameAborted">Tapaka ny lalao</string>
   <string name="standard">Standard</string>
@@ -293,7 +304,6 @@
   <string name="block">Block</string>
   <string name="blocked">Bahano</string>
   <string name="unblock">Aza bahanana</string>
-  <string name="followsYou">Manaraka anao</string>
   <string name="xStartedFollowingY">%1$s dia nanomboka nanaraka an\'i %2$s</string>
   <plurals name="nbFollowers">
     <item quantity="one">%s mpanaraka</item>
@@ -334,8 +344,6 @@
   <string name="reportXToModerators">Toroy any amin\'ny tompon-andraikitra i %s</string>
   <string name="profile">Mombamomba</string>
   <string name="editProfile">Ovay ny mombamomba anao</string>
-  <string name="firstName">Anarana</string>
-  <string name="lastName">Fanampin\'anarana</string>
   <string name="biography">Biographie</string>
   <string name="thankYou">Misaotra!</string>
   <string name="previouslyOnLichessTV">Teto amin\'ny Lichess TV</string>
@@ -364,9 +372,7 @@
   <string name="reason">Antony</string>
   <string name="whatIsIheMatter">Inona ny olana?</string>
   <string name="cheat">Fanambakana</string>
-  <string name="insult">Fanopana</string>
   <string name="troll">Fananihanina</string>
-  <string name="ratingManipulation">Fanovana laharana</string>
   <string name="other">Antony hafa</string>
   <string name="thisTopicIsNowClosed">Mikatona ity lohahevitra ity.</string>
   <string name="blog">Bilaogy</string>

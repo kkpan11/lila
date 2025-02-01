@@ -2,32 +2,30 @@ package lila.security
 
 import play.api.data.Form
 
-import lila.common.EmailAddress
-import lila.common.IpAddress
+import lila.core.net.IpAddress
 import lila.memo.CacheApi
-import lila.user.User
 
 final class DisposableEmailAttempt(
     cacheApi: CacheApi,
-    disposableApi: DisposableEmailDomain,
-    irc: lila.irc.IrcApi
+    disposableApi: DisposableEmailDomain
 ):
 
   import DisposableEmailAttempt.*
 
   private val byIp =
-    cacheApi.notLoadingSync[IpAddress, Set[Attempt]](64, "security.disposableEmailAttempt.ip"):
-      _.expireAfterWrite(1 day).build()
+    cacheApi.notLoadingSync[IpAddress, Set[Attempt]](512, "security.disposableEmailAttempt.ip"):
+      _.expireAfterWrite(1.day).build()
 
   private val byId =
-    cacheApi.notLoadingSync[UserId, Set[Attempt]](64, "security.disposableEmailAttempt.id"):
-      _.expireAfterWrite(1 day).build()
+    cacheApi.notLoadingSync[UserId, Set[Attempt]](512, "security.disposableEmailAttempt.id"):
+      _.expireAfterWrite(1.day).build()
 
   def onFail(form: Form[?], ip: IpAddress): Unit = for
-    email <- form("email").value flatMap EmailAddress.from
+    email <- form("email").value.flatMap(EmailAddress.from)
     if email.domain.exists(disposableApi.apply)
+    if !email.domain.exists(disposableApi.mightBeTypo)
     str <- form("username").value
-    u   <- UserStr read str
+    u   <- UserStr.read(str)
   yield
     val attempt = Attempt(u.id, email, ip)
     byIp.underlying.asMap.compute(ip, (_, attempts) => ~Option(attempts) + attempt)
@@ -42,7 +40,9 @@ final class DisposableEmailAttempt(
       val dispEmails = attempts.map(_.email)
       logger
         .branch("disposableEmailAttempt")
-        .info(s"User ${user.id} signed up with $email after trying ${dispEmails.mkString(", ")}")
+        .info(s"User ${user.username} signed up with $email after trying ${dispEmails.mkString(", ")}")
+
+  def count(id: UserId): Int = byId.getIfPresent(id).so(_.size)
 
 private object DisposableEmailAttempt:
 

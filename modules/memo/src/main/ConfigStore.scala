@@ -14,19 +14,17 @@ final class ConfigStore[A](coll: Coll, id: String, cacheApi: CacheApi, logger: l
   private val mongoDocKey = "config"
 
   private val cache = cacheApi.unit[Option[A]] {
-    _.buildAsyncFuture(_ =>
+    _.buildAsyncFuture: _ =>
       rawText.map {
-        _.flatMap { text =>
+        _.flatMap: text =>
           parse(text).fold(
             errs =>
-              errs foreach { logger.warn(_) }
+              errs.foreach { logger.warn(_) }
               none
             ,
             res => res.some
           )
-        }
       }
-    )
   }
 
   def parse(text: String): Either[List[String], A] =
@@ -38,10 +36,9 @@ final class ConfigStore[A](coll: Coll, id: String, cacheApi: CacheApi, logger: l
   def rawText: Fu[Option[String]] = coll.primitiveOne[String]($id(id), mongoDocKey)
 
   def set(text: String): Either[List[String], Funit] =
-    parse(text) map { a =>
-      coll.update.one($id(id), $doc(mongoDocKey -> text), upsert = true).void andDo
-        cache.put((), fuccess(a.some))
-    }
+    parse(text).map: a =>
+      for _ <- coll.update.one($id(id), $doc(mongoDocKey -> text), upsert = true)
+      yield cache.put((), fuccess(a.some))
 
   def makeForm: Fu[Form[String]] =
     import play.api.data.Forms.*
@@ -50,12 +47,12 @@ final class ConfigStore[A](coll: Coll, id: String, cacheApi: CacheApi, logger: l
       single(
         "text" -> text.verifying(Constraint[String]("constraint.text_parsable") { t =>
           parse(t) match
-            case Left(errs) => Invalid(ValidationError(errs mkString ","))
+            case Left(errs) => Invalid(ValidationError(errs.mkString(",")))
             case _          => Valid
         })
       )
     )
-    rawText map {
+    rawText.map {
       _.fold(form)(form.fill)
     }
 
@@ -67,4 +64,4 @@ object ConfigStore:
     private val coll = db(config.configColl)
 
     def apply[A: ConfigLoader](id: String, logger: lila.log.Logger) =
-      new ConfigStore[A](coll, id, cacheApi, logger branch "configStore")
+      new ConfigStore[A](coll, id, cacheApi, logger.branch("configStore"))

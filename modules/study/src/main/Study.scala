@@ -1,65 +1,73 @@
 package lila.study
 
-import ornicar.scalalib.ThreadLocalRandom
 import chess.format.UciPath
+import reactivemongo.api.bson.Macros.Annotations.Key
+import scalalib.ThreadLocalRandom
 
-import lila.user.User
+import lila.core.data.OpaqueInstant
+import lila.core.study as hub
+import lila.core.study.Visibility
 
 case class Study(
-    _id: StudyId,
+    @Key("_id") id: StudyId,
     name: StudyName,
     members: StudyMembers,
     position: Position.Ref,
     ownerId: UserId,
-    visibility: Study.Visibility,
+    visibility: Visibility,
     settings: Settings,
     from: Study.From,
     likes: Study.Likes,
     description: Option[String] = None,
     topics: Option[StudyTopics] = None,
+    flair: Option[Flair] = None,
     createdAt: Instant,
     updatedAt: Instant
-):
+) extends hub.Study:
 
   import Study.*
 
-  inline def id = _id
+  val slug = scalalib.StringOps.slug(name.value)
 
-  def owner = members get ownerId
+  def owner = members.get(ownerId)
 
-  def isOwner[U: UserIdOf](u: U) = ownerId is u
+  def isOwner[U: UserIdOf](u: U) = ownerId.is(u)
 
-  def isMember[U: UserIdOf](u: U) = members contains u.id
+  def isMember[U: UserIdOf](u: U) = members.contains(u.id)
 
   def canChat(id: UserId) = Settings.UserSelection.allows(settings.chat, this, id.some)
 
   def canContribute[U: UserIdOf](u: U) =
-    isOwner(u) || members.get(u.id).exists(_.canContribute) || u.is(User.lichessId)
+    isOwner(u) || members.get(u.id).exists(_.canContribute) || u.is(UserId.lichess)
 
   def canView(id: Option[UserId]) = !isPrivate || id.exists(members.contains)
 
   def isCurrent(c: Chapter.Like) = c.id == position.chapterId
 
-  def withChapter(c: Chapter.Like): Study = if isCurrent(c) then this else rewindTo(c)
+  def withChapter(c: Chapter.Like): Study = if isCurrent(c) then this else rewindTo(c.id)
 
-  def rewindTo(c: Chapter.Like): Study =
-    copy(position = Position.Ref(chapterId = c.id, path = UciPath.root))
+  def rewindTo(chapterId: StudyChapterId): Study =
+    copy(position = Position.Ref(chapterId = chapterId, path = UciPath.root))
 
-  def isPublic   = visibility == Study.Visibility.Public
-  def isUnlisted = visibility == Study.Visibility.Unlisted
-  def isPrivate  = visibility == Study.Visibility.Private
+  def isPublic   = visibility == Visibility.public
+  def isUnlisted = visibility == Visibility.unlisted
+  def isPrivate  = visibility == Visibility.`private`
 
   def isNew = (nowSeconds - createdAt.toSeconds) < 4
 
   def isOld = (nowSeconds - updatedAt.toSeconds) > 20 * 60
 
+  def isRelay = from match
+    case _: From.Relay => true
+    case _             => false
+
   def cloneFor(user: User): Study =
     val owner = StudyMember(id = user.id, role = StudyMember.Role.Write)
     copy(
-      _id = Study.makeId,
+      id = Study.makeId,
       members = StudyMembers(Map(user.id -> owner)),
       ownerId = owner.id,
-      visibility = Study.Visibility.Private,
+      visibility = Visibility.`private`,
       from = Study.From.Study(id),
       likes = Likes(1),
       createdAt = nowInstant,
@@ -81,21 +89,12 @@ case class Study(
 
 object Study:
 
-  val maxChapters = 64
+  val maxChapters = Max(64)
 
   val previewNbMembers  = 4
   val previewNbChapters = 4
 
-  case class IdName(_id: StudyId, name: StudyName):
-    inline def id = _id
-
-  def toName(str: String) = StudyName(lila.common.String.fullCleanUp(str) take 100)
-
-  enum Visibility:
-    case Private, Unlisted, Public
-    val key = Visibility.this.toString.toLowerCase
-  object Visibility:
-    val byKey = values.mapBy(_.key)
+  def toName(str: String) = StudyName(lila.common.String.fullCleanUp(str).take(100))
 
   opaque type Likes = Int
   object Likes extends OpaqueInt[Likes]
@@ -106,7 +105,7 @@ object Study:
   opaque type Rank = Instant
   object Rank extends OpaqueInstant[Rank]:
     def compute(likes: Likes, createdAt: Instant) =
-      Rank(createdAt plusHours likesToHours(likes))
+      Rank(createdAt.plusHours(likesToHours(likes)))
     private def likesToHours(likes: Likes): Int =
       if likes < 1 then 0
       else (5 * math.log(likes) + 1).toInt.min(likes) * 24
@@ -119,6 +118,7 @@ object Study:
 
   case class Data(
       name: String,
+      flair: Option[String],
       visibility: String,
       computer: Settings.UserSelection,
       explorer: Settings.UserSelection,
@@ -128,7 +128,7 @@ object Study:
       sticky: String,
       description: String
   ):
-    def vis = Visibility.byKey.getOrElse(visibility, Visibility.Public)
+    def vis = Visibility.byKey.getOrElse(visibility, Visibility.public)
     def settings =
       Settings(computer, explorer, cloneable, shareable, chat, sticky == "true", description == "true")
 
@@ -144,7 +144,7 @@ object Study:
 
   case class LightStudy(isPublic: Boolean, contributors: Set[UserId])
 
-  def makeId = StudyId(ThreadLocalRandom nextString 8)
+  def makeId = StudyId(ThreadLocalRandom.nextString(8))
 
   def make(
       user: User,
@@ -155,12 +155,12 @@ object Study:
   ) =
     val owner = StudyMember(id = user.id, role = StudyMember.Role.Write)
     Study(
-      _id = id | makeId,
+      id = id | makeId,
       name = name | StudyName(s"${user.username}'s Study"),
       members = StudyMembers(Map(user.id -> owner)),
       position = Position.Ref(StudyChapterId(""), UciPath.root),
       ownerId = user.id,
-      visibility = Visibility.Public,
+      visibility = Visibility.public,
       settings = settings | Settings.init,
       from = from,
       likes = Likes(1),

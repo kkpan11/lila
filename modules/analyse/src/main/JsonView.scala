@@ -1,22 +1,22 @@
 package lila.analyse
 
-import chess.{ Ply, Color, ByColor }
+import chess.{ ByColor, Color, Ply }
 import play.api.libs.json.*
 
-import lila.game.Game
-import lila.tree.JsonHandlers.*
 import lila.common.Json.given
+import lila.core.game.SideAndStart
+import lila.tree.Analysis
 
-object JsonView:
+object JsonView extends lila.tree.AnalysisJson:
 
   def moves(analysis: Analysis, withGlyph: Boolean = true) =
-    JsArray(analysis.infoAdvices map { (info, adviceOption) =>
+    JsArray(analysis.infoAdvices.map { (info, adviceOption) =>
       Json
         .obj()
         .add("eval" -> info.cp)
         .add("mate" -> info.mate)
         .add("best" -> info.best.map(_.uci))
-        .add("variation" -> info.variation.nonEmpty.option(info.variation mkString " "))
+        .add("variation" -> info.variation.nonEmpty.option(info.variation.mkString(" ")))
         .add("judgment" -> adviceOption.map { a =>
           Json
             .obj(
@@ -34,12 +34,12 @@ object JsonView:
         })
     })
 
-  def player(pov: Game.SideAndStart)(analysis: Analysis, accuracy: Option[ByColor[AccuracyPercent]]) =
+  def player(pov: SideAndStart)(analysis: Analysis, accuracy: Option[ByColor[AccuracyPercent]]) =
     analysis.summary
       .find(_._1 == pov.color)
       .map(_._2)
       .map { s =>
-        JsObject(s map { (nag, nb) =>
+        JsObject(s.map { (nag, nb) =>
           nag.toString.toLowerCase -> JsNumber(nb)
         })
           .add("acpl", lila.analyse.AccuracyCP.mean(pov, analysis))
@@ -47,11 +47,11 @@ object JsonView:
       }
 
   def bothPlayers(startedAtPly: Ply, analysis: Analysis, withAccuracy: Boolean = true) =
-    val accuracy = withAccuracy so AccuracyPercent.gameAccuracy(startedAtPly.turn, analysis)
+    val accuracy = withAccuracy.so(AccuracyPercent.gameAccuracy(startedAtPly.turn, analysis))
     Json.obj(
       "id"    -> analysis.id.value,
-      "white" -> player(Game.SideAndStart(Color.white, startedAtPly))(analysis, accuracy),
-      "black" -> player(Game.SideAndStart(Color.black, startedAtPly))(analysis, accuracy)
+      "white" -> player(SideAndStart(Color.white, startedAtPly))(analysis, accuracy),
+      "black" -> player(SideAndStart(Color.black, startedAtPly))(analysis, accuracy)
     )
 
 //   def bothPlayers(pov: Game.SideAndStart, analysis: Analysis, accuracy: Option[ByColor[AccuracyPercent]]) =

@@ -1,6 +1,6 @@
-import AnalyseCtrl from '../../ctrl';
-import { Goal } from './interfaces';
-import { Comment } from '../../practice/practiceCtrl';
+import type AnalyseCtrl from '../../ctrl';
+import type { Goal } from './interfaces';
+import type { Comment } from '../../practice/practiceCtrl';
 
 // returns null if not deep enough to know
 const isDrawish = (node: Tree.Node): boolean | null =>
@@ -19,8 +19,8 @@ const isWinning = (ctrl: AnalyseCtrl, node: Tree.Node, goalCp: number, color: Co
 // returns null if not deep enough to know
 const myMateIn = (node: Tree.Node, color: Color): number | boolean | null => {
   if (!hasSolidEval(node)) return null;
-  if (!node.ceval!.mate) return false;
-  const mateIn = node.ceval!.mate! * (color === 'white' ? 1 : -1);
+  if (!node.ceval?.mate) return false;
+  const mateIn = node.ceval.mate * (color === 'white' ? 1 : -1);
   return mateIn > 0 ? mateIn : false;
 };
 
@@ -62,6 +62,7 @@ export default function (root: AnalyseCtrl, goal: Goal, nbMoves: number): boolea
     case 'mate':
       if (node.threefold) return false;
       if (isDrawish(node)) return false;
+      if (root.position(node).unwrap().isStalemate()) return false;
   }
   return null;
 }

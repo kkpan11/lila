@@ -1,28 +1,32 @@
-package views.html.user.show
+package views.user
+package show
 
-import lila.app.templating.Environment.{ given, * }
-import lila.app.ui.ScalatagsTemplate.{ *, given }
+import lila.app.UiEnv.{ *, given }
 import lila.user.{ Trophy, TrophyKind }
-
-import controllers.routes
 
 object otherTrophies:
 
+  import bits.awards.*
+
   def apply(info: lila.app.mashup.UserInfo)(using ctx: Context) =
     frag(
-      info.trophies.trophies.filter(_.kind.klass.has("fire-trophy")).some.filter(_.nonEmpty) map { trophies =>
-        div(cls := "stacked")(
-          trophies.sorted.map { trophy =>
-            trophy.kind.icon.map { iconChar =>
-              a(
-                awardCls(trophy),
-                href := trophy.anyUrl,
-                ariaTitle(s"${trophy.kind.name}")
-              )(raw(iconChar))
+      info.trophies.trophies
+        .filter(_.kind.klass.has("fire-trophy"))
+        .some
+        .filter(_.nonEmpty)
+        .map { trophies =>
+          div(cls := "stacked")(
+            trophies.sorted.map { trophy =>
+              trophy.kind.icon.map { iconChar =>
+                a(
+                  awardCls(trophy),
+                  href := trophy.anyUrl,
+                  ariaTitle(s"${trophy.kind.name}")
+                )(raw(iconChar))
+              }
             }
-          }
-        )
-      },
+          )
+        },
       info.trophies.shields.map { shield =>
         a(
           cls := "shield-trophy combo-trophy",
@@ -57,42 +61,21 @@ object otherTrophies:
           )(raw(iconChar))
         }
       },
-      info.isCoach option
+      info.isCoach.option(
         a(
           href := routes.Coach.show(info.user.username),
           cls  := "trophy award icon3d coach",
           ariaTitle(trans.coach.lichessCoach.txt())
-        )(licon.GraduateCap),
-      (info.isStreamer && ctx.kid.no) option {
+        )(Icon.GraduateCap)
+      ),
+      (info.isStreamer && ctx.kid.no).option {
         val streaming = isStreaming(info.user.id)
-        views.html.streamer.bits.redirectLink(info.user.username, streaming.some)(
+        views.streamer.bits.redirectLink(info.user.username, streaming.some)(
           cls := List(
             "trophy award icon3d streamer" -> true,
             "streaming"                    -> streaming
           ),
           ariaTitle(if streaming then "Live now!" else "Lichess Streamer")
-        )(licon.Mic)
+        )(Icon.Mic)
       }
     )
-
-  private def awardCls(t: Trophy) = cls := s"trophy award ${t.kind._id} ${~t.kind.klass}"
-
-  private def zugMiracleTrophy(t: Trophy) = frag(
-    styleTag("""
-.trophy.zugMiracle {
-  display: flex;
-  align-items: flex-end;
-  height: 40px;
-  margin: 0 8px!important;
-  transition: 2s;
-}
-.trophy.zugMiracle img { height: 60px; }
-@keyframes psyche { 100% { filter: hue-rotate(360deg); } }
-.trophy.zugMiracle:hover {
-  transform: translateY(-9px);
-  animation: psyche 0.3s ease-in-out infinite alternate;
-}"""),
-    a(awardCls(t), href := t.anyUrl, ariaTitle(t.kind.name))(
-      img(src := assetUrl("images/trophy/zug-trophy.png"))
-    )
-  )

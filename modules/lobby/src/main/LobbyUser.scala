@@ -1,8 +1,12 @@
 package lila.lobby
 
-import lila.rating.{ Glicko, Perf, PerfType }
-import lila.user.User
-import lila.pool.Blocking
+import chess.IntRating
+import chess.rating.RatingProvisional
+
+import lila.core.perf.{ UserPerfs, UserWithPerfs }
+import lila.core.pool.Blocking
+import lila.rating.UserPerfsExt.perfsList
+import lila.rating.{ Glicko, PerfType }
 
 private[lobby] case class LobbyUser(
     id: UserId,
@@ -21,9 +25,9 @@ private[lobby] object LobbyUser:
 
   given UserIdOf[LobbyUser] = _.id
 
-  type PerfMap = Map[Perf.Key, LobbyPerf]
+  type PerfMap = Map[PerfKey, LobbyPerf]
 
-  def make(user: User.WithPerfs, blocking: Blocking) =
+  def make(user: UserWithPerfs, blocking: Blocking) =
     LobbyUser(
       id = user.id,
       username = user.username,
@@ -33,15 +37,17 @@ private[lobby] object LobbyUser:
       blocking = blocking
     )
 
-  private def perfMapOf(perfs: lila.user.UserPerfs): PerfMap =
-    perfs.perfs.view.collect {
-      case (pt, perf) if pt != PerfType.Puzzle && perf.nonEmpty =>
-        pt.key -> LobbyPerf(perf.intRating, perf.provisional)
+  private def perfMapOf(perfs: UserPerfs): PerfMap =
+    perfs.perfsList.view.collect {
+      case (pk, perf) if pk != PerfKey.puzzle && perf.nonEmpty =>
+        pk -> LobbyPerf(perf.intRating, perf.provisional)
     }.toMap
 
-// TODO opaque type Int (minus for provisional)
-case class LobbyPerf(rating: IntRating, provisional: RatingProvisional)
-
-object LobbyPerf:
-
-  val default = LobbyPerf(Glicko.default.intRating, provisional = RatingProvisional.Yes)
+private opaque type LobbyPerf = Int
+private object LobbyPerf extends OpaqueInt[LobbyPerf]:
+  def apply(rating: IntRating, provisional: RatingProvisional): LobbyPerf =
+    LobbyPerf(rating.value * (if provisional.yes then -1 else 1))
+  extension (lp: LobbyPerf)
+    def rating: IntRating              = IntRating(math.abs(lp))
+    def provisional: RatingProvisional = RatingProvisional(lp < 0)
+  val default = LobbyPerf(-Glicko.default.intRating.value)

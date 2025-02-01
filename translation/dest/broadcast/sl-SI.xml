@@ -9,9 +9,10 @@
     <item quantity="other">%s oddaj</item>
   </plurals>
   <string name="liveBroadcasts">Prenos turnirjev v živo</string>
+  <string name="broadcastCalendar">Koledar oddaj</string>
   <string name="newBroadcast">Nov prenos v živo</string>
+  <string name="subscribedBroadcasts">Naročene oddaje</string>
   <string name="aboutBroadcasts">O oddaji</string>
-  <string name="noRoundsYet">Ni še krogov.</string>
   <string name="howToUseLichessBroadcasts">Kako uporabljati Lichess Broadcasts.</string>
   <string name="theNewRoundHelp">Novi krog bo imel iste člane in sodelavce kot prejšnji.</string>
   <string name="addRound">Dodajte krog</string>
@@ -25,14 +26,11 @@
   <string name="tournamentDescription">Kratek opis turnirja</string>
   <string name="fullDescription">Polni opis dogodka</string>
   <string name="fullDescriptionHelp">Neobvezen dolg opis prenosa. %1$s je na voljo. Dolžina mora biti manjša od %2$s znakov.</string>
-  <string name="sourceUrlOrGameIds">Izvorni URL ali ID igre</string>
+  <string name="sourceSingleUrl">Vir partije v PGN formatu</string>
   <string name="sourceUrlHelp">URL, ki ga bo Lichess preveril, da bo prejel PGN posodobitve. Javno mora biti dostopen preko interneta.</string>
-  <string name="gameIdsHelp">Lahko pa vnesete do 64 ID-jev lichess iger, ločene s presledki.</string>
-  <string name="startDate">Datum začetka v vaše časovnem pasu</string>
+  <string name="sourceGameIds">Do 64 Lichess ID-jev iger, deljenih s presledkom.</string>
+  <string name="startDateTimeZone">Začetni datum v lokalnem časovnem pasu turnirja: %s</string>
   <string name="startDateHelp">Izbirno, če veste, kdaj se dogodek začne</string>
-  <string name="credits">Navedi vir</string>
-  <string name="broadcastUrl">URL oddaje</string>
-  <string name="currentRoundUrl">URL trenutnega kroga</string>
   <string name="currentGameUrl">URL trenutno igrane igre</string>
   <string name="downloadAllRounds">Prenesite vse kroge</string>
   <string name="resetRound">Ponastavi ta krog</string>
@@ -42,14 +40,46 @@
   <string name="editRoundStudy">Uredi krog študije</string>
   <string name="deleteTournament">Zbrišite ta turnir</string>
   <string name="definitivelyDeleteTournament">Dokončno izbrišite celoten turnir, vse njegove kroge in vse njegove igre.</string>
-  <string name="automaticLeaderboard">Samodejna lestvica najboljših</string>
-  <string name="automaticLeaderboardHelp">Izračunajte in prikažite preprosto lestvico najboljših na podlagi rezultatov igre</string>
-  <string name="replace">Izbirno: zamenjajte imena igralcev, rejtinge in nazive</string>
-  <string name="replaceHelp">Ena vrstica na igralca, oblikovana tako:
-izvirno ime; Nadomestno ime; Izbirno rejting zamenjave; Izbirno nadomestni naslov
-primer:
-dr.Nykterstein;Magnus Carlsen;2863
-AnishGiri;Anish Giri;2764;GM</string>
-  <string name="periodInSeconds">Obdobje v sekundah</string>
-  <string name="periodInSecondsHelp">Izbirno, koliko časa je treba čakati med zahtevami. Najmanj 2 s, največ 60 s. Privzeto je samodejno glede na število gledalcev.</string>
+  <string name="showScores">Prikaži rezultate igralcev na podlagi rezultatov igre</string>
+  <string name="replacePlayerTags">Izbirno: zamenjajte imena igralcev, ratinge in nazive</string>
+  <string name="fideFederations">FIDE države</string>
+  <string name="top10Rating">Najboljših 10 po ratingu</string>
+  <string name="fidePlayers">FIDE igralci</string>
+  <string name="fidePlayerNotFound">FIDE igralec ni najden</string>
+  <string name="fideProfile">FIDE profil</string>
+  <string name="federation">Država</string>
+  <string name="ageThisYear">Starost letos</string>
+  <string name="unrated">Nima ratinga</string>
+  <string name="recentTournaments">Pretekli turnirji</string>
+  <string name="openLichess">Odprto v Lichess</string>
+  <string name="teams">Ekipe</string>
+  <string name="boards">Deske</string>
+  <string name="overview">Pregled</string>
+  <string name="subscribeTitle">Naročite se in bodite obveščeni ob začetku kola. Lahko si nastavite zvonec ali potisna obvestila za prenos v živo v nastavitvah vašega računa.</string>
+  <string name="uploadImage">Naloži sliko turnirja</string>
+  <string name="noBoardsYet">Deske niso na voljo. Prikazane bodo, ko se igre naložijo.</string>
+  <string name="boardsCanBeLoaded" comment="%s is 'Broadcaster App'">Deske se lahko naložijo iz vira ali z \"%s\"</string>
+  <string name="startsAfter">Začne se s \"%s\"</string>
+  <string name="startVerySoon">Prenos v živo se bo začel kmalu.</string>
+  <string name="notYetStarted">Prenos v živo se še ni začel.</string>
+  <string name="officialWebsite">Uradna spletna stran</string>
+  <string name="standings">Lestvica</string>
+  <string name="officialStandings">Uradna lestvica</string>
+  <string name="iframeHelp" comment="%s is 'webmasters page'">Več nastavitev s %s</string>
+  <string name="webmastersPage">Stran administratorja turnirja</string>
+  <string name="pgnSourceHelp" comment="%s is 'streaming API'">Javen, v realnem času dostopen PGN vir tega kola. Ponujamo tudi iskanje s %s za hitrejše iskanje in bolj učinkovito sinhronizacijo.</string>
+  <string name="embedThisBroadcast">Vgradite prenos v živo v svojo spletno stran.</string>
+  <string name="embedThisRound">Vgradite %s v svojo spletno stran.</string>
+  <string name="ratingDiff">Razlika v ratingu</string>
+  <string name="gamesThisTournament">Igre v tem turnirju</string>
+  <string name="score">Rezultat</string>
+  <string name="allTeams">Vse ekipe</string>
+  <string name="tournamentFormat">Oblika turnirja</string>
+  <string name="tournamentLocation">Lokacija turnirja</string>
+  <string name="topPlayers">Najboljši igralci</string>
+  <string name="timezone">Časovni pas</string>
+  <string name="fideRatingCategory">FIDE rating kategorija</string>
+  <string name="optionalDetails">Neobvezne podrobnosti</string>
+  <string name="pastBroadcasts">Pretekle oddaje</string>
+  <string name="allBroadcastsByMonth">Oglejte si vse oddaje po mesecih</string>
 </resources>

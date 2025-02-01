@@ -3,6 +3,7 @@ package lila.tournament
 import reactivemongo.api.*
 import reactivemongo.api.bson.*
 
+import lila.core.tournament.leaderboard.Ratio
 import lila.db.dsl.{ *, given }
 
 final private class LeaderboardIndexer(
@@ -31,18 +32,18 @@ final private class LeaderboardIndexer(
   //       .void
 
   def indexOne(tour: Tournament): Funit =
-    leaderboardRepo.coll.delete.one($doc("t" -> tour.id)) >>
-      generateTourEntries(tour) flatMap saveEntries
+    (leaderboardRepo.coll.delete.one($doc("t" -> tour.id)) >>
+      generateTourEntries(tour)).flatMap(saveEntries)
 
   private def saveEntries(entries: Seq[Entry]): Funit =
-    entries.nonEmpty so leaderboardRepo.coll.insert.many(entries).void
+    entries.nonEmpty.so(leaderboardRepo.coll.insert.many(entries).void)
 
   private def generateTourEntries(tour: Tournament): Fu[List[Entry]] =
     for
       nbGames <- pairingRepo.countByTourIdAndUserIds(tour.id)
       players <- playerRepo.bestByTourWithRank(tour.id, nb = 9000, skip = 0)
     yield players.flatMap { case RankedPlayer(rank, player) =>
-      nbGames get player.userId map { nb =>
+      nbGames.get(player.userId).map { nb =>
         Entry(
           id = player._id,
           tourId = tour.id,
@@ -51,8 +52,7 @@ final private class LeaderboardIndexer(
           score = player.score,
           rank = rank,
           rankRatio = Ratio(if tour.nbPlayers > 0 then rank.value.toDouble / tour.nbPlayers else 0),
-          freq = tour.schedule.map(_.freq),
-          speed = tour.schedule.map(_.speed),
+          freq = tour.scheduleFreq,
           perf = tour.perfType,
           date = tour.startsAt
         )

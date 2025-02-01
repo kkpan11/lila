@@ -1,15 +1,15 @@
 package lila.tournament
 
 import cats.derived.*
-
+import chess.Clock.{ IncrementSeconds, LimitSeconds }
 import chess.format.Fen
 import chess.variant.Variant
-import chess.Clock.{ LimitSeconds, IncrementSeconds }
-import play.api.i18n.Lang
+import chess.IntRating
 
-import lila.i18n.I18nKeys
-import lila.rating.PerfType
+import lila.core.i18n.{ I18nKey, Translate }
 import lila.gathering.Condition
+
+case class Scheduled(freq: Schedule.Freq, at: LocalDateTime)
 
 case class Schedule(
     freq: Schedule.Freq,
@@ -19,138 +19,43 @@ case class Schedule(
     at: LocalDateTime,
     conditions: TournamentCondition.All = TournamentCondition.All.empty
 ):
-
-  def name(full: Boolean = true)(using Lang): String =
-    import Schedule.Freq.*
-    import Schedule.Speed.*
-    import lila.i18n.I18nKeys.tourname.*
-    if variant.standard && position.isEmpty then
-      (conditions.minRating, conditions.maxRating) match
-        case (None, None) =>
-          (freq, speed) match
-            case (Hourly, Rapid) if full      => hourlyRapidArena.txt()
-            case (Hourly, Rapid)              => hourlyRapid.txt()
-            case (Hourly, speed) if full      => hourlyXArena.txt(speed.trans)
-            case (Hourly, speed)              => hourlyX.txt(speed.trans)
-            case (Daily, Rapid) if full       => dailyRapidArena.txt()
-            case (Daily, Rapid)               => dailyRapid.txt()
-            case (Daily, Classical) if full   => dailyClassicalArena.txt()
-            case (Daily, Classical)           => dailyClassical.txt()
-            case (Daily, speed) if full       => dailyXArena.txt(speed.trans)
-            case (Daily, speed)               => dailyX.txt(speed.trans)
-            case (Eastern, Rapid) if full     => easternRapidArena.txt()
-            case (Eastern, Rapid)             => easternRapid.txt()
-            case (Eastern, Classical) if full => easternClassicalArena.txt()
-            case (Eastern, Classical)         => easternClassical.txt()
-            case (Eastern, speed) if full     => easternXArena.txt(speed.trans)
-            case (Eastern, speed)             => easternX.txt(speed.trans)
-            case (Weekly, Rapid) if full      => weeklyRapidArena.txt()
-            case (Weekly, Rapid)              => weeklyRapid.txt()
-            case (Weekly, Classical) if full  => weeklyClassicalArena.txt()
-            case (Weekly, Classical)          => weeklyClassical.txt()
-            case (Weekly, speed) if full      => weeklyXArena.txt(speed.trans)
-            case (Weekly, speed)              => weeklyX.txt(speed.trans)
-            case (Monthly, Rapid) if full     => monthlyRapidArena.txt()
-            case (Monthly, Rapid)             => monthlyRapid.txt()
-            case (Monthly, Classical) if full => monthlyClassicalArena.txt()
-            case (Monthly, Classical)         => monthlyClassical.txt()
-            case (Monthly, speed) if full     => monthlyXArena.txt(speed.trans)
-            case (Monthly, speed)             => monthlyX.txt(speed.trans)
-            case (Yearly, Rapid) if full      => yearlyRapidArena.txt()
-            case (Yearly, Rapid)              => yearlyRapid.txt()
-            case (Yearly, Classical) if full  => yearlyClassicalArena.txt()
-            case (Yearly, Classical)          => yearlyClassical.txt()
-            case (Yearly, speed) if full      => yearlyXArena.txt(speed.trans)
-            case (Yearly, speed)              => yearlyX.txt(speed.trans)
-            case (Shield, Rapid) if full      => rapidShieldArena.txt()
-            case (Shield, Rapid)              => rapidShield.txt()
-            case (Shield, Classical) if full  => classicalShieldArena.txt()
-            case (Shield, Classical)          => classicalShield.txt()
-            case (Shield, speed) if full      => xShieldArena.txt(speed.trans)
-            case (Shield, speed)              => xShield.txt(speed.trans)
-            case _ if full                    => xArena.txt(s"${freq.toString} ${speed.trans}")
-            case _                            => s"${freq.toString} ${speed.trans}"
-        case (Some(_), _) if full   => eliteXArena.txt(speed.trans)
-        case (Some(_), _)           => eliteX.txt(speed.trans)
-        case (_, Some(max)) if full => s"≤${max.rating} ${xArena.txt(speed.trans)}"
-        case (_, Some(max))         => s"≤${max.rating} ${speed.trans}"
-    else if variant.standard then
-      val n = position.flatMap(Thematic.byFen).fold(speed.trans) { pos =>
-        s"${pos.family.name} ${speed.trans}"
-      }
-      if full then xArena.txt(n) else n
-    else
-      freq match
-        case Hourly if full  => hourlyXArena.txt(variant.name)
-        case Hourly          => hourlyX.txt(variant.name)
-        case Daily if full   => dailyXArena.txt(variant.name)
-        case Daily           => dailyX.txt(variant.name)
-        case Eastern if full => easternXArena.txt(variant.name)
-        case Eastern         => easternX.txt(variant.name)
-        case Weekly if full  => weeklyXArena.txt(variant.name)
-        case Weekly          => weeklyX.txt(variant.name)
-        case Monthly if full => monthlyXArena.txt(variant.name)
-        case Monthly         => monthlyX.txt(variant.name)
-        case Yearly if full  => yearlyXArena.txt(variant.name)
-        case Yearly          => yearlyX.txt(variant.name)
-        case Shield if full  => xShieldArena.txt(variant.name)
-        case Shield          => xShield.txt(variant.name)
-        case _ =>
-          val n = s"${freq.name} ${variant.name}"
-          if full then xArena.txt(n) else n
-
-  def day = at.withTimeAtStartOfDay
+  /** Absolute start time of the schedule. */
+  def atInstant = at.instant
 
   def sameSpeed(other: Schedule) = speed == other.speed
 
-  def similarSpeed(other: Schedule) = Schedule.Speed.similar(speed, other.speed)
-
-  def sameVariant(other: Schedule) = variant.id == other.variant.id
-
-  def sameVariantAndSpeed(other: Schedule) = sameVariant(other) && sameSpeed(other)
-
-  def sameFreq(other: Schedule) = freq == other.freq
-
-  def sameConditions(other: Schedule) = conditions == other.conditions
-
-  def sameMaxRating(other: Schedule) = conditions sameMaxRating other.conditions
-
-  def similarConditions(other: Schedule) = conditions similar other.conditions
+  def sameMaxRating(other: Schedule) = conditions.sameMaxRating(other.conditions)
 
   def sameDay(other: Schedule) = day == other.day
+  private def day              = at.withTimeAtStartOfDay
 
   def hasMaxRating = conditions.maxRating.isDefined
 
-  def similarTo(other: Schedule) =
-    similarSpeed(other) && sameVariant(other) && sameFreq(other) && sameConditions(other)
+  def perfKey: PerfKey = PerfKey.byVariant(variant) | Schedule.Speed.toPerfKey(speed)
 
-  def perfType = PerfType.byVariant(variant) | Schedule.Speed.toPerfType(speed)
+  def plan                                  = Schedule.Plan(this, atInstant, None)
+  def plan(build: Tournament => Tournament) = Schedule.Plan(this, atInstant, build.some)
 
-  def plan                                  = Schedule.Plan(this, None)
-  def plan(build: Tournament => Tournament) = Schedule.Plan(this, build.some)
-
-  override def toString = s"$freq ${variant.key} ${speed.key} $conditions ${at.instant}"
+  override def toString =
+    val initial = if position.isEmpty then "standard" else "position"
+    s"${atInstant} $freq ${variant.key} ${speed.key}(${Schedule.clockFor(this)}) $conditions $initial"
 
 object Schedule:
 
-  def uniqueFor(tour: Tournament) =
-    Schedule(
-      freq = Freq.Unique,
-      speed = Speed fromClock tour.clock,
-      variant = tour.variant,
-      position = tour.position,
-      at = tour.startsAt.dateTime
-    )
+  case class Plan(schedule: Schedule, startsAt: Instant, buildFunc: Option[Tournament => Tournament])
+      extends PlanBuilder.ScheduleWithInterval:
 
-  case class Plan(schedule: Schedule, buildFunc: Option[Tournament => Tournament]):
-
-    def build: Tournament =
-      val t = Tournament.scheduleAs(addCondition(schedule), durationFor(schedule))
+    def build(using Translate): Tournament =
+      val t = Tournament.scheduleAs(withConditions(schedule), startsAt, minutes)
       buildFunc.fold(t) { _(t) }
 
     def map(f: Tournament => Tournament) = copy(
       buildFunc = buildFunc.fold(f)(f.compose).some
     )
+
+    def minutes = durationFor(schedule)
+
+    override def duration = java.time.Duration.ofMinutes(minutes)
 
   enum Freq(val id: Int, val importance: Int) extends Ordered[Freq] derives Eq:
     case Hourly               extends Freq(10, 10)
@@ -178,12 +83,14 @@ object Schedule:
     val byName           = values.mapBy(_.name)
     val byId             = values.mapBy(_.id)
 
-  enum Speed(val id: Int):
+  enum Speed(val id: Int) derives Eq:
     val name = Speed.this.toString
-    val key  = lila.common.String lcfirst name
-    def trans(using Lang): String = this match
-      case Speed.Rapid     => I18nKeys.rapid.txt()
-      case Speed.Classical => I18nKeys.classical.txt()
+    val key  = lila.common.String.lcfirst(name)
+    def trans(using Translate): String = this match
+      case Speed.Bullet    => I18nKey.site.bullet.txt()
+      case Speed.Blitz     => I18nKey.site.blitz.txt()
+      case Speed.Rapid     => I18nKey.site.rapid.txt()
+      case Speed.Classical => I18nKey.site.classical.txt()
       case _               => name
     case UltraBullet extends Speed(5)
     case HyperBullet extends Speed(10)
@@ -197,7 +104,7 @@ object Schedule:
     val all                      = values.toList
     val mostPopular: List[Speed] = List(Bullet, Blitz, Rapid, Classical)
     val byId                     = values.mapBy(_.id)
-    def apply(key: String) = all.find(_.key == key) orElse all.find(_.key.toLowerCase == key.toLowerCase)
+    def apply(key: String) = all.find(_.key == key).orElse(all.find(_.key.toLowerCase == key.toLowerCase))
     def similar(s1: Speed, s2: Speed) =
       (s1, s2) match
         case (a, b) if a == b                                        => true
@@ -209,17 +116,17 @@ object Schedule:
       if time < 30 then UltraBullet
       else if time < 60 then HyperBullet
       else if time < 120 then Bullet
-      else if time < 180 then HippoBullet
+      else if time == 120 then HippoBullet
+      else if time <= 220 then SuperBlitz // 3 + 1
       else if time < 480 then Blitz
       else if time < 1500 then Rapid
       else Classical
-    def toPerfType(speed: Speed) =
-      speed match
-        case UltraBullet                        => PerfType.UltraBullet
-        case HyperBullet | Bullet | HippoBullet => PerfType.Bullet
-        case SuperBlitz | Blitz                 => PerfType.Blitz
-        case Rapid                              => PerfType.Rapid
-        case Classical                          => PerfType.Classical
+    def toPerfKey(speed: Speed) = speed match
+      case UltraBullet                        => PerfKey.ultraBullet
+      case HyperBullet | Bullet | HippoBullet => PerfKey.bullet
+      case SuperBlitz | Blitz                 => PerfKey.blitz
+      case Rapid                              => PerfKey.rapid
+      case Classical                          => PerfKey.classical
 
   enum Season:
     case Spring, Summer, Autumn, Winter
@@ -278,9 +185,10 @@ object Schedule:
 
       case (Unique, _, _) => 60 * 6
 
-  private val standardIncHours         = Set(1, 7, 13, 19)
-  private def standardInc(s: Schedule) = standardIncHours(s.at.getHour)
-  private def zhInc(s: Schedule)       = s.at.getHour % 2 == 0
+  private val standardIncHours          = Set(1, 7, 13, 19)
+  private def standardInc(s: Schedule)  = standardIncHours(s.at.getHour)
+  private def zhInc(s: Schedule)        = s.at.getHour % 2 == 0
+  private def bottomOfHour(s: Schedule) = s.at.getMinute > 29
 
   private given Conversion[Int, LimitSeconds]     = LimitSeconds(_)
   private given Conversion[Int, IncrementSeconds] = IncrementSeconds(_)
@@ -302,10 +210,11 @@ object Schedule:
 
     (s.freq, s.variant, s.speed) match
       // Special cases.
-      case (Weekend, Crazyhouse, Blitz)                 => zhEliteTc(s)
-      case (Hourly, Crazyhouse, SuperBlitz) if zhInc(s) => TC(3 * 60, 1)
-      case (Hourly, Crazyhouse, Blitz) if zhInc(s)      => TC(4 * 60, 2)
-      case (Hourly, Standard, Blitz) if standardInc(s)  => TC(3 * 60, 2)
+      case (Weekend, Crazyhouse, Blitz)                                    => zhEliteTc(s)
+      case (Hourly, Crazyhouse, SuperBlitz) if zhInc(s)                    => TC(3 * 60, 1)
+      case (Hourly, Crazyhouse, Blitz) if zhInc(s)                         => TC(4 * 60, 2)
+      case (Hourly, Standard, Blitz) if standardInc(s)                     => TC(3 * 60, 2)
+      case (Hourly, Standard, Bullet) if s.hasMaxRating && bottomOfHour(s) => TC(60, 1)
 
       case (Shield, variant, Blitz) if variant.exotic => TC(3 * 60, 2)
 
@@ -317,16 +226,15 @@ object Schedule:
       case (_, _, Blitz)       => TC(5 * 60, 0)
       case (_, _, Rapid)       => TC(10 * 60, 0)
       case (_, _, Classical)   => TC(20 * 60, 10)
-  private[tournament] def addCondition(s: Schedule) =
-    s.copy(conditions = conditionFor(s))
+
+  private[tournament] def withConditions(s: Schedule) = s.copy(conditions = conditionFor(s))
 
   private[tournament] def conditionFor(s: Schedule) =
     if s.conditions.nonEmpty then s.conditions
     else
       import Freq.*, Speed.*
 
-      val nbRatedGame = (s.freq, s.variant, s.speed) match
-
+      val nbRatedGame = ((s.freq, s.variant, s.speed) match
         case (Hourly, variant, _) if variant.exotic => 0
 
         case (Hourly | Daily | Eastern, _, HyperBullet | Bullet)             => 20
@@ -339,18 +247,22 @@ object Schedule:
         case (Weekly | Weekend | Monthly | Shield, _, Classical)                        => 5
 
         case _ => 0
+      ).some.filter(0 <).map(Condition.NbRatedGame.apply)
 
-      val minRating = IntRating:
-        (s.freq, s.variant) match
-          case (Weekend, chess.variant.Crazyhouse) => 2100
-          case (Weekend, _)                        => 2200
-          case _                                   => 0
+      val minRating = ((s.freq, s.variant) match
+        case (Weekend, chess.variant.Crazyhouse) => 2100
+        case (Weekend, _)                        => 2200
+        case _                                   => 0
+      ).some.filter(0 <).map(v => Condition.MinRating(IntRating(v)))
 
-      TournamentCondition.All(
-        nbRatedGame = nbRatedGame.some.filter(0 <) map Condition.NbRatedGame.apply,
-        minRating = minRating.some.filter(_ > 0) map Condition.MinRating.apply,
-        maxRating = none,
-        titled = none,
-        teamMember = none,
-        allowList = none
-      )
+      if nbRatedGame.isEmpty && minRating.isEmpty then TournamentCondition.All.empty
+      else
+        TournamentCondition.All(
+          nbRatedGame = nbRatedGame,
+          minRating = minRating,
+          maxRating = none,
+          titled = none,
+          teamMember = none,
+          accountAge = none,
+          allowList = none
+        )

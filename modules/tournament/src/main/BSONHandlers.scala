@@ -1,46 +1,39 @@
 package lila.tournament
 
-import chess.format.Fen
 import chess.Mode
+import chess.format.Fen
 import chess.variant.Variant
+import chess.IntRating
 import reactivemongo.api.bson.*
 
+import lila.core.id.TourPlayerId
+import lila.core.tournament.Status
+import lila.core.tournament.leaderboard.Ratio
 import lila.db.BSON
 import lila.db.dsl.{ *, given }
+import lila.gathering.Thematic
 import lila.rating.PerfType
-import lila.user.User.lichessId
 
 object BSONHandlers:
 
-  private[tournament] given BSONHandler[Status] = tryHandler(
-    { case BSONInteger(v) => Status(v) toTry s"No such status: $v" },
-    x => BSONInteger(x.id)
-  )
+  private[tournament] given BSONHandler[Status] = valueMapHandler(Status.byId)(_.id)
 
   private[tournament] given BSONHandler[Schedule.Freq] = tryHandler(
-    { case BSONString(v) => Schedule.Freq.byName.get(v) toTry s"No such freq: $v" },
+    { case BSONString(v) => Schedule.Freq.byName.get(v).toTry(s"No such freq: $v") },
     x => BSONString(x.name)
   )
 
-  private[tournament] given BSONHandler[Schedule.Speed] = tryHandler(
-    { case BSONString(v) => Schedule.Speed(v) toTry s"No such speed: $v" },
-    x => BSONString(x.key)
-  )
-
-  given BSONWriter[Schedule] = BSONWriter: s =>
-    $doc(
-      "freq"  -> s.freq,
-      "speed" -> s.speed
-    )
+  given BSONWriter[Scheduled] = Macros.handler
 
   private given BSONHandler[chess.Clock.Config] = clockConfigHandler
 
+  given BSONHandler[lila.ui.Icon]              = isoHandler[lila.ui.Icon, String]
   private given BSONDocumentHandler[Spotlight] = Macros.handler
 
   given BSONDocumentHandler[TeamBattle] = Macros.handler
 
-  private given BSONHandler[LeaderboardApi.Ratio] = BSONIntegerHandler.as(
-    i => LeaderboardApi.Ratio(i.toDouble / 100_000),
+  private given BSONHandler[Ratio] = BSONIntegerHandler.as(
+    i => Ratio(i.toDouble / 100_000),
     r => (r.value * 100_000).toInt
   )
 
@@ -50,40 +43,40 @@ object BSONHandlers:
     def reads(r: BSON.Reader) =
       val variant = Variant.idOrDefault(r.getO[Variant.Id]("variant"))
       val position: Option[Fen.Standard] =
-        r.getO[Fen.Epd]("fen")
+        r.getO[Fen.Full]("fen")
           .map(_.opening: Fen.Standard)
-          .filter(_ != Fen.Standard.initial) orElse
-          r.getO[chess.opening.Eco]("eco").flatMap(Thematic.byEco).map(_.fen) // for BC
-      val startsAt   = r date "startsAt"
+          .filter(_ != Fen.Standard.initial)
+          .orElse(r.getO[chess.opening.Eco]("eco").flatMap(Thematic.byEco).map(_.fen)) // for BC
+      val startsAt   = r.date("startsAt")
       val conditions = r.getD[TournamentCondition.All]("conditions")
       Tournament(
         id = r.get[TourId]("_id"),
-        name = r str "name",
+        name = r.str("name"),
         status = r.get[Status]("status"),
         clock = r.get[chess.Clock.Config]("clock"),
-        minutes = r int "minutes",
+        minutes = r.int("minutes"),
         variant = variant,
         position = position,
-        mode = r.intO("mode") flatMap Mode.apply getOrElse Mode.Rated,
+        mode = r.intO("mode").flatMap(Mode.apply).getOrElse(Mode.Rated),
         password = r.strO("password"),
         conditions = conditions,
         teamBattle = r.getO[TeamBattle]("teamBattle"),
-        noBerserk = r boolD "noBerserk",
-        noStreak = r boolD "noStreak",
+        noBerserk = r.boolD("noBerserk"),
+        noStreak = r.boolD("noStreak"),
         schedule = for
-          doc   <- r.getO[Bdoc]("schedule")
-          freq  <- doc.getAsOpt[Schedule.Freq]("freq")
-          speed <- doc.getAsOpt[Schedule.Speed]("speed")
-        yield Schedule(freq, speed, variant, position, startsAt.dateTime, conditions),
-        nbPlayers = r int "nbPlayers",
-        createdAt = r date "createdAt",
-        createdBy = r.getO[UserId]("createdBy") | lichessId,
+          doc  <- r.getO[Bdoc]("schedule")
+          freq <- doc.getAsOpt[Schedule.Freq]("freq")
+          at = doc.getAsOpt[LocalDateTime]("at") | startsAt.dateTime
+        yield Scheduled(freq, at),
+        nbPlayers = r.int("nbPlayers"),
+        createdAt = r.date("createdAt"),
+        createdBy = r.getO[UserId]("createdBy") | UserId.lichess,
         startsAt = startsAt,
         winnerId = r.getO[UserId]("winner"),
         featuredId = r.getO[GameId]("featured"),
         spotlight = r.getO[Spotlight]("spotlight"),
-        description = r strO "description",
-        hasChat = r boolO "chat" getOrElse true
+        description = r.strO("description"),
+        hasChat = r.boolO("chat").getOrElse(true)
       )
     def writes(w: BSON.Writer, o: Tournament) =
       $doc(
@@ -119,11 +112,11 @@ object BSONHandlers:
         tourId = r.get("tid"),
         userId = r.get("uid"),
         rating = r.get("r"),
-        provisional = r yesnoD "pr",
-        withdraw = r boolD "w",
-        score = r intD "s",
-        fire = r boolD "f",
-        performance = r intD "e",
+        provisional = r.yesnoD("pr"),
+        withdraw = r.boolD("w"),
+        score = r.intD("s"),
+        fire = r.boolD("f"),
+        performance = r.getO[IntRating]("e"),
         team = r.getO[TeamId]("t")
       )
     def writes(w: BSON.Writer, o: Player) =
@@ -143,20 +136,20 @@ object BSONHandlers:
 
   given pairingHandler: BSON[Pairing] with
     def reads(r: BSON.Reader) =
-      val users = r strsD "u"
-      val user1 = UserId(users.headOption err "tournament pairing first user")
-      val user2 = UserId(users lift 1 err "tournament pairing second user")
+      val users = r.strsD("u")
+      val user1 = UserId(users.headOption.err("tournament pairing first user"))
+      val user2 = UserId(users.lift(1).err("tournament pairing second user"))
       Pairing(
         id = r.get[GameId]("_id"),
         tourId = r.get[TourId]("tid"),
-        status = chess.Status(r int "s") err "tournament pairing status",
+        status = chess.Status(r.int("s")).err("tournament pairing status"),
         user1 = user1,
         user2 = user2,
-        winner = r boolO "w" map {
+        winner = r.boolO("w").map {
           if _ then user1
           else user2
         },
-        turns = r intO "t",
+        turns = r.intO("t"),
         berserk1 = r.intO("b1").fold(r.boolD("b1"))(1 ==), // it used to be int = 0/1
         berserk2 = r.intO("b2").fold(r.boolD("b2"))(1 ==)
       )
@@ -178,14 +171,13 @@ object BSONHandlers:
         id = r.get("_id"),
         userId = r.get("u"),
         tourId = r.get("t"),
-        nbGames = r int "g",
-        score = r int "s",
+        nbGames = r.int("g"),
+        score = r.int("s"),
         rank = r.get("r"),
         rankRatio = r.get("w"),
-        freq = r intO "f" flatMap Schedule.Freq.byId.get,
-        speed = r intO "p" flatMap Schedule.Speed.byId.get,
-        perf = PerfType.byId get r.get("v") err "Invalid leaderboard perf",
-        date = r date "d"
+        freq = r.intO("f").flatMap(Schedule.Freq.byId.get),
+        perf = PerfType.byId.get(r.get("v")).err("Invalid leaderboard perf"),
+        date = r.date("d")
       )
 
     def writes(w: BSON.Writer, o: LeaderboardApi.Entry) =
@@ -198,7 +190,6 @@ object BSONHandlers:
         "r"   -> o.rank,
         "w"   -> o.rankRatio,
         "f"   -> o.freq.map(_.id),
-        "p"   -> o.speed.map(_.id),
         "v"   -> o.perf.id,
         "d"   -> w.date(o.date)
       )

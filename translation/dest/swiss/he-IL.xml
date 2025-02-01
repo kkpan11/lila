@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="swiss" comment="Used as an adjective.&#10;&#10;Appears on tournament pages information boxes, to explain that the tournament is Swiss format.">שוויצרי</string>
   <string name="swissTournaments">טורנירים שוויצריים</string>
   <plurals name="viewAllXRounds" comment="viewAllXRounds [one] [other]&#10;&#10;%s is the number of rounds in the Swiss tournament.">
     <item quantity="one">צפו בסיבוב</item>
@@ -38,7 +39,7 @@
     <item quantity="many">%s דקות בין סבבים</item>
     <item quantity="other">%s דקות בין סבבים</item>
   </plurals>
-  <string name="startingIn" comment="Displayed above a timer">מתחילים בעוד</string>
+  <string name="startingIn" comment="Displayed above a timer. Is auto-capitalised.">מתחילים בעוד</string>
   <string name="nextRound">הסבב הבא</string>
   <plurals name="ongoingGames" comment="Displayed next to the ongoing games count">
     <item quantity="one">משחק נוכחי</item>
@@ -52,6 +53,19 @@
   <string name="roundInterval">מרווח בין סבבים</string>
   <string name="forbiddenPairings">שיבוצים אסורים</string>
   <string name="forbiddenPairingsHelp">שמות המשתמש של שחקנים שלא יכולים לשחק אחד נגד השני (אחים, למשל). שני שמות משתמש בכל שורה, מופרדים ברווח.</string>
+  <string name="manualPairings">שיבוצים ידניים עבור הסיבוב הבא</string>
+  <string name="manualPairingsHelp">הגדירו את השיבוצים לסיבוב הבא באופן ידני. יש להזין שחקן אחד בכל שורה. לדוגמה:
+PlayerA PlayerB
+PlayerC PlayerD
+
+כדי לתת לשחקן נקודה במקום לשבצו לשחק, הזינו זאת כך:
+PlayerE 1
+
+שחקנים שלא יופיעו למשחק יוגדרו כלא נוכחים ולא יקבלו ניקוד.
+
+אם השדה הזה יושאר ריק, Lichess ישבץ את השחקנים באופן אוטומטי.</string>
+  <string name="mustHavePlayedTheirLastSwissGame">רק שחקנים שהופיעו למשחק השוויצרי האחרון שלהם</string>
+  <string name="mustHavePlayedTheirLastSwissGameHelp">אפשרו לשחקנים להשתתף רק אם נכחו במשחק השוויצרי האחרון שלהם. אם נעדרו מטורניר לאחרונה, הם לא יורשו להשתתף בטורניר שלך. ההגדרה הזו עשויה להוביל לחוויה נעימה יותר עבור השחקנים שמתמידים בהופעתם.</string>
   <string name="newSwiss">טורניר שוויצרי חדש</string>
   <string name="swissVsArenaQ">מתי ליצור טורנירים שוויצריים במקום טורנירי זירה?</string>
   <string name="swissVsArenaA">בטורניר שוויצרי, כל השחקנים משחקים אותו מספר של משחקים, ויכולים לשחק אחד נגד השני פעם אחת בלבד. זאת יכולה להיות אפשרות טובה למועדונים ולטורנירים רשמיים.</string>
@@ -75,7 +89,7 @@
   <string name="whatIfOneDoesntPlayQ">מה קורה אם שחקן לא משחק?</string>
   <string name="whatIfOneDoesntPlayA">השעון שלו יתקתק, ״יפול לו הדגל״ והוא יפסיד את המשחק. לאחר מכן הוא יוצא מהטורניר כדי לא להפסיד משחקנים נוספים. הוא יוכל להצטרף מחדש בכל שלב.</string>
   <string name="protectionAgainstNoShowQ">מה נעשה באשר לשחקים שלא מופיעים למשחק?</string>
-  <string name="protectionAgainstNoShowA">שחקנים שנרשמים לטורנירים שוויצריים אבל לא משחקים כנדרש יכולים להוות בעיה. כדי למנוע את זה, ליצ׳ס מונע משחקים שלא מופיעים להצטרף לטורנירים שוויצריים למשך זמן מסויים. היוצר של הטורניר יכול לבחור לאשר את הצטרפותם בכל זאת.</string>
+  <string name="protectionAgainstNoShowA" comment="By &quot;a game&quot; - we mean just one game. Missing even one game will prevent that player from joining a new Swiss event for a certain amount of time.">שחקנים שנרשמים לטורנירים שוויצריים אבל לא משחקים כנדרש יכולים להוות בעיה. כדי למנוע את זה, Lichess מונע משחקים שלא מופיעים להצטרף לטורנירים שוויצריים למשך זמן מסויים. היוצר של הטורניר יכול לבחור לאשר את הצטרפותם בכל זאת.</string>
   <string name="lateJoinQ">האם ניתן להצטרף באיחור?</string>
   <string name="lateJoinA">כן, עד אשר שוחקו יותר ממחצית הסבבים. לדוגמה, בטורניר של 11 סבבים ניתן להצטרף לפני שסיבוב 6 מתחיל ואם יש 12 סבבים ניתן להצטרף לפני שסיבוב 7 מתחיל. מצטרפים באיחור מקבלים חצי נקודה בלבד, אף אם החמיצו מספר סבבים.</string>
   <string name="willSwissReplaceArenasQ">האם טורנירים שוויצריים יחליפו את טורנירי הזירה?</string>
@@ -115,4 +129,7 @@
   <string name="predefinedUsers">אפשרו רק לשחקנים מוגדרים מראש להצטרף</string>
   <string name="forbiddedUsers">אם תמלא/י את הרשימה הזאת, משתמשים שלא יופיעו בה לא יורשו להצטרף. כתבו שם משתמש אחד בכל שורה.</string>
   <string name="playYourGames">שחקו את כל המשחקים שלכם</string>
+  <string name="byes">נקודות ״מתנה״</string>
+  <string name="absences">חיסורים</string>
+  <string name="tieBreak">שובר שוויון</string>
 </resources>

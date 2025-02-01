@@ -1,7 +1,5 @@
 package lila.chat
 
-import lila.hub.actorApi.shutup.PublicSource
-import lila.user.{ Me, User }
 import reactivemongo.api.bson.BSONDocumentHandler
 
 sealed trait AnyChat:
@@ -34,27 +32,27 @@ case class UserChat(
 
   def markDeleted(u: User) = copy(
     lines = lines.map: l =>
-      if l.userId is u.id then l.delete else l
+      if l.userId.is(u.id) then l.delete else l
   )
 
   def hasLinesOf(u: User) = lines.exists(_.userId == u.id)
 
   def add(line: UserLine) = copy(lines = lines :+ line)
 
-  def mapLines(f: UserLine => UserLine) = copy(lines = lines map f)
+  def mapLines(f: UserLine => UserLine) = copy(lines = lines.map(f))
 
-  def filterLines(f: UserLine => Boolean) = copy(lines = lines filter f)
+  def filterLines(f: UserLine => Boolean) = copy(lines = lines.filter(f))
 
   def flairUserIds = lines.collect:
     case l if l.flair => l.userId
 
-  def truncate(max: Int) = copy(lines = lines.drop((lines.size - max) atLeast 0))
+  def truncate(max: Int) = copy(lines = lines.drop((lines.size - max).atLeast(0)))
 
   def hasRecentLine(u: User): Boolean = lines.reverse.take(12).exists(_.userId == u.id)
 
 object UserChat:
   case class Mine(chat: UserChat, lines: JsonChatLines, timeout: Boolean, locked: Boolean = false):
-    def truncate(max: Int) = copy(chat = chat truncate max)
+    def truncate(max: Int) = copy(chat = chat.truncate(max))
 
 case class MixedChat(
     id: ChatId,
@@ -68,10 +66,9 @@ case class MixedChat(
     else
       copy(lines = lines.filter:
         case l: UserLine   => !l.troll
-        case _: PlayerLine => true
-      )
+        case _: PlayerLine => true)
 
-  def mapLines(f: Line => Line) = copy(lines = lines map f)
+  def mapLines(f: Line => Line) = copy(lines = lines.map(f))
 
   def flairUserIds = lines.collect:
     case l: UserLine if l.flair => l.userId
@@ -81,10 +78,12 @@ object Chat:
   opaque type ResourceId = String
   object ResourceId extends OpaqueString[ResourceId]
 
+  import lila.core.shutup.PublicSource
+
   case class Setup(id: ChatId, publicSource: PublicSource)
 
-  def tournamentSetup(tourId: TourId) = Setup(tourId into ChatId, PublicSource.Tournament(tourId))
-  def simulSetup(simulId: SimulId)    = Setup(simulId into ChatId, PublicSource.Simul(simulId))
+  def tournamentSetup(tourId: TourId) = Setup(tourId.into(ChatId), PublicSource.Tournament(tourId))
+  def simulSetup(simulId: SimulId)    = Setup(simulId.into(ChatId), PublicSource.Simul(simulId))
 
   // if restricted, only presets are available
   case class Restricted(chat: MixedChat, lines: JsonChatLines, restricted: Boolean)
@@ -107,10 +106,10 @@ object Chat:
 
   import BSONFields.*
   import reactivemongo.api.bson.BSONDocument
-  import Line.given
   import lila.db.dsl.given
 
   given BSONDocumentHandler[MixedChat] = new BSON[MixedChat]:
+    import lila.chat.Line.given
     def reads(r: BSON.Reader): MixedChat =
       MixedChat(
         id = r.get[ChatId](id),

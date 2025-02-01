@@ -1,11 +1,11 @@
-import { MaybeVNode } from 'common/snabbdom';
+import type { MaybeVNode } from 'common/snabbdom';
 import { h } from 'snabbdom';
-import LobbyController from '../../../ctrl';
+import type LobbyController from '../../../ctrl';
 import { speeds, variants } from '../../../options';
 
 export const ratingView = (ctrl: LobbyController): MaybeVNode => {
   const { opts, data } = ctrl;
-  if (lichess.blindMode || !data.ratingMap) return null;
+  if (site.blindMode || !data.ratingMap) return null;
 
   const selectedPerf = ctrl.setupCtrl.selectedPerf();
 
@@ -16,11 +16,10 @@ export const ratingView = (ctrl: LobbyController): MaybeVNode => {
     const perfIconAttrs = { attrs: { 'data-icon': perfOrSpeed.icon } };
     return h(
       'div.ratings',
-      opts.hideRatings
+      !opts.showRatings
         ? [h('i', perfIconAttrs), perfOrSpeed.name]
         : [
-            ...ctrl.trans.vdom(
-              'perfRatingX',
+            ...i18n.site.perfRatingX.asArray(
               h(
                 'strong',
                 perfIconAttrs,

@@ -53,6 +53,8 @@
   <string name="allSyncMembersRemainOnTheSamePosition">Krejt anëtarët SYNC mbesin në të njëjtin pozicion</string>
   <string name="shareChanges">Ndani ndryshimet me shikuesit dhe ruajini ato në shërbyes</string>
   <string name="playing">Po luhet</string>
+  <string name="showResults">Përfundime</string>
+  <string name="showEvalBar">Shtylla vlerësimi</string>
   <string name="first">E para</string>
   <string name="previous">E mëparshmja</string>
   <string name="next">Pasuesja</string>
@@ -63,7 +65,6 @@
   <string name="downloadAllGames">Shkarkoji krejt lojërat</string>
   <string name="chapterPgn">PGN e kapitullit</string>
   <string name="copyChapterPgn">Kopjo PGN</string>
-  <string name="copyChapterPgnDescription">Kopjo në të papastër PGN kapitulli.</string>
   <string name="downloadGame">Shkarko lojën</string>
   <string name="studyUrl">URL Mësimi</string>
   <string name="currentChapterUrl">URL e Kapitullit Aktual</string>
@@ -167,4 +168,5 @@
   <string name="playAgain">Riluaje</string>
   <string name="whatWouldYouPlay">Ç’lëvizje do të bënit në këtë pozicion?</string>
   <string name="youCompletedThisLesson">Përgëzime! E mbaruat këtë mësim.</string>
+  <string name="perPage">%s për faqe</string>
 </resources>

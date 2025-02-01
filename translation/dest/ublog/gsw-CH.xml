@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="communityBlogs">Gemeinschaftlichi Tagebüecher</string>
+  <string name="friendBlogs">Tagebüecher vu Fründe</string>
+  <string name="likedBlogs">Bevorzugti Tagebuech Biträg</string>
+  <string name="blogTopics">Tagebuech Theme</string>
+  <plurals name="blogPosts">
+    <item quantity="one">%s Tagebuech-Bitrag</item>
+    <item quantity="other">%s Tagebuech-Biträg</item>
+  </plurals>
+  <string name="lichessOfficialBlog">Offiziells Lichess Tagebuech</string>
+  <string name="continueReadingPost">De Bitrag witer läse</string>
+  <string name="lichessBlogPostsFromXYear">Lichess Tagebuech-Biträg in %s</string>
+  <string name="previousBlogPosts">Vorherigi Tagebuech-Biträg</string>
   <string name="xBlog">%s\'s Blog</string>
   <string name="newPost">Neue Bitrag</string>
-  <string name="editYourBlogPost">Bearbeit din Blog Bitrag</string>
+  <string name="editYourBlogPost">Bearbeit din Tagebuech-Bitrag</string>
   <string name="saveDraft">Entwurf schpeichere</string>
   <string name="postTitle">Bitrag Titel</string>
   <string name="postIntro">Bitrag Iileitig</string>
@@ -11,11 +23,13 @@
   <string name="published">Veröffentlicht</string>
   <string name="createBlogDiscussion">Kommentär erlaube</string>
   <string name="createBlogDiscussionHelp">Es Forum - Thema erschtelle, für Lüt wo din Bitrag wänd kommentiere</string>
-  <string name="publishOnYourBlog">Veröffentlich i dim Blog</string>
-  <string name="publishHelp">Isch er aktiviert, wird de Bitrag i dim Blog ufgelischtet. Wänn nöd, wird er i dine Entwürf, privat blibe</string>
+  <string name="publishOnYourBlog">Machs im Tagebuech öffentlich</string>
+  <string name="publishHelp">Isch er aktiviert, wird de Bitrag i dim Tagebuech zeigt. Wänn nöd, wird er i dine Entwürf, privat blibe</string>
+  <string name="stickyPost" comment="Label for the toggle that can make this blog post sticky.">Post-Chläber</string>
+  <string name="stickyPostHelp">Wänn das aktiviert isch, chunnt de Post im Profil als Erschte vu de neuschte Biträg.</string>
   <plurals name="publishedNbBlogPosts">
-    <item quantity="one">Hät en Blog Bitrag veröffentlicht</item>
-    <item quantity="other">Hät %s Blog Biträg veröffentlicht</item>
+    <item quantity="one">Hät en Tagebuech-Bitrag veröffentlicht</item>
+    <item quantity="other">Hät %s Tagebuech-Biträg veröffentlicht</item>
   </plurals>
   <plurals name="nbViews">
     <item quantity="one">1 Mal gseh</item>
@@ -24,10 +38,10 @@
   <string name="xPublishedY">%1$s hät %2$s veröffentlicht</string>
   <string name="thisPostIsPublished">De Bitrag isch veröffentlicht worde</string>
   <string name="thisIsADraft">Das isch en Entwurf</string>
-  <string name="moreBlogPostsBy">Meh Blog Biträg vu %s</string>
-  <string name="noPostsInThisBlogYet">No kei Biträg i dem Blog.</string>
+  <string name="moreBlogPostsBy">Meh Tagebuech-Biträg vu %s</string>
+  <string name="noPostsInThisBlogYet">No kei Biträg i dem Tagebuech.</string>
   <string name="noDrafts">Kei Entwürf zum zeige.</string>
-  <string name="latestBlogPosts">Neuschti Blog Biträg</string>
+  <string name="latestBlogPosts">Neuschti Tagebuech-Biträg</string>
   <plurals name="viewAllNbPosts">
     <item quantity="one">Ein Post zeige</item>
     <item quantity="other">Zeig all %s Biträg</item>
@@ -35,13 +49,13 @@
   <string name="uploadAnImageForYourPost">Lad für din Bitrag es Bild ufe</string>
   <string name="imageAlt">Alternative Bildtegscht</string>
   <string name="imageCredit">Bild Herkunft</string>
-  <string name="deleteBlog">Lösch de Blog-Post definitiv</string>
-  <string name="deleteImage">Lösch s\'Bild</string>
+  <string name="deleteBlog">Lösch de Tagebuech-Post definitiv</string>
   <string name="safeToUseImages">Es isch sicher, Bilder vu folgende Website z\'verwände: </string>
   <string name="selectPostTopics">Wähl d\'Theme vu dim Post us</string>
   <string name="useImagesYouMadeYourself">Du chasch auch sälber g\'machti- oder knipsti Bilder verwände oder Screenshots vu Lichess... eifach alles, was nöd vu öpper anderem urheberrächtlich gschützt isch.</string>
   <string name="safeAndRespectfulContent">Bitte nur sicheri und reschpäktvolli Inhält poschte. Kopier nöd Inhält vu öpper anderem.</string>
   <string name="inappropriateContentAccountClosed">Irgendwelchi unagmässeni Inhält, chönd zur Schlüssig vu dim Konto fühere.</string>
-  <string name="blogTips">Euseri simple Ratschläg, zum tolli Biträg poschte</string>
-  <string name="discussThisBlogPostInTheForum" comment="A button at the bottom of blog posts which will take you to the forum discussion for that post.">Diskutier de Blogbitrag im Forum</string>
+  <string name="blogTips">Eusi simple Tips, zum tolli Tagebuech-Biträg poschte</string>
+  <string name="discussThisBlogPostInTheForum">Diskutier de Tagebuech-Bitrag im Forum</string>
+  <string name="youBlockedByBlogAuthor">De Autor - vu dem Tagebuech - hät dich blockiert.</string>
 </resources>

@@ -1,23 +1,24 @@
 .cmn-toggle {
   @extend %double-tap;
   position: absolute;
-  margin-#{$start-direction}: -99999px;
+  margin-inline-start: -99999px;
   .force-ltr & {
     margin-left: -99999px;
   }
 }
 
 .cmn-toggle + label {
+  @include prevent-select;
   display: block;
   position: relative;
   cursor: pointer;
   outline: none;
-  user-select: none;
   padding: 1px;
   width: 40px;
   height: 24px;
   border: 1px solid $c-border;
   border-radius: 24px;
+  background-clip: padding-box;
 
   &::before,
   &::after {
@@ -27,7 +28,7 @@
     width: 22px;
     height: 22px;
     bottom: 0;
-    #{$start-direction}: 0;
+    @include inline-start(0);
   }
 
   &::before {
@@ -39,10 +40,9 @@
   }
 
   &::after {
-    @if $theme == 'transp' {
-      background: linear-gradient(to bottom, hsl($c-site-hue, 7%, 22), hsl($c-site-hue, 5%, 19) 100%);
-    } @else {
-      @extend %metal;
+    @extend %metal;
+    @include if-transp {
+      background: linear-gradient(to bottom, hsl($site-hue, 7%, 22), hsl($site-hue, 5%, 19) 100%);
     }
 
     border-radius: 100%;
@@ -52,14 +52,33 @@
 
 .cmn-toggle:not(:checked) + label {
   background-color: $c-bad;
+
+  &::before {
+    content: $licon-X;
+    color: $c-bad;
+  }
 }
 
 .cmn-toggle--subtle:not(:checked) + label {
   background-color: $c-font-dimmer;
+
+  &::before {
+    color: $c-font-dimmer;
+  }
 }
 
 .cmn-toggle:checked + label {
   background-color: $c-good;
+
+  &::before,
+  &::after {
+    margin-inline-start: 16px;
+  }
+
+  &::before {
+    content: $licon-Checkmark;
+    color: $c-good;
+  }
 }
 
 .cmn-toggle:disabled + label {
@@ -67,7 +86,7 @@
   cursor: not-allowed !important;
 }
 
-.cmn-toggle:focus:not(:disabled) + label {
+.cmn-toggle:focus-visible:not(:disabled) + label {
   @extend %focus-shadow;
 }
 
@@ -83,37 +102,11 @@
     }
 
     &::after {
-      @if $theme == 'transp' {
-        background: linear-gradient(to bottom, hsl($c-site-hue, 7%, 25), hsl($c-site-hue, 5%, 22) 100%);
-      } @else {
-        @extend %metal;
+      @extend %metal;
+      @include if-transp {
+        background: linear-gradient(to bottom, hsl($site-hue, 7%, 22), hsl($site-hue, 5%, 19) 100%);
       }
       @include transition(margin);
     }
-  }
-}
-
-.cmn-toggle:not(:checked) + label {
-  &::before {
-    content: $licon-X;
-    color: $c-bad;
-  }
-}
-
-.cmn-toggle--subtle:not(:checked) + label {
-  &::before {
-    color: $c-font-dimmer;
-  }
-}
-
-.cmn-toggle:checked + label {
-  &::before,
-  &::after {
-    margin-#{$start-direction}: 16px;
-  }
-
-  &::before {
-    content: $licon-Checkmark;
-    color: $c-good;
   }
 }

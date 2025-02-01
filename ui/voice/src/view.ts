@@ -1,24 +1,23 @@
-import { h } from 'snabbdom';
 import * as licon from 'common/licon';
-import { onInsert, bind } from 'common/snabbdom';
+import { onInsert, bind, looseH as h, type VNode } from 'common/snabbdom';
+import { jsonSimple } from 'common/xhr';
 import { snabDialog, type Dialog } from 'common/dialog';
-import * as xhr from 'common/xhr';
-import { onClickAway } from 'common';
-import { Entry, VoiceCtrl } from './interfaces';
-import { supportedLangs } from './main';
+import { onClickAway, $as } from 'common';
+import type { Entry, VoiceCtrl, MsgType } from './interfaces';
+import { supportedLangs } from './voice';
 
-export function renderVoiceBar(ctrl: VoiceCtrl, redraw: () => void, cls?: string) {
+export function renderVoiceBar(ctrl: VoiceCtrl, redraw: () => void, cls?: string): VNode {
   return h(`div#voice-bar${cls ? '.' + cls : ''}`, [
     h('div#voice-status-row', [
       h('button#microphone-button', {
         hook: onInsert(el => el.addEventListener('click', () => ctrl.toggle())),
       }),
       h('span#voice-status', {
-        hook: onInsert(el => lichess.mic.setController(voiceBarUpdater(ctrl, el))),
+        hook: onInsert(el => ctrl.mic.setController(voiceBarUpdater(ctrl, el))),
       }),
       h('button#voice-help-button', {
         attrs: { 'data-icon': licon.InfoCircle, title: 'Voice help' },
-        hook: bind('click', () => ctrl.showHelp(true)),
+        hook: bind('click', () => ctrl.showHelp(true), undefined, false),
       }),
       h('button#voice-settings-button', {
         attrs: { 'data-icon': licon.Gear, title: 'Voice settings' },
@@ -26,28 +25,30 @@ export function renderVoiceBar(ctrl: VoiceCtrl, redraw: () => void, cls?: string
         hook: bind('click', () => ctrl.showPrefs.toggle(), redraw, false),
       }),
     ]),
-    ctrl.showPrefs()
-      ? h('div#voice-settings', { hook: onInsert(onClickAway(() => ctrl.showPrefs(false))) }, [
-          deviceSelector(ctrl, redraw),
-          langSetting(ctrl),
-          ...(ctrl.module()?.prefNodes(redraw) ?? []),
-          pushTalkSetting(ctrl),
-        ])
-      : null,
-    ctrl.showHelp() ? renderHelpModal(ctrl) : null,
+    ctrl.showPrefs() &&
+      h('div#voice-settings', { hook: onInsert(onClickAway(() => ctrl.showPrefs(false))) }, [
+        deviceSelector(ctrl, redraw),
+        langSetting(ctrl),
+        ...(ctrl.module()?.prefNodes(redraw) ?? []),
+        pushTalkSetting(ctrl),
+      ]),
+    ctrl.showHelp() && renderHelpModal(ctrl),
   ]);
+}
+
+export function flash(): void {
+  const div = $as<HTMLElement>('#voice-status-row');
+  div.classList.add('flash');
+  div.onanimationend = () => div.classList.remove('flash');
 }
 
 function voiceBarUpdater(ctrl: VoiceCtrl, el: HTMLElement) {
   const voiceBtn = $('button#microphone-button');
-
-  return (txt: string, tpe: Voice.MsgType) => {
-    const classes: [string, boolean][] = [];
-    classes.push(['listening', lichess.mic.isListening]);
-    classes.push(['busy', lichess.mic.isBusy]);
-    classes.push(['push-to-talk', ctrl.pushTalk() && !lichess.mic.isListening && !lichess.mic.isBusy]);
-    classes.map(([clz, has]) => (has ? voiceBtn.addClass(clz) : voiceBtn.removeClass(clz)));
-    voiceBtn.attr('data-icon', lichess.mic.isBusy ? licon.Cancel : licon.Voice);
+  return (txt: string, tpe: MsgType) => {
+    voiceBtn.toggleClass('listening', ctrl.mic.isListening);
+    voiceBtn.toggleClass('busy', ctrl.mic.isBusy);
+    voiceBtn.toggleClass('push-to-talk', ctrl.pushTalk() && !ctrl.mic.isListening && !ctrl.mic.isBusy);
+    voiceBtn.attr('data-icon', ctrl.mic.isBusy ? licon.Cancel : licon.Voice);
 
     if (tpe !== 'partial') el.innerText = txt;
   };
@@ -67,29 +68,28 @@ function pushTalkSetting(ctrl: VoiceCtrl) {
 }
 
 function langSetting(ctrl: VoiceCtrl) {
-  return supportedLangs.length < 2
-    ? null
-    : h('div.voice-setting', [
-        h('label', { attrs: { for: 'voice-lang' } }, 'Language'),
-        h(
-          'select#voice-lang',
-          {
-            attrs: { name: 'lang' },
-            hook: bind('change', e => ctrl.lang((e.target as HTMLSelectElement).value)),
-          },
-          [
-            ...supportedLangs.map(l =>
-              h(
-                'option',
-                {
-                  attrs: l[0] === ctrl.lang() ? { value: l[0], selected: '' } : { value: l[0] },
-                },
-                l[1],
-              ),
+  return (
+    supportedLangs.length > 1 &&
+    h('div.voice-setting', [
+      h('label', { attrs: { for: 'voice-lang' } }, 'Language'),
+      h(
+        'select#voice-lang',
+        {
+          attrs: { name: 'lang' },
+          hook: bind('change', e => ctrl.lang((e.target as HTMLSelectElement).value)),
+        },
+        [
+          ...supportedLangs.map(l =>
+            h(
+              'option',
+              { attrs: l[0] === ctrl.lang() ? { value: l[0], selected: '' } : { value: l[0] } },
+              l[1],
             ),
-          ],
-        ),
-      ]);
+          ),
+        ],
+      ),
+    ])
+  );
 }
 
 const nullMic: MediaDeviceInfo = {
@@ -109,11 +109,10 @@ function deviceSelector(ctrl: VoiceCtrl, redraw: () => void) {
       {
         hook: onInsert((el: HTMLSelectElement) => {
           el.addEventListener('change', () => ctrl.micId(el.value));
-          if (devices === undefined)
-            lichess.mic.getMics().then(ds => {
-              devices = ds.length ? ds : [nullMic];
-              redraw();
-            });
+          ctrl.mic.getMics().then(ds => {
+            devices = ds.length ? ds : [nullMic];
+            redraw();
+          });
         }),
       },
       devices.map(d =>
@@ -151,14 +150,15 @@ function renderHelpModal(ctrl: VoiceCtrl) {
     }
     html += '</tbody></table>';
     dlg.view.innerHTML = html;
-    if (!dlg.open) dlg.showModal();
+    if (!dlg.open) dlg.show();
   };
 
   return snabDialog({
     class: 'help.voice-move-help',
     htmlUrl: `/help/voice/${ctrl.moduleId}`,
-    cssPath: 'voiceMove.help',
+    css: [{ hashed: 'voice.move.help' }],
     onClose: () => ctrl.showHelp(false),
+    modal: true,
     onInsert: async dlg => {
       if (ctrl.showHelp() === 'list') {
         showMoveList(dlg);
@@ -167,7 +167,7 @@ function renderHelpModal(ctrl: VoiceCtrl) {
       const grammar =
         ctrl.moduleId === 'coords'
           ? []
-          : await xhr.jsonSimple(lichess.asset.url(`compiled/grammar/${ctrl.moduleId}-${ctrl.lang()}.json`));
+          : await jsonSimple(site.asset.url(`compiled/grammar/${ctrl.moduleId}-${ctrl.lang()}.json`));
 
       const valToWord = (val: string, phonetic: boolean) =>
         grammar.entries.find(
@@ -182,7 +182,7 @@ function renderHelpModal(ctrl: VoiceCtrl) {
           .join(' ');
       });
       $('.all-phrases-button', dlg.view).on('click', () => showMoveList(dlg));
-      dlg.showModal();
+      dlg.show();
     },
   });
 }

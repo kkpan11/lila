@@ -3,19 +3,70 @@
 @import 'title';
 @import 'buttons';
 
-#top {
+body > header {
+  @include prevent-select;
   height: $site-header-height;
   display: flex;
   justify-content: space-between;
   position: relative;
-  z-index: z('site-header');
+  z-index: $z-site-header-106;
   max-width: 1800px;
   margin: 0 auto;
-  user-select: none;
-  --dropdown-top: 40px;
 
-  @include breakpoint($mq-site-header-tall) {
-    --dropdown-top: 60px;
+  @include mq-sticky-header {
+    max-width: unset;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 0 var(---site-header-sticky-padding);
+    border-bottom: 1px solid transparent;
+    transition:
+      transform $transition-duration ease-in-out,
+      border-color $transition-duration ease-in-out;
+
+    &.scrolled {
+      background-image: linear-gradient(to bottom, $c-body-gradient, $m-body-gradient_bg-page--mix-50 60px);
+      border-color: black;
+      @include if-light {
+        border-color: hsl(0, 0%, 70%);
+      }
+    }
+
+    @include if-transp {
+      @include back-blur(6px);
+      border: none;
+      background: hsla(0, 0, 60%, 0.14);
+    }
+
+    .dropdown {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transition:
+        opacity $transition-duration,
+        visibility 0s linear 0s;
+    }
+
+    &.hide {
+      transform: translateY(-100%);
+
+      #topnav,
+      .dropdown {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition:
+          opacity $transition-duration,
+          visibility 0s linear $transition-duration;
+      }
+    }
+  }
+}
+
+body.zen {
+  @include topnav-unsticky;
+  header::before {
+    display: none;
   }
 }
 
@@ -27,7 +78,10 @@
     font-size: 1.3em;
     color: $c-brag;
     @include margin-direction(0, 0, 0.08ch, 0.3ch);
-    transform: scaleX(-1 * $transform-direction);
+    transform: scaleX(-1);
+    @include if-rtl {
+      transform: none;
+    }
   }
 }
 
@@ -38,10 +92,10 @@
   &__donate {
     @extend %flex-center;
     color: $c-brag;
-    margin-left: 1rem;
+    margin: 0 1rem;
     text-transform: uppercase;
     line-height: $site-header-height;
-    @include breakpoint($mq-not-xx-small) {
+    @media (max-width: at-most($xx-small)) {
       display: none;
     }
   }

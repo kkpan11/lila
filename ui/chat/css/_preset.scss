@@ -1,11 +1,11 @@
 .mchat {
   &__presets {
+    @include prevent-select;
     display: flex;
     flex: 0 0 auto;
     align-items: center;
     flex-flow: row nowrap;
     line-height: 1.4em;
-    user-select: none;
 
     span {
       flex: 1 1 auto;
@@ -21,14 +21,14 @@
       @include transition;
 
       &.disabled {
-        background: mix($c-accent, $c-bg-box, 15%);
+        background: $m-accent_bg--mix-15;
         color: transparent;
         cursor: default;
       }
 
       &:not(.disabled):hover {
         background: $c-accent;
-        color: $c-accent-over;
+        color: $c-over;
         opacity: 1;
       }
     }

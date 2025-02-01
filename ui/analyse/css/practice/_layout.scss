@@ -1,7 +1,7 @@
 .analyse {
   .practice__side {
     grid-area: side;
-    margin-top: $block-gap;
+    margin-top: $analyse-block-gap;
   }
 
   &__acpl {
@@ -9,15 +9,27 @@
   }
 
   grid-template-rows: auto;
-  grid-template-areas: 'board' 'controls' 'under' 'tools' 'side';
+  grid-template-areas:
+    'board'
+    'controls'
+    'kb-move'
+    'under'
+    'tools'
+    'side';
 
-  @include breakpoint($mq-col2) {
-    grid-template-areas: 'board gauge tools' 'under .     controls' 'side  .     .';
+  @include mq-at-least-col2 {
+    grid-template-areas:
+      'board    gauge   tools'
+      'under    .       controls'
+      'side     .       kb-move';
   }
 
-  @include breakpoint($mq-col3) {
+  @include mq-at-least-col3 {
     grid-template-rows: fit-content(0);
-    grid-template-areas: 'side    . board gauge tools' '.       . under .     controls';
+    grid-template-areas:
+      'side    . board    gauge tools'
+      '.       . under    .     controls'
+      '.       . kb-move  .     controls';
 
     .practice__side {
       margin-top: 0;

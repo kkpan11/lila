@@ -1,7 +1,6 @@
 {
   "extends": "../tsconfig.base.json",
-  "compilerOptions": { "noEmit": true },
-  "isolatedModules": true,
+  "compilerOptions": { "emitDeclarationOnly": true },
   "references": [
     { "path": "../chat/tsconfig.json" },
     { "path": "../chess/tsconfig.json" },

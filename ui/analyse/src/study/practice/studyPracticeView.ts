@@ -1,36 +1,25 @@
 import * as licon from 'common/licon';
-import { bind, bindNonPassive, MaybeVNodes } from 'common/snabbdom';
+import { bind, bindNonPassive, type MaybeVNodes } from 'common/snabbdom';
 import { spinnerVdom as spinner } from 'common/spinner';
-import { h, thunk, VNode } from 'snabbdom';
+import { h, thunk, type VNode } from 'snabbdom';
 import { toggle } from 'common/controls';
 import { richHTML } from 'common/richText';
 import { option, plural } from '../../view/util';
 import { view as descView } from '../description';
-import { StudyPracticeCtrl, StudyPracticeData } from './interfaces';
-import StudyCtrl from '../studyCtrl';
+import type { StudyPracticeData } from './interfaces';
+import type StudyCtrl from '../studyCtrl';
+import type StudyPracticeCtrl from './studyPracticeCtrl';
 
 const selector = (data: StudyPracticeData) =>
   h(
     'select.selector',
-    {
-      hook: bind('change', e => {
-        location.href = '/practice/' + (e.target as HTMLInputElement).value;
-      }),
-    },
+    { hook: bind('change', e => (location.href = '/practice/' + (e.target as HTMLInputElement).value)) },
     [
-      h(
-        'option',
-        {
-          attrs: { disabled: true, selected: true },
-        },
-        'Practice list',
-      ),
+      h('option', { attrs: { disabled: true, selected: true } }, 'Practice list'),
       ...data.structure.map(section =>
         h(
           'optgroup',
-          {
-            attrs: { label: section.name },
-          },
+          { attrs: { label: section.name } },
           section.studies.map(study =>
             option(section.id + '/' + study.slug + '/' + study.id, '', study.name),
           ),
@@ -73,24 +62,17 @@ export function underboard(ctrl: StudyCtrl): MaybeVNodes {
         h(
           'a.feedback.win',
           ctrl.nextChapter()
-            ? {
-                hook: bind('click', ctrl.goToNextChapter),
-              }
-            : {
-                attrs: { href: '/practice' },
-              },
+            ? { hook: bind('click', ctrl.goToNextChapter) }
+            : { attrs: { href: '/practice' } },
           [h('span', 'Success!'), ctrl.nextChapter() ? 'Go to next exercise' : 'Back to practice menu'],
         ),
       ];
     case false:
       return [
-        h(
-          'a.feedback.fail',
-          {
-            hook: bind('click', p.reset, ctrl.redraw),
-          },
-          [h('span', [renderGoal(p, p.goal().moves!)]), h('strong', 'Click to retry')],
-        ),
+        h('a.feedback.fail', { hook: bind('click', p.reset, ctrl.redraw) }, [
+          h('span', [renderGoal(p, p.goal().moves!)]),
+          h('strong', 'Click to retry'),
+        ]),
       ];
     default:
       return [
@@ -105,7 +87,6 @@ export function underboard(ctrl: StudyCtrl): MaybeVNodes {
             checked: p.autoNext(),
             change: p.autoNext,
           },
-          ctrl.trans,
           ctrl.redraw,
         ),
       ];
@@ -127,14 +108,14 @@ export function side(ctrl: StudyCtrl): VNode {
         hook: bindNonPassive('click', e => {
           e.preventDefault();
           const target = e.target as HTMLElement,
-            id = (target.parentNode as HTMLElement).getAttribute('data-id') || target.getAttribute('data-id');
+            id = (target.parentNode as HTMLElement).dataset['id'] || target.dataset['id'];
           if (id) ctrl.setChapter(id, true);
           return false;
         }),
       },
-      ctrl.chapters
-        .list()
-        .map(function (chapter) {
+      ctrl.chapters.list
+        .all()
+        .map(chapter => {
           const loading = ctrl.vm.loading && chapter.id === ctrl.vm.nextChapterId,
             active = !ctrl.vm.loading && current && current.id === chapter.id,
             completion = data.completion[chapter.id] >= 0 ? 'done' : 'ongoing';
@@ -143,10 +124,7 @@ export function side(ctrl: StudyCtrl): VNode {
               'a.ps__chapter',
               {
                 key: chapter.id,
-                attrs: {
-                  href: data.url + '/' + chapter.id,
-                  'data-id': chapter.id,
-                },
+                attrs: { href: data.url + '/' + chapter.id, 'data-id': chapter.id },
                 class: { active, loading },
               },
               [
@@ -164,13 +142,7 @@ export function side(ctrl: StudyCtrl): VNode {
         .reduce((a, b) => a.concat(b), []),
     ),
     h('div.finally', [
-      h('a.back', {
-        attrs: {
-          'data-icon': licon.LessThan,
-          href: '/practice',
-          title: 'More practice',
-        },
-      }),
+      h('a.back', { attrs: { 'data-icon': licon.LessThan, href: '/practice', title: 'More practice' } }),
       thunk('select.selector', selector, [data]),
     ]),
   ]);

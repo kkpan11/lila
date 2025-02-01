@@ -3,13 +3,9 @@
   "version": "2.0.0",
   "private": true,
   "description": "lichess.org common utils",
-  "module": "common.js",
-  "type": "module",
+  "author": "Thibault Duplessis",
+  "license": "AGPL-3.0-or-later",
   "typings": "common",
-  "exports": {
-    ".": "./dist/common.js",
-    "./*": "./dist/*.js"
-  },
   "typesVersions": {
     "*": {
       "*": [
@@ -17,27 +13,20 @@
       ]
     }
   },
-  "keywords": [
-    "chess",
-    "lichess"
-  ],
-  "author": "Thibault Duplessis",
-  "license": "AGPL-3.0-or-later",
+  "exports": {
+    ".": "./src/common.ts",
+    "./*": "./src/*.ts"
+  },
   "dependencies": {
-    "dialog-polyfill": "0.5.6",
-    "lichess-pgn-viewer": "^2.0.1",
-    "snabbdom": "^3.5.1",
+    "@types/debounce-promise": "^3.1.9",
+    "debounce-promise": "^3.1.2",
+    "lichess-pgn-viewer": "^2.3.0",
     "tablesort": "^5.3.0"
   },
-  "scripts": {
-    "compile": "tsc",
-    "dev": "tsc",
-    "prod": "tsc"
-  },
-  "lichess": {
-    "copy": {
-      "src": "node_modules/dialog-polyfill/dist/dialog-polyfill.esm.js",
-      "dest": "../../public/npm"
+  "build": {
+    "hash": {
+      "glob": "/public/font/*.woff2",
+      "update": "css/theme/font-face.css"
     }
   }
 }

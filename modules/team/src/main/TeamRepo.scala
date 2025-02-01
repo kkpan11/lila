@@ -1,12 +1,13 @@
 package lila.team
 
-import reactivemongo.akkastream.cursorProducer
+import reactivemongo.akkastream.{ AkkaStreamCursor, cursorProducer }
 import reactivemongo.api.*
 import reactivemongo.api.bson.*
+
 import java.time.Period
 
+import lila.core.team.{ Access, LightTeam, TeamData }
 import lila.db.dsl.{ *, given }
-import lila.hub.LightTeam
 
 final class TeamRepo(val coll: Coll)(using Executor):
 
@@ -40,7 +41,7 @@ final class TeamRepo(val coll: Coll)(using Executor):
   private[team] def countCreatedSince(userId: UserId, duration: Period): Fu[Int] =
     coll.countSel:
       $doc(
-        "createdAt" $gt nowInstant.minus(duration),
+        "createdAt".$gt(nowInstant.minus(duration)),
         "createdBy" -> userId
       )
 
@@ -56,24 +57,33 @@ final class TeamRepo(val coll: Coll)(using Executor):
   def addRequest(teamId: TeamId, request: TeamRequest): Funit =
     coll.update
       .one(
-        $id(teamId) ++ $doc("requests.user" $ne request.user),
+        $id(teamId) ++ $doc("requests.user".$ne(request.user)),
         $push("requests" -> request.user)
       )
       .void
 
-  def cursor = coll.find(enabledSelect).cursor[Team](ReadPref.sec)
+  private[team] def cursor: AkkaStreamCursor[TeamData] =
+    coll.find(enabledSelect).cursor[TeamData]()
 
-  def forumAccess(id: TeamId): Fu[Option[Team.Access]] =
-    coll.secondaryPreferred.primitiveOne[Team.Access]($id(id), "forum")
+  private[team] def forumAccess(id: TeamId): Fu[Option[Access]] =
+    coll.secondaryPreferred.primitiveOne[Access]($id(id), "forum")
 
   def filterHideMembers(ids: Iterable[TeamId]): Fu[Set[TeamId]] =
-    ids.nonEmpty so coll.secondaryPreferred
-      .distinctEasy[TeamId, Set]("_id", $inIds(ids) ++ $doc("hideMembers" -> true))
+    ids.nonEmpty.so(
+      coll.secondaryPreferred
+        .distinctEasy[TeamId, Set]("_id", $inIds(ids) ++ $doc("hideMembers" -> true))
+    )
 
   def filterHideForum(ids: Iterable[TeamId]): Fu[Set[TeamId]] =
-    ids.nonEmpty so coll.secondaryPreferred
-      .distinctEasy[TeamId, Set]("_id", $inIds(ids) ++ $doc("forum" $ne Team.Access.EVERYONE))
+    ids.nonEmpty.so:
+      coll.secondaryPreferred
+        .distinctEasy[TeamId, Set]("_id", $inIds(ids) ++ $doc("forum".$ne(Access.Everyone)))
+
+  def onUserDelete(userId: UserId): Funit = for
+    _ <- coll.update.one($doc("createdBy" -> userId), $set("createdBy" -> UserId.ghost), multi = true)
+    _ <- coll.update.one($doc("leaders" -> userId), $pull("leaders" -> userId), multi = true)
+  yield ()
 
   private[team] val enabledSelect = $doc("enabled" -> true)
 
-  private[team] val sortPopular = $sort desc "nbMembers"
+  private[team] val sortPopular = $sort.desc("nbMembers")

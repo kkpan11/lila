@@ -1,10 +1,9 @@
 package lila.tournament
 
-import java.util.concurrent.ConcurrentHashMap
 import scala.collection.immutable.TreeSet
+import chess.IntRating
 
-import lila.game.Game
-import lila.user.User
+import lila.core.chess.Rank
 
 case class Duel(
     gameId: GameId,
@@ -26,7 +25,7 @@ object Duel:
     given UserIdOf[DuelPlayer] = _.name.id
 
   def tbUser(p: UsernameRating, ranking: Ranking) =
-    ranking get p._1.id map { rank =>
+    ranking.get(p._1.id).map { rank =>
       DuelPlayer(p._1, p._2, rank + 1)
     }
 
@@ -38,17 +37,17 @@ final private class DuelStore:
 
   import Duel.*
 
-  private val byTourId = new ConcurrentHashMap[TourId, TreeSet[Duel]](256)
+  private val byTourId = scalalib.ConcurrentMap[TourId, TreeSet[Duel]](256)
 
-  def get(tourId: TourId): Option[TreeSet[Duel]] = Option(byTourId get tourId)
+  export byTourId.get
 
   def bestRated(tourId: TourId, nb: Int): List[Duel] =
-    get(tourId) so {
-      lila.common.Heapsort.topNToList(_, nb)(using ratingOrdering)
+    get(tourId).so {
+      scalalib.HeapSort.topNToList(_, nb)(using ratingOrdering)
     }
 
   def find(tour: Tournament, user: User): Option[GameId] =
-    get(tour.id) flatMap { _.find(_ has user).map(_.gameId) }
+    get(tour.id).flatMap { _.find(_.has(user)).map(_.gameId) }
 
   def add(tour: Tournament, game: Game, p1: UsernameRating, p2: UsernameRating, ranking: Ranking): Unit =
     for
@@ -61,19 +60,13 @@ final private class DuelStore:
         averageRating = IntRating((p1.rating.value + p2.rating.value) / 2)
       )
     do
-      byTourId.compute(
-        tour.id,
-        (_: TourId, v: TreeSet[Duel]) =>
-          if v == null then TreeSet(tb)(gameIdOrdering)
-          else v + tb
-      )
+      byTourId.compute(tour.id):
+        _.fold(TreeSet(tb)(gameIdOrdering))(_ + tb).some
 
   def remove(game: Game): Unit =
     game.tournamentId.foreach: tourId =>
-      byTourId.computeIfPresent(
-        tourId,
-        (_: TourId, tb: TreeSet[Duel]) =>
-          val w = tb - emptyGameId(game.id)
-          if w.isEmpty then null else w
-      )
+      byTourId.computeIfPresent(tourId): tb =>
+        val w = tb - emptyGameId(game.id)
+        Option.when(w.nonEmpty)(w)
+
   def remove(tour: Tournament): Unit = byTourId.remove(tour.id)

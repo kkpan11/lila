@@ -1,6 +1,6 @@
-import { h, VNode } from 'snabbdom';
+import { h, type VNode } from 'snabbdom';
 import { bind } from 'common/snabbdom';
-import { Redraw } from './interfaces';
+import type { Redraw } from './interfaces';
 
 export interface PresetCtrl {
   group(): string | undefined;
@@ -72,16 +72,9 @@ export function presetView(ctrl: PresetCtrl): VNode | undefined {
           return h(
             'span',
             {
-              class: {
-                disabled,
-              },
-              attrs: {
-                title: p.text,
-                disabled,
-              },
-              hook: bind('click', () => {
-                !disabled && ctrl.post(p);
-              }),
+              class: { disabled },
+              attrs: { title: p.text, disabled },
+              hook: bind('click', () => !disabled && ctrl.post(p)),
             },
             p.key,
           );

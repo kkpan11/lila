@@ -1,8 +1,8 @@
-import { throttlePromiseDelay } from 'common/throttle';
+import { throttlePromiseDelay } from 'common/timing';
 import { json } from 'common/xhr';
 
 // when the simul no longer exists
-const onFail = () => lichess.reload();
+const onFail = () => site.reload();
 
 const post = (action: string) => (id: string) =>
   json(`/simul/${id}/${action}`, { method: 'post' }).catch(onFail);

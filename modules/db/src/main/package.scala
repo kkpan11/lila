@@ -2,9 +2,12 @@ package lila.db
 
 import reactivemongo.api.commands.WriteResult
 
-export lila.Lila.{ *, given }
+export lila.core.lilaism.Lilaism.{ *, given }
+export lila.common.extensions.*
 
-trait NoDbHandler[A] // don't create default BSON handlers for this type
+trait NoBSONWriter[A] // don't create default BSONWiter for this type
+trait NoBSONReader[A] // don't create default BSONReader for this type
+trait NoDbHandler[A] extends NoBSONWriter[A] with NoBSONReader[A]
 
 def recoverDuplicateKey[A](f: WriteResult => A): PartialFunction[Throwable, A] =
   case wr: WriteResult if isDuplicateKey(wr) => f(wr)

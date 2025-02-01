@@ -1,34 +1,27 @@
 package lila.timeline
 
-import akka.actor.*
 import com.softwaremill.macwire.*
-import lila.common.autoconfig.{ *, given }
 import play.api.Configuration
 
-import lila.common.config.*
-import lila.user.Me
+import lila.common.autoconfig.{ *, given }
+import lila.core.config.*
 
 @Module
 private class TimelineConfig(
     @ConfigName("collection.entry") val entryColl: CollName,
     @ConfigName("collection.unsub") val unsubColl: CollName,
-    @ConfigName("user.display_max") val userDisplayMax: Max,
-    @ConfigName("user.actor.name") val userActorName: String
+    @ConfigName("user.display_max") val userDisplayMax: Max
 )
 
 @Module
 final class Env(
     appConfig: Configuration,
     db: lila.db.Db,
-    userRepo: lila.user.UserRepo,
-    relationApi: lila.relation.RelationApi,
+    userApi: lila.core.user.UserApi,
+    relationApi: lila.core.relation.RelationApi,
     cacheApi: lila.memo.CacheApi,
-    memberRepo: lila.team.TeamMemberRepo,
-    teamCache: lila.team.Cached
-)(using
-    ec: Executor,
-    system: ActorSystem
-):
+    teamApi: lila.core.team.TeamApi
+)(using Executor):
 
   private val config = appConfig.get[TimelineConfig]("timeline")(AutoConfig.loader)
 
@@ -44,17 +37,18 @@ final class Env(
     unsubApi.get(channel, me)
 
   def status(channel: String)(using me: Me): Fu[Option[Boolean]] =
-    unsubApi.get(channel, me) flatMap {
+    unsubApi.get(channel, me).flatMap {
       if _ then fuccess(Some(true)) // unsubbed
       else
-        entryApi.channelUserIdRecentExists(channel, me) map {
+        entryApi.channelUserIdRecentExists(channel, me).map {
           if _ then Some(false) // subbed
           else None             // not applicable
         }
     }
 
-  system.actorOf(Props(wire[TimelinePush]), name = config.userActorName)
+  private val api = wire[TimelineApi]
 
-  lila.common.Bus.subscribeFun("shadowban") { case lila.hub.actorApi.mod.Shadowban(userId, true) =>
-    entryApi.removeRecentFollowsBy(userId)
-  }
+  lila.common.Bus.subscribeFun("shadowban"):
+    case lila.core.mod.Shadowban(userId, true) => entryApi.removeRecentFollowsBy(userId)
+
+  lila.common.Bus.sub[lila.core.timeline.Propagate](api(_))

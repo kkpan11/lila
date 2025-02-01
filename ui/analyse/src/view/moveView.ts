@@ -1,8 +1,7 @@
-import { h, VNode } from 'snabbdom';
-import { fixCrazySan } from 'chess';
+import { h, type VNode } from 'snabbdom';
+import { fixCrazySan, plyToTurn } from 'chess';
 import { defined } from 'common';
 import { view as cevalView, renderEval as normalizeEval } from 'ceval';
-import { plyToTurn } from '../util';
 
 export interface Ctx {
   withDots?: boolean;
@@ -11,13 +10,7 @@ export interface Ctx {
 }
 
 export const renderGlyph = (glyph: Tree.Glyph): VNode =>
-  h(
-    'glyph',
-    {
-      attrs: { title: glyph.name },
-    },
-    glyph.symbol,
-  );
+  h('glyph', { attrs: { title: glyph.name } }, glyph.symbol);
 
 const renderEval = (e: string): VNode => h('eval', e.replace('-', '−'));
 

@@ -1,6 +1,6 @@
 import { h } from 'snabbdom';
-import Ctrl from './ctrl';
-import { Dimension } from './interfaces';
+import type Ctrl from './ctrl';
+import type { Dimension } from './interfaces';
 
 const select = (ctrl: Ctrl) => (dimension: Dimension) => {
   if (dimension.key === 'date') return;
@@ -32,12 +32,7 @@ const select = (ctrl: Ctrl) => (dimension: Dimension) => {
     dimension.values.map(value =>
       h(
         'option',
-        {
-          attrs: {
-            value: value.key,
-            selected: ctrl.vm.filters[dimension.key]?.includes(value.key),
-          },
-        },
+        { attrs: { value: value.key, selected: ctrl.vm.filters[dimension.key]?.includes(value.key) } },
         value.name,
       ),
     ),

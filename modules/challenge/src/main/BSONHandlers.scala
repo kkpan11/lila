@@ -2,8 +2,8 @@ package lila.challenge
 
 import chess.variant.Variant
 import reactivemongo.api.bson.*
+import scalalib.model.Days
 
-import lila.common.Days
 import lila.db.BSON
 import lila.db.BSON.{ Reader, Writer }
 import lila.db.dsl.{ *, given }
@@ -13,26 +13,23 @@ private object BSONHandlers:
   import Challenge.*
   import lila.game.BSONHandlers.given
 
-  given BSONHandler[ColorChoice] = BSONIntegerHandler.as[ColorChoice](
-    {
-      case 1 => ColorChoice.White
-      case 2 => ColorChoice.Black
-      case _ => ColorChoice.Random
-    },
-    {
-      case ColorChoice.White  => 1
-      case ColorChoice.Black  => 2
-      case ColorChoice.Random => 0
-    }
-  )
+  given BSONHandler[ColorChoice] =
+    val map = Map(
+      0 -> ColorChoice.Random,
+      1 -> ColorChoice.White,
+      2 -> ColorChoice.Black
+    )
+    valueMapHandler[Int, ColorChoice](map)(i => map.find(_._2 == i).so(_._1))
+
   given BSON[TimeControl] with
     import chess.Clock
     def reads(r: Reader) =
-      (r.getO[Clock.LimitSeconds]("l"), r.getO[Clock.IncrementSeconds]("i")) mapN { (limit, inc) =>
-        TimeControl.Clock(chess.Clock.Config(limit, inc))
-      } orElse {
-        r.getO[Days]("d") map TimeControl.Correspondence.apply
-      } getOrElse TimeControl.Unlimited
+      (r.getO[Clock.LimitSeconds]("l"), r.getO[Clock.IncrementSeconds]("i"))
+        .mapN: (limit, inc) =>
+          TimeControl.Clock(chess.Clock.Config(limit, inc))
+        .orElse:
+          r.getO[Days]("d").map(TimeControl.Correspondence.apply)
+        .getOrElse(TimeControl.Unlimited)
     def writes(w: Writer, t: TimeControl) =
       t match
         case TimeControl.Clock(chess.Clock.Config(l, i)) => $doc("l" -> l, "i" -> i)
@@ -62,8 +59,8 @@ private object BSONHandlers:
 
   given BSON[Challenger] with
     def reads(r: Reader) =
-      if r contains "id" then registeredHandler reads r
-      else if r contains "s" then anonHandler reads r
+      if r contains "id" then registeredHandler.reads(r)
+      else if r contains "s" then anonHandler.reads(r)
       else Challenger.Open
     def writes(w: Writer, c: Challenger) =
       c match

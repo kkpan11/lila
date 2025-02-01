@@ -1,19 +1,20 @@
 package lila.swiss
 
-import chess.{ Black, Color, White, ByColor }
+import chess.ByColor
+import monocle.syntax.all.*
 
 import lila.db.dsl.{ *, given }
-import lila.game.Game
 
 final private class SwissDirector(
     mongo: SwissMongo,
     pairingSystem: PairingSystem,
     manualPairing: SwissManualPairing,
-    gameRepo: lila.game.GameRepo,
-    onStart: lila.round.OnStart
+    gameRepo: lila.core.game.GameRepo,
+    newPlayer: lila.core.game.NewPlayer,
+    onStart: lila.core.game.OnStart
 )(using
     ec: Executor,
-    idGenerator: lila.game.IdGenerator
+    idGenerator: lila.core.game.IdGenerator
 ):
   import BsonHandlers.given
 
@@ -56,20 +57,20 @@ final private class SwissDirector(
             _ <- SwissPlayer.fields { f =>
               mongo.player.update
                 .one(
-                  $doc(f.userId $in byes, f.swissId -> swiss.id),
-                  $addToSet(f.byes                  -> swiss.round),
+                  $doc(f.userId.$in(byes), f.swissId -> swiss.id),
+                  $addToSet(f.byes                   -> swiss.round),
                   multi = true
                 )
                 .void
             }
             _ <- mongo.pairing.insert.many(pairings).void
             games = pairings.map(makeGame(swiss, players.mapBy(_.userId)))
-            _ <- games.traverse_ : game =>
-              gameRepo.insertDenormalized(game) andDo onStart(game.id)
+            _ <- games.sequentiallyVoid: game =>
+              for _ <- gameRepo.insertDenormalized(game) yield onStart.exec(game.id)
           yield swiss.some
       }
       .recover { case PairingSystem.BBPairingException(msg, input) =>
-        if msg contains "The number of rounds is larger than the reported number of rounds." then none
+        if msg.contains("The number of rounds is larger than the reported number of rounds.") then none
         else
           logger.warn(s"BBPairing ${from.id} $msg")
           logger.info(s"BBPairing ${from.id} $input")
@@ -78,8 +79,8 @@ final private class SwissDirector(
       .monSuccess(_.swiss.startRound)
 
   private def makeGame(swiss: Swiss, players: Map[UserId, SwissPlayer])(pairing: SwissPairing): Game =
-    Game
-      .make(
+    lila.core.game
+      .newGame(
         chess = chess
           .Game(
             variantOption = Some {
@@ -90,16 +91,14 @@ final private class SwissDirector(
           )
           .copy(clock = swiss.clock.toClock.some),
         players = ByColor: c =>
-          val player = players get pairing(c) err s"Missing pairing $c $pairing"
-          lila.game.Player.make(c, player.userId, player.rating, player.provisional)
+          val player = players.get(pairing(c)).err(s"Missing pairing $c $pairing")
+          newPlayer(c, player.userId, player.rating, player.provisional)
         ,
         mode = chess.Mode(swiss.settings.rated),
-        source = lila.game.Source.Swiss,
+        source = lila.core.game.Source.Swiss,
         pgnImport = None
       )
       .withId(pairing.gameId)
-      .withSwissId(swiss.id)
+      .focus(_.metadata.swissId)
+      .replace(swiss.id.some)
       .start
-
-  private def makePlayer(color: Color, player: SwissPlayer) =
-    lila.game.Player.make(color, player.userId, player.rating, player.provisional)

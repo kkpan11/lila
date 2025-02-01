@@ -1,9 +1,10 @@
-import LobbyController from '../../ctrl';
+import type LobbyController from '../../ctrl';
 import * as licon from 'common/licon';
 import { bind } from 'common/snabbdom';
-import { h, VNode } from 'snabbdom';
-import { Hook } from '../../interfaces';
+import { h, type VNode } from 'snabbdom';
+import type { Hook } from '../../interfaces';
 import perfIcons from 'common/perfIcons';
+import { memoize } from 'common';
 
 const percents = (v: number) => v + '%';
 
@@ -20,7 +21,7 @@ function ratingY(e?: number) {
   } else {
     ratio = mid - (ratingLog(1500 - rating) / ratingLog(500)) * mid;
   }
-  return Math.round(ratio * 94);
+  return Math.round(ratio * 92);
 }
 
 const clockMax = 2000;
@@ -30,9 +31,15 @@ const clockX = (dur: number) => {
   return Math.round((durLog(Math.min(clockMax, dur || clockMax)) / durLog(clockMax)) * 100);
 };
 
+const iconTranslateAmts: () => [number, number] = memoize<[number, number]>(() => {
+  const chart = document.querySelector('.hooks__chart') as HTMLElement;
+  const fontSize = parseFloat(window.getComputedStyle(chart).fontSize);
+  return [(fontSize / chart.clientWidth) * 95, (fontSize / chart.clientHeight) * 75];
+});
+
 function renderPlot(ctrl: LobbyController, hook: Hook) {
-  const bottom = Math.max(0, ratingY(hook.rating) - 2),
-    left = Math.max(0, clockX(hook.t) - 2),
+  const bottom = Math.max(0, ratingY(hook.rating) - iconTranslateAmts()[1]),
+    left = Math.max(0, clockX(hook.t) - iconTranslateAmts()[0]),
     klass = [
       hook.id,
       'plot.new',
@@ -41,10 +48,7 @@ function renderPlot(ctrl: LobbyController, hook: Hook) {
     ].join('.');
   return h('span#' + klass, {
     key: hook.id,
-    attrs: {
-      'data-icon': perfIcons[hook.perf],
-      style: `bottom:${percents(bottom)};left:${percents(left)}`,
-    },
+    attrs: { 'data-icon': perfIcons[hook.perf], style: `bottom:${percents(bottom)};left:${percents(left)}` },
     hook: {
       insert(vnode) {
         $(vnode.elm as HTMLElement).powerTip({
@@ -62,28 +66,24 @@ function renderPlot(ctrl: LobbyController, hook: Hook) {
           (vnode.elm as HTMLElement).classList.remove('new');
         }, 20);
       },
-      destroy(vnode) {
-        $.powerTip.hide(vnode.elm as HTMLElement, true);
-        $.powerTip.destroy(vnode.elm as HTMLElement);
-      },
+      destroy: vnode => $.powerTip.destroy(vnode.elm as HTMLElement),
     },
   });
 }
 
 function renderHook(ctrl: LobbyController, hook: Hook): string {
-  const color = hook.c || 'random';
   let html = '<div class="inner">';
   if (hook.rating) {
-    html += '<a class="opponent ulpt is color-icon ' + color + '" href="/@/' + hook.u + '">';
+    html += '<a class="opponent ulpt is color-icon" href="/@/' + hook.u + '">';
     html += ' ' + hook.u;
-    if (!ctrl.opts.hideRatings) html += ' (' + hook.rating + (hook.prov ? '?' : '') + ')';
+    if (ctrl.opts.showRatings) html += ' (' + hook.rating + (hook.prov ? '?' : '') + ')';
     html += '</a>';
   } else {
-    html += '<span class="opponent anon ' + color + '">' + ctrl.trans('anonymous') + '</span>';
+    html += '<span class="opponent anon">' + i18n.site.anonymous + '</span>';
   }
   html += '<div class="inner-clickable">';
   html += `<div>${hook.clock}</div>`;
-  html += '<i data-icon="' + perfIcons[hook.perf] + '"> ' + ctrl.trans(hook.ra ? 'rated' : 'casual') + '</i>';
+  html += '<i data-icon="' + perfIcons[hook.perf] + '"> ' + i18n.site[hook.ra ? 'rated' : 'casual'] + '</i>';
   html += '</div></div>';
   return html;
 }
@@ -94,20 +94,8 @@ function renderXAxis() {
   const tags: VNode[] = [];
   xMarks.forEach(v => {
     const l = clockX(v * 60);
-    tags.push(
-      h(
-        'span.x.label',
-        {
-          attrs: { style: 'left:' + percents(l - 1.5) },
-        },
-        '' + v,
-      ),
-    );
-    tags.push(
-      h('div.grid.vert', {
-        attrs: { style: 'width:' + percents(l) },
-      }),
-    );
+    tags.push(h('span.x.label', { attrs: { style: 'left:' + percents(l - 1.5) } }, '' + v));
+    tags.push(h('div.grid.vert', { attrs: { style: 'width:' + percents(l) } }));
   });
   return tags;
 }
@@ -118,20 +106,8 @@ function renderYAxis() {
   const tags: VNode[] = [];
   yMarks.forEach(function (v) {
     const b = ratingY(v);
-    tags.push(
-      h(
-        'span.y.label',
-        {
-          attrs: { style: 'bottom:' + percents(b + 1) },
-        },
-        '' + v,
-      ),
-    );
-    tags.push(
-      h('div.grid.horiz', {
-        attrs: { style: 'height:' + percents(b + 0.8) },
-      }),
-    );
+    tags.push(h('span.y.label', { attrs: { style: 'bottom:' + percents(b + 1) } }, '' + v));
+    tags.push(h('div.grid.horiz', { attrs: { style: 'height:' + percents(b + 0.8) } }));
   });
   return tags;
 }
@@ -139,7 +115,7 @@ function renderYAxis() {
 export function toggle(ctrl: LobbyController) {
   return h('i.toggle', {
     key: 'set-mode-list',
-    attrs: { title: ctrl.trans.noarg('list'), 'data-icon': licon.List },
+    attrs: { title: i18n.site.list, 'data-icon': licon.List },
     hook: bind('mousedown', _ => ctrl.setMode('list'), ctrl.redraw),
   });
 }

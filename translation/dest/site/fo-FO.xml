@@ -104,7 +104,6 @@
   <string name="replayMode">Endurspælsháttur</string>
   <string name="realtimeReplay">Verulig tíð</string>
   <string name="byCPL">Við CPL</string>
-  <string name="openStudy">Lat rannsókn upp</string>
   <string name="enable">Loyv</string>
   <string name="bestMoveArrow">Pílur fyri besta leik</string>
   <string name="evaluationGauge">Eftirmetingarmát</string>
@@ -120,13 +119,25 @@
     <item quantity="one">%s bukkur</item>
     <item quantity="other">%s bukkar</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="one">%s Bukkur</item>
+    <item quantity="other">%s Bukkar</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="one">%s mistak</item>
     <item quantity="other">%s mistøk</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="one">%s Mistak</item>
+    <item quantity="other">%s Mistøk</item>
+  </plurals>
   <plurals name="nbInaccuracies">
     <item quantity="one">%s óneyvleiki</item>
     <item quantity="other">%s óneyvleikar</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
+    <item quantity="one">%s Óneyvleiki</item>
+    <item quantity="other">%s Óneyvleikar</item>
   </plurals>
   <string name="moveTimes">Leiktíðir</string>
   <string name="flipBoard">Vend borði við</string>
@@ -231,7 +242,6 @@
   <string name="playingRightNow">Verður telvað beint nú</string>
   <string name="eventInProgress">Telvað beint nú</string>
   <string name="finished">Liðugt</string>
-  <string name="finishesX">endar %s</string>
   <string name="abortGame">Enda talvið</string>
   <string name="gameAborted">Talvið varð brotið av</string>
   <string name="standard">Vanligt</string>
@@ -379,7 +389,6 @@
   <string name="block">Forða</string>
   <string name="blocked">Forðaður</string>
   <string name="unblock">Forða ikki</string>
-  <string name="followsYou">Fylgir tær</string>
   <string name="xStartedFollowingY">%1$s byrjaði at fylgja %2$s</string>
   <plurals name="nbFollowers">
     <item quantity="one">%s fylgjari</item>
@@ -411,9 +420,6 @@
   <string name="safeTournamentName">Vel eitt trygt og hóskiligt navn til kappingina.</string>
   <string name="inappropriateNameWarning">Er navnið á nakran hátt ósømiligt, kann konta tín verða stongd.</string>
   <string name="emptyTournamentName">Lat teigin vera tóman, um tú vilt, at kappingin verður nevnd eftir gitnum telvara.</string>
-  <string name="recommendNotTouching">Vit viðmæla ikki at nerta hesar.</string>
-  <string name="fewerPlayers">Um tú setir luttøkutreytir, verða færri telvarar í kappingini.</string>
-  <string name="showAdvancedSettings">Vís framkomnar stillingar</string>
   <string name="makePrivateTournament">Ger so kappingin ikki er almen, og avmarka atgongdina við einum loyniorði</string>
   <string name="join">Tak lut</string>
   <string name="withdraw">Far úr</string>
@@ -450,8 +456,6 @@
   <string name="ifNoneLeaveEmpty">Um einki, lat teigin vera tóman</string>
   <string name="profile">Vangamynd</string>
   <string name="editProfile">Broyt vangamynd</string>
-  <string name="firstName">Fornavn</string>
-  <string name="lastName">Eftirnavn</string>
   <string name="biography">Ævilýsing</string>
   <string name="thankYou">Takk fyri!</string>
   <string name="socialMediaLinks">Leinki til sosialar miðlar</string>
@@ -469,7 +473,6 @@
   <string name="automaticallyProceedToNextGameAfterMoving">Halt sjálvvirkið fram við næsta talvi aftaná at hava flutt</string>
   <string name="autoSwitch">Sjálvvirknisknøttur</string>
   <string name="puzzles">Uppgávur</string>
-  <string name="tournamentWinners">Kappingarvinnarar</string>
   <string name="name">Navn</string>
   <string name="description">Lýsing</string>
   <string name="descPrivate">Innanhýsis lýsing</string>
@@ -492,11 +495,8 @@
   <string name="reason">Orsøk</string>
   <string name="whatIsIheMatter">Hvat bagir?</string>
   <string name="cheat">Snýt</string>
-  <string name="insult">Háðar</string>
   <string name="troll">Trøll</string>
-  <string name="ratingManipulation">Svik við styrkitali</string>
   <string name="other">Annað</string>
-  <string name="reportDescriptionHelp">Flyt leinkið til talvið ella talvini higar, og greið frá, hvat bagir atburðinum hjá brúkaranum. Skriva ikki bert \"hann snýtir\", men sig okkum, hvussu tú komst til hesa niðurstøðu. Fráboðan tín verður skjótari viðgjørd, um hon verður skrivað á enskum.</string>
   <string name="error.provideOneCheatedGameLink">Útvega leinki til í minsta lagi eitt talv, har snýtt varð.</string>
   <string name="by">eftir %s</string>
   <string name="importedByX">%s las inn</string>
@@ -695,9 +695,6 @@
   <string name="dark">Myrkt</string>
   <string name="transparent">Gjøgnumskygt</string>
   <string name="backgroundImageUrl">Bakgrundsmynd URL:</string>
-  <string name="boardGeometry">Borðgeometri</string>
-  <string name="boardTheme">Talvborðssnið</string>
-  <string name="boardSize">Borðstødd</string>
   <string name="pieceSet">Snið á talvfólki</string>
   <string name="embedInYourWebsite">Fell inn í heimasíðu tína</string>
   <string name="usernameAlreadyUsed">Hetta brúkaranavnið verður longu nýtt. Royn vinaliga eitt annað.</string>
@@ -769,7 +766,6 @@
   </plurals>
   <string name="sorry">Orsaka :(</string>
   <string name="weHadToTimeYouOutForAWhile">Vit noyddust at geva tær leikbrá eina tíð.</string>
-  <string name="timeoutExpires">Leikbráið gongur út %s.</string>
   <string name="why">Hví?</string>
   <string name="pleasantChessExperience">Vit miða ímóti at veita øllum eina góða talvuppliving.</string>
   <string name="goodPractice">Tískil mugu vit vissa okkum, at allir telvarar sýna góðan atburð.</string>
@@ -825,7 +821,6 @@
   <string name="navigateMoveTree">Far runt í leiktrænum</string>
   <string name="mouseTricks">Músasnildir</string>
   <string name="playComputerMove">Telv besta telduleikin</string>
-  <string name="onlyWorksOnce">Hetta riggar bert eina ferð.</string>
   <string name="hangOn">Bíða líka!</string>
   <string name="abortTheGame">Enda talvið</string>
   <string name="resignTheGame">Gev upp talvið</string>

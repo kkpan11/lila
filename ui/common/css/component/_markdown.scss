@@ -2,6 +2,7 @@
   $element-margin: 1em,
   $img-max-height: 50vh,
   $table: true,
+  $list: true,
   $img: true,
   $h1: true,
   $h2: true
@@ -17,36 +18,35 @@
   }
 
   p,
-  ol,
-  ul,
-  table,
   pre {
     margin: $element-margin 0;
   }
 
-  ol,
-  ul {
-    padding-#{$start-direction}: 0.5em;
-  }
+  @if $list {
+    ol,
+    ul {
+      margin: $element-margin 0;
+      padding-inline-start: 2em;
+    }
 
-  li ol,
-  li ul {
-    margin: 0;
-    padding-#{$start-direction}: 2em;
-  }
+    li ol,
+    li ul {
+      margin: 0;
+    }
 
-  ol > li {
-    list-style: decimal inside;
-  }
+    ol > li {
+      list-style: decimal;
+    }
 
-  ul > li {
-    list-style: disc inside;
-  }
+    ul > li {
+      list-style: disc;
+    }
 
-  li p {
-    display: inline-block;
-    vertical-align: top;
-    margin-top: 0;
+    li p {
+      display: inline-block;
+      vertical-align: top;
+      margin-top: 0;
+    }
   }
 
   @if $h1 {
@@ -83,6 +83,29 @@
     @include fluid-size('font-size', 17px, 23px);
   }
 
+  h2,
+  h3,
+  h4 {
+    a[id] {
+      opacity: 0;
+
+      &::before {
+        color: $c-font-dimmer;
+        content: $licon-Link;
+        font-family: 'lichess';
+        margin-left: -3rem;
+        width: 3rem;
+        position: absolute;
+      }
+    }
+
+    &:hover {
+      a[id] {
+        opacity: 1;
+      }
+    }
+  }
+
   @if $img {
     img {
       display: block;
@@ -93,6 +116,9 @@
   }
 
   @if $table {
+    table {
+      margin: $element-margin 0;
+    }
     th,
     td {
       &[align='left'] {
@@ -127,7 +153,7 @@
     padding: 1em 1.5em;
     line-height: 1.4em;
     code {
-      background: inherit;
+      background: none;
       padding: 0;
     }
   }
@@ -136,7 +162,48 @@
 @mixin rendered-markdown--quote {
   blockquote {
     color: $c-font-dim;
-    border-#{$start-direction}: 0.3em solid $c-font-dimmer;
-    padding-#{$start-direction}: 1em;
+    border-inline-start: 0.3em solid $c-font-dimmer;
+    padding-inline-start: 1em;
+  }
+}
+
+@mixin rendered-markdown--img {
+  .img-container {
+    text-align: center;
+    color: $c-font-dim;
+    line-height: 1.2em;
+    font-size: 0.9em;
+    max-width: 100%;
+    img {
+      @extend %box-neat;
+      max-width: 100%;
+    }
+    /* image caption */
+    & + p > em:first-child {
+      margin-top: -20px;
+      display: block;
+      font-size: 0.8em;
+      text-align: center;
+    }
+  }
+}
+
+@mixin rendered-markdown--embed {
+  .embed {
+    @extend %video;
+    margin: $block-gap auto;
+    > iframe {
+      left: 0;
+    }
+  }
+
+  .twitter-tweet {
+    color-scheme: normal;
+    margin: auto;
+  }
+
+  .private-study {
+    color: $c-brag;
+    font-size: 1.2em;
   }
 }

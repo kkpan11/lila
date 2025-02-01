@@ -1,15 +1,16 @@
 package lila.streamer
 
 import cats.derived.*
+import reactivemongo.api.bson.Macros.Annotations.Key
 
-import lila.memo.PicfitImage
-import lila.user.User
+import lila.core.i18n.Language
+import lila.core.id.ImageId
 
 case class Streamer(
-    _id: Streamer.Id,
+    @Key("_id") id: Streamer.Id,
     listed: Streamer.Listed,
     approval: Streamer.Approval,
-    picture: Option[PicfitImage.Id],
+    picture: Option[ImageId],
     name: Streamer.Name,
     headline: Option[Streamer.Headline],
     description: Option[Streamer.Description],
@@ -19,11 +20,8 @@ case class Streamer(
     liveAt: Option[Instant], // last seen streaming
     createdAt: Instant,
     updatedAt: Instant,
-    lastStreamLang: Option[String] // valid 2 char language code or None
+    lastStreamLang: Option[Language]
 ):
-
-  inline def id = _id
-
   def userId = id.userId
 
   def hasPicture = picture.isDefined
@@ -32,9 +30,20 @@ case class Streamer(
 
   def completeEnough = {
     twitch.isDefined || youTube.isDefined
-  } && headline.isDefined && hasPicture
+  } && name.value.length > 2 && hasPicture
 
 object Streamer:
+
+  opaque type Id = String
+  object Id extends lila.core.userId.OpaqueUserId[Id]
+  opaque type Listed = Boolean
+  object Listed extends YesNo[Listed]
+  opaque type Name = String
+  object Name extends OpaqueString[Name]
+  opaque type Headline = String
+  object Headline extends OpaqueString[Headline]
+  opaque type Description = String
+  object Description extends OpaqueString[Description]
 
   given UserIdOf[Streamer] = _.id.userId
 
@@ -42,7 +51,7 @@ object Streamer:
 
   def make(user: User) =
     Streamer(
-      _id = user.id into Id,
+      id = user.id.into(Id),
       listed = Listed(true),
       approval = Approval(
         requested = false,
@@ -50,7 +59,8 @@ object Streamer:
         ignored = user.marks.troll,
         tier = 0,
         chatEnabled = true,
-        lastGrantedAt = none
+        lastGrantedAt = none,
+        reason = none
       ),
       picture = none,
       name = Name(user.realNameOrUsername),
@@ -65,26 +75,15 @@ object Streamer:
       lastStreamLang = none
     )
 
-  opaque type Id = String
-  object Id extends OpaqueUserId[Id]
-
-  opaque type Listed = Boolean
-  object Listed extends YesNo[Listed]
-
   case class Approval(
       requested: Boolean,   // user requests a mod to approve
       granted: Boolean,     // a mod approved
       ignored: Boolean,     // further requests are ignored
       tier: Int,            // homepage featuring tier
       chatEnabled: Boolean, // embed chat inside lichess
-      lastGrantedAt: Option[Instant]
+      lastGrantedAt: Option[Instant],
+      reason: Option[String]
   )
-  opaque type Name = String
-  object Name extends OpaqueString[Name]
-  opaque type Headline = String
-  object Headline extends OpaqueString[Headline]
-  opaque type Description = String
-  object Description extends OpaqueString[Description]
 
   case class Twitch(userId: String) derives Eq:
     def fullUrl = s"https://www.twitch.tv/$userId"
@@ -125,10 +124,12 @@ object Streamer:
   ) extends WithContext:
     def redirectToLiveUrl: Option[String] =
       stream.so: s =>
-        streamer.twitch.ifTrue(s.twitch).map(_.fullUrl) orElse
-          streamer.youTube.ifTrue(s.youTube).map(_.fullUrl)
+        streamer.twitch
+          .ifTrue(s.twitch)
+          .map(_.fullUrl)
+          .orElse(streamer.youTube.ifTrue(s.youTube).map(_.fullUrl))
 
-  case class ModChange(list: Option[Boolean], tier: Option[Int], decline: Boolean)
+  case class ModChange(list: Option[Boolean], tier: Option[Int], decline: Boolean, reason: Option[String])
 
   val maxTier = 10
 

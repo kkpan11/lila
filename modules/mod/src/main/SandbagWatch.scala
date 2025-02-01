@@ -1,10 +1,9 @@
 package lila.mod
 
-import chess.Color
 import com.github.blemale.scaffeine.Cache
+import chess.rating.IntRatingDiff
 
-import lila.game.Game
-import lila.msg.{ MsgApi, MsgPreset }
+import lila.core.msg.{ MsgApi, MsgPreset }
 import lila.report.ReportApi
 
 final private class SandbagWatch(
@@ -16,14 +15,14 @@ final private class SandbagWatch(
   import SandbagWatch.*
   import Outcome.*
 
-  private val messageOnceEvery = lila.memo.OnceEvery[UserId](1 hour)
+  private val messageOnceEvery = scalalib.cache.OnceEvery[UserId](1.hour)
 
   def apply(game: Game): Unit = for
     loser <- game.loser.map(_.color)
-    if game.rated && !game.fromApi
+    if game.rated && !game.sourceIs(_.Api)
     userId <- game.userIds
   do
-    (records getIfPresent userId, outcomeOf(game, loser, userId)) match
+    (records.getIfPresent(userId), outcomeOf(game, loser, userId)) match
       case (None, Good)         =>
       case (Some(record), Good) => setRecord(userId, record + Good, game)
       case (record, outcome)    => setRecord(userId, (record | emptyRecord) + outcome, game)
@@ -31,7 +30,7 @@ final private class SandbagWatch(
   private def setRecord(userId: UserId, record: Record, game: Game): Funit =
     if record.immaculate then
       fuccess:
-        records invalidate userId
+        records.invalidate(userId)
     else if game.isTournament && userId.is(game.winnerUserId) then
       // if your opponent always resigns to you in a tournament
       // we'll assume you're not boosting
@@ -46,19 +45,19 @@ final private class SandbagWatch(
           val sandbagSeriousness = sandbagCount + nbWarnings
           val boostSeriousness   = boostCount + nbWarnings
           if sandbagCount == 3
-          then sendMessage(userId, MsgPreset.sandbagAuto)
+          then sendMessage(userId, msgPreset.sandbagAuto)
           else if sandbagCount == 4 then
             game.loserUserId.so:
               reportApi.autoSandbagReport(record.sandbagOpponents, _, sandbagSeriousness)
           else if boostCount == 3
-          then sendMessage(userId, MsgPreset.boostAuto)
+          then sendMessage(userId, msgPreset.boostAuto)
           else if boostCount == 4
           then withWinnerAndLoser(game)((u1, u2) => reportApi.autoBoostReport(u1, u2, boostSeriousness))
           else funit
 
   private def sendMessage(userId: UserId, preset: MsgPreset): Funit =
     messageOnceEvery(userId).so:
-      lila.common.Bus.publish(lila.hub.actorApi.mod.AutoWarning(userId, preset.name), "autoWarning")
+      lila.common.Bus.publish(lila.core.mod.AutoWarning(userId, preset.name), "autoWarning")
       messenger.postPreset(userId, preset).void
 
   private def withWinnerAndLoser(game: Game)(f: (UserId, UserId) => Funit): Funit =
@@ -67,7 +66,7 @@ final private class SandbagWatch(
         f(winner, _)
 
   private val records: Cache[UserId, Record] = lila.memo.CacheApi.scaffeineNoScheduler
-    .expireAfterWrite(3 hours)
+    .expireAfterWrite(3.hours)
     .build[UserId, Record]()
 
   private def outcomeOf(game: Game, loser: Color, userId: UserId): Outcome =
@@ -82,7 +81,7 @@ final private class SandbagWatch(
     game.playedTurns <= {
       if game.variant == chess.variant.Atomic then 3
       else 8
-    } && game.winner.so(~_.ratingDiff > 0)
+    } && game.winner.exists(_.ratingDiff.exists(_.positive))
 
 private object SandbagWatch:
 
@@ -107,9 +106,9 @@ private object SandbagWatch:
       case Outcome.Sandbag(_) => true
       case _                  => false
 
-    def countSandbagWithLatest: Int = latestIsSandbag so outcomes.count:
+    def countSandbagWithLatest: Int = latestIsSandbag.so(outcomes.count:
       case Outcome.Sandbag(_) => true
-      case _                  => false
+      case _                  => false)
 
     def sandbagOpponents = outcomes.collect { case Outcome.Sandbag(opponent) => opponent }.distinct
 
@@ -121,3 +120,21 @@ private object SandbagWatch:
       case _ => 0
 
   val emptyRecord = Record(Nil)
+
+  object msgPreset:
+
+    lazy val sandbagAuto = MsgPreset(
+      name = "Warning: possible sandbagging",
+      text =
+        """You have lost a couple games after a few moves. Please note that you MUST try to win every rated game.
+  Losing rated games on purpose is called "sandbagging" and is not allowed on Lichess.
+
+  Thank you for your understanding."""
+    )
+    lazy val boostAuto = MsgPreset(
+      name = "Warning: possible boosting",
+      """You have won a couple of games after a few moves. Please note that both players MUST try to win every game.
+  Taking advantage of opponents losing rated games on purpose is called "boosting" and is not allowed on Lichess.
+
+  Thank you for your understanding."""
+    )

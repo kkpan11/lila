@@ -1,17 +1,16 @@
-@import 'font';
 @import 'side';
 @import 'combo';
 @import 'clock';
 @import 'history';
 
 #main-wrap {
-  --main-max-width: calc(100vh - #{$site-header-outer-height} - 9rem);
+  @include prevent-select;
 
-  @include breakpoint($mq-col2) {
-    --main-max-width: auto;
+  ---main-max-width: calc(100vh - #{$site-header-outer-height} - 9rem);
+
+  @include mq-at-least-col2 {
+    ---main-max-width: auto;
   }
-
-  user-select: none;
 }
 
 .puz {
@@ -25,11 +24,5 @@
 
   &-history {
     grid-area: history;
-  }
-}
-
-.puz-board {
-  @include breakpoint($mq-col2-uniboard-squeeze) {
-    width: 40vw;
   }
 }

@@ -90,7 +90,6 @@
   <string name="delete">ဖျက်</string>
   <string name="deleteThisImportedGame">ဒီတင်သွင်းထားသောကစားပွဲကို ဖျက်မည်လား?</string>
   <string name="realtimeReplay">အချိန်စစ်</string>
-  <string name="openStudy">လေ့လာခြင်းကို ဖွင့်မည်</string>
   <string name="enable">ဖွင့်သည်</string>
   <string name="bestMoveArrow">အကောင်းဆုံးရွှေ့ကွက်မြှား</string>
   <string name="multipleLines">လိုင်းခွဲများစွာ</string>
@@ -162,8 +161,6 @@
   <string name="minimumRatedGames">လက်ရည် ကန့်သတ်ချက်ဖြင့် ကစားပြီး ဖြစ်ရမည့် ကစားပွဲ အနည်းဆုံး အရေအတွက်</string>
   <string name="minimumRating">အနိမ့်ဆုံး လက်ရည်</string>
   <string name="maximumWeeklyRating">ရက်သတ္တ တစ်ပတ် အတွင်း ရရှိသော အမြင့်ဆုံး လက်ရည်</string>
-  <string name="onlyTitled">တရားဝင်ဘွဲ့ထူး ရရှိထားသော ကစားသမားများသာ</string>
-  <string name="onlyTitledHelp">ပြိုင်ပွဲသို့ ဝင်ရောက်နိုင်ရေး အတွက် တရားဝင်ဘွဲ့ထူး ရရှိထားရန် လိုအပ်သည်</string>
   <string name="positionInputHelp">ကစားပွဲတိုင်းကို သတ်မှတ် အနေအထား တစ်မျိုးတည်းမှ စတင်ရန် အလို့ငှာ အမှားကင်းသော FEN တစ်ခု ထည့်သွင်းပါ။
 မူကွဲစနစ်များ အတွက် မရဘဲ စံနစ်သုံးပွဲများ အတွက်သာ လုပ်ဆောင်နိုင်ပါသည်။
 ထည့်သွင်းလိုသည့် FEN ကို %s အသုံးပြုကာ ထုတ်လုပ်နိုင်ပါသည်။
@@ -175,9 +172,6 @@
   <string name="onlyTeamLeaders">အသင်းခေါင်းဆောင်များသာ</string>
   <string name="onlyTeamMembers">အသင်းဝင်များသာ</string>
   <string name="reopenYourAccount">မိမိ အကောင့် ပြန်ဖွင့်ရန်</string>
-  <string name="closedAccountChangedMind">လူကြီးမင်း ပိတ်လိုက်မိသော အကောင့်ကို စိတ်ပြောင်းသွား၍ ပြန်လည် အလိုရှိလျှင် အခွင့်အရေး တစ်ကြိမ် ရပါမည်။</string>
-  <string name="onlyWorksOnce">တစ်ကြိမ်သာ ပြုလုပ်နိုင်မည်။</string>
-  <string name="cantDoThisTwice">လူကြီးမင်း၏ အကောင့်အား ဒုတိယ အကြိမ် ပိတ်လိုက်လျှင် ပြန်လည် မရနိုင်တော့ပါ။</string>
   <string name="emailAssociatedToaccount">အကောင့်နှင့် ဆက်စပ်သော အီးမေးလ် လိပ်စာ</string>
   <string name="sentEmailWithLink">လင့်ခ် ပါဝင်သော အီးမေးလ် တစ်စောင် သင့်ထံ ပို့လိုက်ပါပြီ။</string>
   <string name="since">မှ</string>

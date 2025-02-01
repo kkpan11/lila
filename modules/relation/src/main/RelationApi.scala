@@ -5,43 +5,44 @@ import reactivemongo.api.bson.*
 
 import lila.common.Bus
 import lila.common.Json.given
+import lila.core.relation.Relation.{ Block, Follow }
+import lila.core.relation.{ Relation, Relations }
+import lila.core.timeline.{ Follow as FollowUser, Propagate }
+import lila.core.user.UserApi
+import lila.core.userId.UserSearch
 import lila.db.dsl.{ *, given }
 import lila.db.paginator.*
-import lila.hub.actorApi.timeline.{ Follow as FollowUser, Propagate }
-import lila.hub.actors
 import lila.memo.CacheApi.*
 import lila.relation.BSONHandlers.given
-import lila.user.User
 
 final class RelationApi(
     repo: RelationRepo,
-    timeline: actors.Timeline,
-    prefApi: lila.pref.PrefApi,
+    prefApi: lila.core.pref.PrefApi,
     cacheApi: lila.memo.CacheApi,
-    userRepo: lila.user.UserRepo,
+    userApi: UserApi,
     config: RelationConfig
-)(using Executor):
-
-  import RelationRepo.makeId
-
-  val coll = repo.coll
+)(using Executor, lila.core.config.RateLimit)
+    extends lila.core.relation.RelationApi(repo.coll):
 
   def fetchRelation(u1: UserId, u2: UserId): Fu[Option[Relation]] =
-    (u1 != u2) so coll.primitiveOne[Relation]($doc("u1" -> u1, "u2" -> u2), "r")
+    (u1 != u2).so(coll.primitiveOne[Relation]($doc("u1" -> u1, "u2" -> u2), "r"))
 
-  def fetchRelation(u1: User, u2: User): Fu[Option[Relation]] = fetchRelation(u1.id, u2.id)
+  def fetchRelation[U1: UserIdOf, U2: UserIdOf](u1: U1, u2: U2): Fu[Option[Relation]] =
+    fetchRelation(u1.id, u2.id)
 
   def fetchRelations(u1: UserId, u2: UserId): Fu[Relations] =
-    fetchRelation(u2, u1) zip fetchRelation(u1, u2) dmap Relations.apply
+    fetchRelation(u2, u1).zip(fetchRelation(u1, u2)).dmap(Relations.apply)
 
   export repo.{
     blocking as fetchBlocking,
     following as fetchFollowing,
     freshFollowersFromSecondary,
-    filterBlocked
+    filterBlocked,
+    unfollowAll,
+    removeAllFollowers
   }
 
-  def fetchFriends(userId: UserId) =
+  def fetchFriends(userId: UserId): Fu[Set[UserId]] =
     coll
       .aggregateWith[Bdoc](readPreference = ReadPref.sec): framework =>
         import framework.*
@@ -63,23 +64,34 @@ final class RelationApi(
         ~_.flatMap(_.getAsOpt[Set[UserId]]("_id")) - userId
 
   def fetchFollows(u1: UserId, u2: UserId): Fu[Boolean] =
-    (u1 != u2) so coll.exists($doc("_id" -> makeId(u1, u2), "r" -> Follow))
+    (u1 != u2).so(coll.exists($doc("_id" -> makeId(u1, u2), "r" -> Follow)))
 
   def fetchBlocks(u1: UserId, u2: UserId): Fu[Boolean] =
-    (u1 != u2) so coll.exists($doc("_id" -> makeId(u1, u2), "r" -> Block))
+    (u1 != u2).so(coll.exists($doc("_id" -> makeId(u1, u2), "r" -> Block)))
 
   def fetchAreFriends(u1: UserId, u2: UserId): Fu[Boolean] =
     fetchFollows(u1, u2) >>& fetchFollows(u2, u1)
 
-  private val countFollowingCache = cacheApi[UserId, Int](16_384, "relation.count.following") {
-    _.maximumSize(8_192).buildAsyncFuture: userId =>
+  private val countFollowingCache = cacheApi[UserId, Int](16_384, "relation.count.following"):
+    _.maximumSize(16_384).buildAsyncFuture: userId =>
       coll.countSel($doc("u1" -> userId, "r" -> Follow))
-  }
 
-  def countFollowing(userId: UserId) = countFollowingCache get userId
+  def countFollowing(userId: UserId) = countFollowingCache.get(userId)
+
+  private val unfollowInactiveAccountsOnceEvery = scalalib.cache.OnceEvery[UserId](1.hour)
+
+  def unfollowInactiveAccounts(userId: UserId, since: Instant = nowInstant.minusYears(2)): Fu[List[UserId]] =
+    unfollowInactiveAccountsOnceEvery(userId).so:
+      for
+        following <- fetchFollowing(userId)
+        inactive  <- userApi.filterClosedOrInactiveIds(since)(following)
+        _ <- inactive.nonEmpty.so:
+          countFollowingCache.update(userId, _ - inactive.size)
+          repo.unfollowMany(userId, inactive)
+      yield inactive
 
   def reachedMaxFollowing(userId: UserId): Fu[Boolean] =
-    countFollowingCache get userId map (_ >= config.maxFollow.value)
+    countFollowingCache.get(userId).map(config.maxFollow <= _)
 
   def countBlocking(userId: UserId) =
     coll.countSel($doc("u1" -> userId, "r" -> Block))
@@ -110,46 +122,37 @@ final class RelationApi(
     ).map(_.userId)
 
   def follow(u1: UserId, u2: UserId): Funit =
-    (u1 != u2) so prefApi.followable(u2).flatMapz {
-      userRepo.isEnabled(u2) flatMapz {
-        fetchRelation(u1, u2) zip fetchRelation(u2, u1) flatMap {
+    (u1 != u2).so(prefApi.followable(u2).flatMapz {
+      userApi.isEnabled(u2).flatMapz {
+        fetchRelation(u1, u2).zip(fetchRelation(u2, u1)).flatMap {
           case (Some(Follow), _) => funit
           case (_, Some(Block))  => funit
           case _ =>
-            repo.follow(u1, u2) >> limitFollow(u1) andDo {
-              countFollowingCache.update(u1, prev => (prev + 1) atMost config.maxFollow.value)
-              timeline ! Propagate(FollowUser(u1, u2)).toFriendsOf(u1)
-              Bus.publish(lila.hub.actorApi.relation.Follow(u1, u2), "relation")
+            for
+              _ <- repo.follow(u1, u2)
+              _ <- limitFollow(u1)
+            yield
+              countFollowingCache.update(u1, prev => (prev + 1).atMost(config.maxFollow.value))
+              lila.common.Bus.pub(Propagate(FollowUser(u1, u2)).toFriendsOf(u1))
+              Bus.publish(lila.core.relation.Follow(u1, u2), "relation")
               lila.mon.relation.follow.increment()
-            }
         }
       }
-    }
-
-  private val limitFollowRateLimiter = lila.memo.RateLimit[UserId](
-    credits = 1,
-    duration = 1 hour,
-    key = "follow.limit.cleanup"
-  )
+    })
 
   private def limitFollow(u: UserId) =
     countFollowing(u).flatMap: nb =>
-      (nb > config.maxFollow.value) so {
-        limitFollowRateLimiter(u, fuccess(Nil)):
-          fetchFollowing(u) flatMap userRepo.filterClosedOrInactiveIds(nowInstant.minusDays(90))
-        .flatMap:
-          case Nil => repo.drop(u, true, nb - config.maxFollow.value)
-          case inactiveIds =>
-            repo.unfollowMany(u, inactiveIds) andDo
-              countFollowingCache.update(u, _ - inactiveIds.size)
-      }
+      (config.maxFollow < nb).so:
+        unfollowInactiveAccounts(u, nowInstant.minusDays(90)).flatMap:
+          _.isEmpty.so:
+            repo.drop(u, Follow, nb - config.maxFollow.value)
 
   private def limitBlock(u: UserId) =
     countBlocking(u).flatMap: nb =>
-      (config.maxBlock < nb) so repo.drop(u, false, nb - config.maxBlock.value)
+      (config.maxBlock < nb).so(repo.drop(u, Block, nb - config.maxBlock.value))
 
   def block(u1: UserId, u2: UserId): Funit =
-    (u1 != u2 && u2 != User.lichessId) so fetchBlocks(u1, u2).flatMap {
+    (u1 != u2 && u2 != UserId.lichess).so(fetchBlocks(u1, u2).flatMap {
       if _ then funit
       else
         for
@@ -157,41 +160,42 @@ final class RelationApi(
           _ <- limitBlock(u1)
           _ <- unfollow(u2, u1)
         yield
-          Bus.publish(lila.hub.actorApi.relation.Block(u1, u2), "relation")
+          Bus.publish(lila.core.relation.Block(u1, u2), "relation")
           Bus.publish(
-            lila.hub.actorApi.socket.SendTo(u2, lila.socket.Socket.makeMessage("blockedBy", u1)),
+            lila.core.socket.SendTo(u2, lila.core.socket.makeMessage("blockedBy", u1)),
             "socketUsers"
           )
           lila.mon.relation.block.increment()
-    }
+    })
 
   def unfollow(u1: UserId, u2: UserId): Funit =
-    (u1 != u2) so
-      fetchFollows(u1, u2).flatMapz {
-        repo.unfollow(u1, u2) andDo {
-          countFollowingCache.update(u1, _ - 1)
-          Bus.publish(lila.hub.actorApi.relation.UnFollow(u1, u2), "relation")
-          lila.mon.relation.unfollow.increment()
-        }
-      }
-
-  def unfollowAll(u1: UserId): Funit = repo.unfollowAll(u1)
+    (u1 != u2).so(fetchFollows(u1, u2).flatMapz {
+      for _ <- repo.unfollow(u1, u2)
+      yield
+        countFollowingCache.update(u1, _ - 1)
+        Bus.publish(lila.core.relation.UnFollow(u1, u2), "relation")
+        lila.mon.relation.unfollow.increment()
+    })
 
   def unblock(u1: UserId, u2: UserId): Funit =
-    (u1 != u2) so fetchBlocks(u1, u2).flatMap {
-      if _ then
-        repo.unblock(u1, u2) andDo {
-          Bus.publish(lila.hub.actorApi.relation.UnBlock(u1, u2), "relation")
-          Bus.publish(
-            lila.hub.actorApi.socket.SendTo(u2, lila.socket.Socket.makeMessage("unblockedBy", u1)),
-            "socketUsers"
-          )
-          lila.mon.relation.unblock.increment()
-        }
-      else funit
-    }
+    (u1 != u2).so(fetchBlocks(u1, u2).flatMapz {
+      for _ <- repo.unblock(u1, u2)
+      yield
+        Bus.publish(lila.core.relation.UnBlock(u1, u2), "relation")
+        Bus.publish(
+          lila.core.socket.SendTo(u2, lila.core.socket.makeMessage("unblockedBy", u1)),
+          "socketUsers"
+        )
+        lila.mon.relation.unblock.increment()
+    })
 
-  def searchFollowedBy(u: User, term: UserSearch, max: Int): Fu[List[UserId]] =
-    repo.followingLike(u.id, term) map { list =>
-      lila.common.Heapsort.topN(list, max)(using stringOrdering[UserId].reverse)
-    }
+  def isBlockedByAny(by: Iterable[UserId])(using me: Option[Me]): Fu[Boolean] =
+    me.ifTrue(by.nonEmpty)
+      .so: me =>
+        coll.exists($doc("_id".$in(by.map(makeId(_, me.userId))), "r" -> Block))
+
+  def searchFollowedBy(u: UserId, term: UserSearch, max: Int): Fu[List[UserId]] =
+    repo
+      .followingLike(u, term)
+      .map: list =>
+        scalalib.HeapSort.topN(list, max)(using stringOrdering[UserId].reverse)

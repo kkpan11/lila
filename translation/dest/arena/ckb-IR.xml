@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="arena">یاریگا</string>
   <string name="arenaTournaments">پاڵەوانیەتەکانی ئارینا</string>
   <string name="isItRated">ئایا ڕیزبەندی کراوە؟</string>
   <string name="willBeNotified">کاتێک پاڵەوانێتییەکە دەستپێدەکات ئاگادار دەکرێیتەوە، بۆیە باشترە لە پەڕەیەکتردا یاری بکەیت لەکاتی چاوەڕوانیدا.</string>
@@ -53,4 +54,16 @@
   <string name="averagePerformance">تێکڕای هەوڵەکان</string>
   <string name="averageScore">تێکڕای خاڵ</string>
   <string name="myTournaments">پاڵەوانێتیەکانم</string>
+  <string name="editTournament">دەستکاریکردنی پاڵەوانێتی</string>
+  <string name="editTeamBattle">دەستکاریکردنی شەڕی تیم</string>
+  <string name="defender">بەرگریکار</string>
+  <string name="pickYourTeam">تیمەکەت هەڵبژێرە</string>
+  <string name="whichTeamWillYouRepresentInThisBattle">لەم شەڕەدا نوێنەرایەتی کامە تیم دەکەیت?</string>
+  <string name="youMustJoinOneOfTheseTeamsToParticipate">پێویستە لە یەکێک لەم تیمانەدا بیت بۆ بەشداریکردن!</string>
+  <string name="created">دروستکراوە</string>
+  <string name="recentlyPlayed">بەم دواییە یاری کردووە</string>
+  <string name="bestResults">باشترین ئەنجام</string>
+  <string name="tournamentStats">ئاماری پاڵەوانیەتیەکە</string>
+  <string name="rankAvgHelp">تێکڕای پلە یەک لەسەدی ڕیزبەندییەکەتە. نزمتر باشترە.</string>
+  <string name="medians">مامناوەندەکان</string>
 </resources>

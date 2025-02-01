@@ -1,10 +1,11 @@
 package lila.challenge
 
-import lila.common.{ LightUser, Template }
-import lila.user.{ LightUserApi, User }
 import chess.ByColor
 
-final class ChallengeMsg(msgApi: lila.msg.MsgApi, lightUserApi: LightUserApi)(using Executor):
+import lila.core.LightUser
+import lila.core.data.Template
+
+final class ChallengeMsg(msgApi: lila.core.msg.MsgApi)(using Executor):
 
   // bulk
   def onApiPair(gameId: GameId, users: ByColor[LightUser])(
@@ -13,10 +14,9 @@ final class ChallengeMsg(msgApi: lila.msg.MsgApi, lightUserApi: LightUserApi)(us
   ): Funit =
     List(users, users.swap)
       .map(_.toPair)
-      .map: (u1, u2) =>
+      .sequentiallyVoid { (u1, u2) =>
         sendGameMessage(gameId, u1, u2, managedById, template)
-      .parallel
-      .void
+      }
 
   private def sendGameMessage(
       gameId: GameId,

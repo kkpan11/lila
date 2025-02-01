@@ -12,7 +12,7 @@
   <string name="newTeam">Jauna komanda</string>
   <string name="myTeams">Manas komandas</string>
   <string name="noTeamFound">Neatrada nevienu komandu</string>
-  <string name="joinTeam">Pievienoties komandai</string>
+  <string name="joinTeam" comment="Appears as a button on team pages, and on pages of tournaments that require you to be a member of that team (e.g. Swiss tournaments).&#10;&#10;Please keep as short as possible.">Pievienoties komandai</string>
   <string name="onlyLeaderLeavesTeam">Lūdzu, pievienojiet jaunu komandas vadītāju pirms pamešanas, vai arī slēdziet komandu.</string>
   <string name="quitTeam">Pamest komandu</string>
   <string name="manuallyReviewAdmissionRequests">Izskatīt katru pievienošanās pieprasījumu</string>
@@ -53,7 +53,6 @@ Spēlētāji, kas nevēlēsies saņemt jūsu ziņas varētu pamest komandu.</str
   <string name="entryCodeDescriptionForLeader">(Neobligāts) Kods, kas jāzina jauniem dalībniekiem, lai pievienotos komandai.</string>
   <string name="incorrectEntryCode">Nepareizs pievienošanās kods.</string>
   <string name="teamAlreadyExists">Šī komanda jau pastāv.</string>
-  <string name="upcomingTourns">Gaidāmie turnīri</string>
   <string name="completedTourns">Notikušie turnīri</string>
   <string name="declinedRequests">Noraidītie pieprasījumi</string>
   <string name="joinLichessVariantTeam">Pievienojieties oficiālajai \"%s\" komandai, lai saņemtu jaunumus un informāciju par pasākumiem</string>

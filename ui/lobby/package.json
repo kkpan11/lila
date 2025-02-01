@@ -3,33 +3,19 @@
   "version": "2.0.0",
   "private": true,
   "description": "lichess.org lobby",
-  "type": "module",
-  "module": "src/main.js",
-  "keywords": [
-    "chess",
-    "lichess",
-    "lobby",
-    "seek"
-  ],
   "author": "Thibault Duplessis",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@types/debounce-promise": "^3.1.6",
+    "@types/debounce-promise": "^3.1.9",
     "common": "workspace:*",
     "dasher": "workspace:*",
     "debounce-promise": "^3.1.2",
-    "snabbdom": "^3.5.1"
+    "game": "workspace:*"
   },
-  "scripts": {
-    "compile": "tsc",
-    "dev": "tsc",
-    "prod": "tsc"
-  },
-  "lichess": {
-    "modules": {
-      "esm": {
-        "src/boot.ts": "lobby"
-      }
+  "build": {
+    "bundle": {
+      "module": "src/lobby.ts",
+      "inline": "src/lobby.inline.ts"
     }
   }
 }

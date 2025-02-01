@@ -1,26 +1,22 @@
-package views.html.analyse
+package views.analyse
 
-import lila.app.templating.Environment.{ given, * }
-import lila.app.ui.ScalatagsTemplate.*
-import lila.game.Pov
+import lila.app.UiEnv.{ *, given }
 
-object replayBot:
-
-  def apply(
-      pov: Pov,
-      initialFen: Option[chess.format.Fen.Epd],
-      pgn: String,
-      simul: Option[lila.simul.Simul],
-      cross: Option[lila.game.Crosstable.WithMatchup]
-  )(using PageContext) =
-    views.html.analyse.bits.layout(
-      title = replay titleOf pov,
-      moreCss = cssTag("analyse.round"),
-      openGraph = povOpenGraph(pov).some
-    ) {
+def replayBot(
+    pov: Pov,
+    initialFen: Option[chess.format.Fen.Full],
+    pgn: String,
+    simul: Option[lila.simul.Simul],
+    cross: Option[lila.game.Crosstable.WithMatchup]
+)(using Context) =
+  Page(ui.titleOf(pov))
+    .css("analyse.round")
+    .graph(views.round.ui.povOpenGraph(pov))
+    .csp(bits.csp)
+    .robots(false):
       main(cls := "analyse")(
         st.aside(cls := "analyse__side")(
-          views.html.game.side(pov, initialFen, none, simul = simul, bookmarked = false)
+          views.game.side(pov, initialFen, none, simul = simul, bookmarked = false)
         ),
         div(cls := "analyse__board main-board")(chessgroundBoard),
         div(cls := "analyse__tools")(div(cls := "ceval")),
@@ -30,16 +26,14 @@ object replayBot:
             div(cls := "fen-pgn active")(
               div(
                 strong("FEN"),
-                input(readonly, spellcheck := false, cls := "copyable autoselect analyse__underboard__fen")
+                input(readonly, spellcheck := false, cls := "analyse__underboard__fen")
               ),
               div(cls := "pgn")(pgn)
             ),
-            cross.map { c =>
+            cross.map: c =>
               div(cls := "ctable active")(
-                views.html.game.crosstable(pov.player.userId.fold(c)(c.fromPov), pov.gameId.some)
+                views.game.ui.crosstable(pov.player.userId.fold(c)(c.fromPov), pov.gameId.some)
               )
-            }
           )
         )
       )
-    }

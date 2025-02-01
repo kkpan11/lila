@@ -1,25 +1,24 @@
 package lila.api
 
 import chess.format.Fen
-import play.api.i18n.Lang
 import play.api.libs.json.*
 
 import lila.analyse.{ Analysis, JsonView as analysisJson }
 import lila.api.Context.given
+import lila.common.HTTPRequest
 import lila.common.Json.given
-import lila.common.{ Preload, HTTPRequest, ApiVersion }
-import lila.game.{ Game, Pov }
-import lila.memo.MongoCache.Api
+import lila.core.data.Preload
+import lila.core.i18n.Translate
+import lila.core.perm.Granter
+import lila.core.user.GameUsers
 import lila.pref.Pref
 import lila.puzzle.PuzzleOpening
-import lila.round.JsonView.WithFlags
+import lila.round.RoundGame.*
 import lila.round.{ Forecast, JsonView }
-import lila.security.Granter
 import lila.simul.Simul
-import lila.swiss.{ GameView as SwissView }
-import lila.tournament.{ GameView as TourView }
-import lila.tree.Node.partitionTreeJsonWriter
-import lila.user.{ User, GameUsers }
+import lila.swiss.GameView as SwissView
+import lila.tournament.GameView as TourView
+import lila.tree.{ ExportOptions, Tree }
 
 final private[api] class RoundApi(
     jsonView: JsonView,
@@ -32,11 +31,12 @@ final private[api] class RoundApi(
     simulApi: lila.simul.SimulApi,
     puzzleOpeningApi: lila.puzzle.PuzzleOpeningApi,
     externalEngineApi: lila.analyse.ExternalEngineApi,
-    getLightTeam: lila.hub.LightTeam.GetterSync,
+    getLightTeam: lila.core.team.LightTeam.GetterSync,
     userApi: lila.user.UserApi,
     prefApi: lila.pref.PrefApi,
-    getLightUser: lila.common.LightUser.GetterSync
-)(using Executor):
+    getLightUser: lila.core.LightUser.GetterSync,
+    userLag: lila.socket.UserLagCache
+)(using Executor, lila.core.i18n.Translator):
 
   def player(
       pov: Pov,
@@ -45,24 +45,26 @@ final private[api] class RoundApi(
   )(using ctx: Context): Fu[JsObject] = {
     for
       initialFen <- gameRepo.initialFen(pov.game)
-      users      <- users.orLoad(userApi.gamePlayers(pov.game.userIdPair, pov.game.perfType))
-      prefs      <- prefApi.get(users.map(_.map(_.user)))
-      given Lang = ctx.lang
-      (((((json, simul), swiss), note), forecast), bookmarked) <-
-        jsonView.playerJson(pov, prefs, users, initialFen, ctxFlags) zip
-          (pov.game.simulId so simulApi.find) zip
-          swissApi.gameView(pov) zip
-          (ctx.myId.ifTrue(ctx.isMobileApi).so(noteApi.get(pov.gameId, _))) zip
-          forecastApi.loadForDisplay(pov) zip
+      users      <- users.orLoad(userApi.gamePlayers(pov.game.userIdPair, pov.game.perfKey))
+      prefs      <- prefApi.get(users.map(_.map(_.user)), pov.color, ctx.pref)
+      (json, simul, swiss, note, forecast, bookmarked) <-
+        (
+          jsonView.playerJson(pov, prefs, users, initialFen, ctxFlags),
+          pov.game.simulId.so(simulApi.find),
+          swissApi.gameView(pov),
+          ctx.myId.ifTrue(ctx.isMobileApi).so(noteApi.get(pov.gameId, _)),
+          forecastApi.loadForDisplay(pov),
           bookmarkApi.exists(pov.game, ctx.me)
+        ).tupled
     yield (
-      withTournament(pov, tour) compose
-        withSwiss(swiss) compose
-        withSimul(simul) compose
-        withSteps(pov, initialFen) compose
-        withNote(note) compose
-        withBookmark(bookmarked) compose
-        withForecastCount(forecast.map(_.steps.size))
+      withTournament(pov, tour)
+        .compose(withSwiss(swiss))
+        .compose(withSimul(simul))
+        .compose(withSteps(pov, initialFen))
+        .compose(withNote(note))
+        .compose(withBookmark(bookmarked))
+        .compose(withForecastCount(forecast.map(_.steps.size)))
+        .compose(withOpponentSignal(pov))
     )(json)
   }.mon(_.round.api.player)
 
@@ -71,29 +73,31 @@ final private[api] class RoundApi(
       users: GameUsers,
       tour: Option[TourView],
       tv: Option[lila.round.OnTv],
-      initialFenO: Option[Option[Fen.Epd]] = None // Preload[Option[Fen.Epd]]?
+      initialFenO: Option[Option[Fen.Full]] = None // Preload[Option[Fen.Full]]?
   )(using ctx: Context): Fu[JsObject] = {
     for
-      initialFen <- initialFenO.fold(gameRepo initialFen pov.game)(fuccess)
-      given Lang = ctx.lang
-      ((((json, simul), swiss), note), bookmarked) <-
-        jsonView.watcherJson(pov, users, ctx.pref.some, ctx.me, tv, initialFen, ctxFlags) zip
-          (pov.game.simulId so simulApi.find) zip
-          swissApi.gameView(pov) zip
-          ctx.me.ifTrue(ctx.isMobileApi).so(noteApi.get(pov.gameId, _)) zip
+      initialFen <- initialFenO.fold(gameRepo.initialFen(pov.game))(fuccess)
+      given Translate = ctx.translate
+      (json, simul, swiss, note, bookmarked) <-
+        (
+          jsonView.watcherJson(pov, users, ctx.pref.some, ctx.me, tv, initialFen, ctxFlags),
+          pov.game.simulId.so(simulApi.find),
+          swissApi.gameView(pov),
+          ctx.me.ifTrue(ctx.isMobileApi).so(noteApi.get(pov.gameId, _)),
           bookmarkApi.exists(pov.game, ctx.me)
+        ).tupled
     yield (
-      withTournament(pov, tour) compose
-        withSwiss(swiss) compose
-        withSimul(simul) compose
-        withNote(note) compose
-        withBookmark(bookmarked) compose
-        withSteps(pov, initialFen)
+      withTournament(pov, tour)
+        .compose(withSwiss(swiss))
+        .compose(withSimul(simul))
+        .compose(withNote(note))
+        .compose(withBookmark(bookmarked))
+        .compose(withSteps(pov, initialFen))
     )(json)
   }.mon(_.round.api.watcher)
 
   private def ctxFlags(using ctx: Context) =
-    WithFlags(
+    ExportOptions(
       blurs = Granter.opt(_.ViewBlurs),
       rating = ctx.pref.showRatings,
       nvui = ctx.blind,
@@ -105,57 +109,55 @@ final private[api] class RoundApi(
       users: GameUsers,
       tv: Option[lila.round.OnTv] = None,
       analysis: Option[Analysis] = None,
-      initialFen: Option[Fen.Epd],
-      withFlags: WithFlags,
+      initialFen: Option[Fen.Full],
+      withFlags: ExportOptions,
       owner: Boolean = false
-  )(using ctx: Context): Fu[JsObject] = withExternalEngines(ctx.me) {
-    given Lang = ctx.lang
-    jsonView.watcherJson(
-      pov,
-      users,
-      ctx.pref.some,
-      ctx.me,
-      tv,
-      initialFen = initialFen,
-      flags = withFlags.copy(blurs = Granter.opt(_.ViewBlurs))
-    ) zip
-      tourApi.gameView.analysis(pov.game) zip
-      (pov.game.simulId so simulApi.find) zip
-      swissApi.gameView(pov) zip
-      ctx.me.ifTrue(ctx.isMobileApi).so {
-        noteApi.get(pov.gameId, _)
-      } zip
-      owner.so(forecastApi loadForDisplay pov) zip
-      withFlags.puzzles.so(pov.game.opening.map(_.opening)).so(puzzleOpeningApi.getClosestTo) zip
-      bookmarkApi.exists(pov.game, ctx.me) map {
-        case (((((((json, tour), simul), swiss), note), fco), puzzleOpening), bookmarked) =>
-          (
-            withTournament(pov, tour) compose
-              withSwiss(swiss) compose
-              withSimul(simul) compose
-              withNote(note) compose
-              withBookmark(bookmarked) compose
-              withTree(pov, analysis, initialFen, withFlags) compose
-              withAnalysis(pov.game, analysis) compose
-              withForecast(pov, owner, fco) compose
-              withPuzzleOpening(puzzleOpening)
-          )(json)
-      }
-  }
-    .mon(_.round.api.watcher)
+  )(using ctx: Context): Fu[JsObject] =
+    given Translate = ctx.translate
+    (
+      jsonView.watcherJson(
+        pov,
+        users,
+        ctx.pref.some,
+        ctx.me,
+        tv,
+        initialFen = initialFen,
+        flags = withFlags.copy(blurs = Granter.opt(_.ViewBlurs))
+      ),
+      tourApi.gameView.analysis(pov.game),
+      pov.game.simulId.so(simulApi.find),
+      swissApi.gameView(pov),
+      ctx.me.ifTrue(ctx.isMobileApi).so(noteApi.get(pov.gameId, _)),
+      owner.so(forecastApi.loadForDisplay(pov)),
+      withFlags.puzzles.so(pov.game.opening.map(_.opening)).so(puzzleOpeningApi.getClosestTo(_, true)),
+      bookmarkApi.exists(pov.game, ctx.me)
+    ).mapN: (json, tour, simul, swiss, note, fco, puzzleOpening, bookmarked) =>
+      (
+        withTournament(pov, tour)
+          .compose(withSwiss(swiss))
+          .compose(withSimul(simul))
+          .compose(withNote(note))
+          .compose(withBookmark(bookmarked))
+          .compose(withTree(pov, analysis, initialFen, withFlags))
+          .compose(withAnalysis(pov.game, analysis))
+          .compose(withForecast(pov, owner, fco))
+          .compose(withPuzzleOpening(puzzleOpening))
+      )(json)
+    .flatMap(externalEngineApi.withExternalEngines)
+      .mon(_.round.api.watcher)
 
   def userAnalysisJson(
       pov: Pov,
       pref: Pref,
-      initialFen: Option[Fen.Epd],
-      orientation: chess.Color,
-      owner: Boolean,
-      me: Option[User]
-  ) =
-    withExternalEngines(me) {
-      owner.so(forecastApi loadForDisplay pov).map { fco =>
-        withForecast(pov, owner, fco) {
-          withTree(pov, analysis = none, initialFen, WithFlags(opening = true)) {
+      initialFen: Option[Fen.Full],
+      orientation: Color,
+      owner: Boolean
+  )(using Option[Me]) =
+    owner
+      .so(forecastApi.loadForDisplay(pov))
+      .map: fco =>
+        withForecast(pov, owner, fco):
+          withTree(pov, analysis = none, initialFen, ExportOptions(opening = true)):
             jsonView.userAnalysisJson(
               pov,
               pref,
@@ -163,24 +165,24 @@ final private[api] class RoundApi(
               orientation,
               owner = owner
             )
-          }
-        }
-      }
-    }
+      .flatMap(externalEngineApi.withExternalEngines)
 
   private def withTree(
       pov: Pov,
       analysis: Option[Analysis],
-      initialFen: Option[Fen.Epd],
-      withFlags: WithFlags
-  )(
-      obj: JsObject
-  ) =
-    obj + ("treeParts" -> partitionTreeJsonWriter.writes(
-      lila.round.TreeBuilder(pov.game, analysis, initialFen | pov.game.variant.initialFen, withFlags)
-    ))
+      initialFen: Option[Fen.Full],
+      withFlags: ExportOptions
+  )(obj: JsObject) =
+    obj + ("treeParts" ->
+      Tree.makePartitionTreeJson(
+        pov.game,
+        analysis,
+        initialFen | pov.game.variant.initialFen,
+        withFlags,
+        logChessError = lila.log("api.round").warn
+      ))
 
-  private def withSteps(pov: Pov, initialFen: Option[Fen.Epd])(obj: JsObject) =
+  private def withSteps(pov: Pov, initialFen: Option[Fen.Full])(obj: JsObject) =
     obj + ("steps" -> lila.round.StepBuilder(
       id = pov.gameId,
       sans = pov.game.sans,
@@ -198,6 +200,11 @@ final private[api] class RoundApi(
     count.filter(0 !=).fold(json) { c =>
       json + ("forecastCount" -> JsNumber(c))
     }
+
+  private def withOpponentSignal(pov: Pov)(json: JsObject) =
+    if pov.game.speed <= chess.Speed.Bullet then
+      json.add("opponentSignal", pov.opponent.userId.flatMap(userLag.getLagRating))
+    else json
 
   private def withPuzzleOpening(
       opening: Option[Either[PuzzleOpening.FamilyWithCount, PuzzleOpening.WithCount]]
@@ -220,7 +227,7 @@ final private[api] class RoundApi(
           if pov.forecastable then
             fco.fold[JsValue](Json.obj("none" -> true)) { fc =>
               import Forecast.given
-              Json toJson fc
+              Json.toJson(fc)
             }
           else Json.obj("onMyTurn" -> true)
         }
@@ -233,15 +240,7 @@ final private[api] class RoundApi(
       o.map { analysisJson.bothPlayers(g.startedAtPly, _) }
     )
 
-  private def withExternalEngines(me: Option[User])(jsonFu: Fu[JsObject]): Fu[JsObject] =
-    jsonFu flatMap { withExternalEngines(me, _) }
-
-  def withExternalEngines(me: Option[User], json: JsObject): Fu[JsObject] =
-    (me so externalEngineApi.list) map { engines =>
-      json.add("externalEngines", engines.nonEmpty.option(engines))
-    }
-
-  def withTournament(pov: Pov, viewO: Option[TourView])(json: JsObject)(using lang: Lang) =
+  def withTournament(pov: Pov, viewO: Option[TourView])(json: JsObject)(using Translate) =
     json.add("tournament" -> viewO.map { v =>
       Json
         .obj(
@@ -268,12 +267,14 @@ final private[api] class RoundApi(
         )
         .add(
           "team",
-          v.teamVs.map(_.teams(pov.color)) map: id =>
-            getLightTeam(id).fold(Json.obj("name" -> id)): team =>
-              Json.obj(
-                "name"  -> team.name,
-                "flair" -> team.flair
-              )
+          v.teamVs
+            .map(_.teams(pov.color))
+            .map: id =>
+              getLightTeam(id).fold(Json.obj("name" -> id)): team =>
+                Json.obj(
+                  "name"  -> team.name,
+                  "flair" -> team.flair
+                )
         )
     })
 

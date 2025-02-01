@@ -56,6 +56,8 @@
   <string name="allSyncMembersRemainOnTheSamePosition">Toți membri sincronizați rămân la aceeași poziție</string>
   <string name="shareChanges">Împărtășește modificările cu spectatorii și salvează-le pe server</string>
   <string name="playing">În desfășurare</string>
+  <string name="showResults">Rezultate</string>
+  <string name="showEvalBar">Bară de evaluare</string>
   <string name="first">Prima</string>
   <string name="previous">Precedentă</string>
   <string name="next">Următoarea</string>
@@ -66,7 +68,6 @@
   <string name="downloadAllGames">Descarcă toate partidele</string>
   <string name="chapterPgn">PGN-ul capitolului</string>
   <string name="copyChapterPgn">Copiază PGN</string>
-  <string name="copyChapterPgnDescription">Copiază în clipboard PGN pentru capitol.</string>
   <string name="downloadGame">Descarcă partida</string>
   <string name="studyUrl">URL-ul studiului</string>
   <string name="currentChapterUrl">URL-ul capitolului curent</string>
@@ -171,4 +172,5 @@
   <string name="playAgain">Joacă din nou</string>
   <string name="whatWouldYouPlay">Ce ai juca în această poziție?</string>
   <string name="youCompletedThisLesson">Felicitări! Ai terminat această lecție.</string>
+  <string name="perPage">%s pe pagină</string>
 </resources>

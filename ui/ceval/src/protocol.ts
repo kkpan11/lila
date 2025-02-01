@@ -1,11 +1,12 @@
 import { defined } from 'common';
-import { Work } from './types';
+import type { Work } from './types';
 
 export class Protocol {
   public engineName: string | undefined;
 
   private work: Work | undefined;
   private currentEval: Tree.LocalEval | undefined;
+  private gameId: string | undefined;
   private expectedPvs = 1;
 
   private nextWork: Work | undefined;
@@ -138,13 +139,14 @@ export class Protocol {
 
       if (multiPv === this.expectedPvs && this.currentEval) {
         this.work.emit(this.currentEval);
-        if (depth >= 99 || millis >= this.work.searchMs) this.stop();
+        if (depth >= 99) this.stop();
       }
-    } else if (command && !['Stockfish', 'id', 'option', 'info'].includes(parts[0])) {
-      // some think it's a bug when they see these in console
-      if (!['No such option: Analysis Contempt', 'No such option: UCI_Variant'].includes(command))
-        console.warn('SF:', command);
-    }
+    } else if (
+      command &&
+      !['Stockfish', 'id', 'option', 'info'].includes(parts[0]) &&
+      !['Analysis Contempt', 'UCI_Variant', 'UCI_AnalyseMode'].includes(command.split(': ')[1])
+    )
+      console.warn(`SF: ${command}`);
   }
 
   private stop(): void {
@@ -169,8 +171,12 @@ export class Protocol {
       this.setOption('Hash', this.work.hashSize || 16);
       this.setOption('MultiPV', Math.max(1, this.work.multiPv));
 
+      if (this.gameId && this.gameId !== this.work.gameId) this.send('ucinewgame');
+      this.gameId = this.work.gameId;
+
       this.send(['position fen', this.work.initialFen, 'moves', ...this.work.moves].join(' '));
-      this.send(`go depth 99`);
+      const [by, value] = Object.entries(this.work.search)[0];
+      this.send(`go ${by} ${value}`);
     }
   }
 

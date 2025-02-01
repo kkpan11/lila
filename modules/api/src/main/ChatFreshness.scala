@@ -1,9 +1,8 @@
 package lila.api
 
-import lila.chat.UserLine
-import lila.hub.actorApi.shutup.PublicSource
-import lila.tournament.{ Tournament, TournamentCache }
+import lila.core.shutup.PublicSource
 import lila.swiss.{ Swiss, SwissCache }
+import lila.tournament.{ Tournament, TournamentCache }
 
 /* Checks that a chat can still be posted to */
 final class ChatFreshness(tourCache: TournamentCache, swissCache: SwissCache)(using Executor):

@@ -31,7 +31,7 @@
     <item quantity="other">%s Deelnemers</item>
   </plurals>
   <string name="inviteToTheStudy">Uitnodigen voor de studie</string>
-  <string name="pleaseOnlyInvitePeopleYouKnow">Nodig alleen deelnemers uit die je kent en actief mee willen doen aan deze studie.</string>
+  <string name="pleaseOnlyInvitePeopleYouKnow">Nodig alleen deelnemers uit die jou kennen en actief mee willen doen aan deze studie.</string>
   <string name="searchByUsername">Zoeken op gebruikersnaam</string>
   <string name="spectator">Kijker</string>
   <string name="contributor">Bijdrager</string>
@@ -53,6 +53,8 @@
   <string name="allSyncMembersRemainOnTheSamePosition">Alle SYNC leden blijven op dezelfde positie</string>
   <string name="shareChanges">Deel veranderingen met toeschouwers en sla deze op op de server</string>
   <string name="playing">Spelend</string>
+  <string name="showResults">Resultaten</string>
+  <string name="showEvalBar">Evaluatiebalk</string>
   <string name="first">Eerste</string>
   <string name="previous">Vorige</string>
   <string name="next">Volgende</string>
@@ -63,7 +65,6 @@
   <string name="downloadAllGames">Download alle partijen</string>
   <string name="chapterPgn">Hoofdstuk PGN</string>
   <string name="copyChapterPgn">PGN kopiëren</string>
-  <string name="copyChapterPgnDescription">Kopieer hoofdstuk PGN naar klembord.</string>
   <string name="downloadGame">Partij downloaden</string>
   <string name="studyUrl">Studie URL</string>
   <string name="currentChapterUrl">Huidige hoofdstuk URL</string>
@@ -167,4 +168,5 @@
   <string name="playAgain">Opnieuw spelen</string>
   <string name="whatWouldYouPlay">Wat zou je in deze stelling spelen?</string>
   <string name="youCompletedThisLesson">Gefeliciteerd! Je hebt deze les voltooid.</string>
+  <string name="perPage">%s per pagina</string>
 </resources>

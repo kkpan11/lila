@@ -1,4 +1,5 @@
-import { h } from 'snabbdom';
+import { h, type VNode } from 'snabbdom';
+import { requestIdleCallback } from 'common';
 
 type Notification = {
   text: string;
@@ -9,29 +10,18 @@ export class Notify {
   notification: Notification | undefined;
   redraw?: () => void;
 
-  constructor(readonly timeout: number = 3000) {}
+  constructor() {}
 
-  set = (msg: string) => {
+  set = (msg: string): void => {
     // make sure it's different from previous, so it gets read again
-    if (this.notification && this.notification.text == msg) msg += ' ';
+    if (this.notification && this.notification.text === msg) msg += ' ';
     this.notification = { text: msg, date: new Date() };
-    lichess.requestIdleCallback(() => this.redraw && this.redraw(), 500);
+    requestIdleCallback(() => this.redraw && this.redraw(), 500);
   };
 
-  currentText = () =>
-    this.notification && this.notification.date.getTime() > Date.now() - this.timeout
-      ? this.notification.text
-      : '';
+  currentText = (): string =>
+    this.notification && this.notification.date.getTime() > Date.now() - 3000 ? this.notification.text : '';
 
-  render = () =>
-    h(
-      'div.notify',
-      {
-        attrs: {
-          'aria-live': 'assertive',
-          'aria-atomic': 'true',
-        },
-      },
-      this.currentText(),
-    );
+  render = (): VNode =>
+    h('div.notify', { attrs: { 'aria-live': 'assertive', 'aria-atomic': 'true' } }, this.currentText());
 }

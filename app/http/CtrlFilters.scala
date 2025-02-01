@@ -1,27 +1,18 @@
 package lila.app
 package http
 
+import alleycats.Zero
 import play.api.http.*
 import play.api.mvc.*
-import play.api.libs.json.JsNumber
-
-import lila.security.{ Permission, Granter }
 
 import lila.common.HTTPRequest
-import lila.common.config
+import lila.core.perm.{ Granter, Permission }
 
-trait CtrlFilters extends ControllerHelpers with ResponseBuilder with CtrlConversions:
+trait CtrlFilters(using Executor) extends ControllerHelpers with ResponseBuilder:
 
-  def isGranted(permission: Permission.Selector)(using Me): Boolean =
-    Granter(permission(Permission))
+  export Granter.{ apply as isGranted, opt as isGrantedOpt }
 
-  def isGrantedOpt(permission: Permission.Selector)(using Option[Me]): Boolean =
-    isGranted(permission(Permission))
-
-  def isGranted(permission: Permission)(using me: Option[Me]): Boolean =
-    me.exists(Granter(permission)(using _))
-
-  def NoCurrentGame(a: => Fu[Result])(using ctx: Context)(using Executor): Fu[Result] =
+  def NoCurrentGame(a: => Fu[Result])(using ctx: Context): Fu[Result] =
     ctx.me
       .soUse(env.preloader.currentGameMyTurn)
       .flatMap:
@@ -32,9 +23,9 @@ trait CtrlFilters extends ControllerHelpers with ResponseBuilder with CtrlConver
     Forbidden(
       jsonError:
         s"You are already playing ${current.opponent}"
-    ) as JSON
+    ).as(JSON)
 
-  def NoPlaybanOrCurrent(a: => Fu[Result])(using Context, Executor): Fu[Result] =
+  def NoPlaybanOrCurrent(a: => Fu[Result])(using Context): Fu[Result] =
     NoPlayban(NoCurrentGame(a))
 
   def IfGranted(perm: Permission.Selector)(f: => Fu[Result])(using ctx: Context): Fu[Result] =
@@ -45,21 +36,21 @@ trait CtrlFilters extends ControllerHelpers with ResponseBuilder with CtrlConver
     if env.security.firewall.accepts(ctx.req) then a
     else keyPages.blacklisted
 
-  def NoTor(res: => Fu[Result])(using ctx: Context)(using Executor): Fu[Result] =
+  def NoTor(res: => Fu[Result])(using ctx: Context): Fu[Result] =
     env.security.ipTrust
       .isPubOrTor(ctx.ip)
       .flatMap:
-        if _ then Unauthorized.page(views.html.auth.bits.tor())
+        if _ then Unauthorized.page(views.auth.pubOrTor)
         else res
 
   def NoEngine[A <: Result](a: => Fu[A])(using ctx: Context): Fu[Result] =
     if ctx.me.exists(_.marks.engine)
-    then Forbidden.page(views.html.site.message.noEngine)
+    then Forbidden.page(views.site.message.noEngine)
     else a
 
   def NoBooster[A <: Result](a: => Fu[A])(using ctx: Context): Fu[Result] =
     if ctx.me.exists(_.marks.boost)
-    then Forbidden.page(views.html.site.message.noBooster)
+    then Forbidden.page(views.site.message.noBooster)
     else a
 
   def NoLame[A <: Result](a: => Fu[A])(using Context): Fu[Result] =
@@ -80,12 +71,21 @@ trait CtrlFilters extends ControllerHelpers with ResponseBuilder with CtrlConver
   def NoShadowban[A <: Result](a: => Fu[A])(using ctx: Context): Fu[Result] =
     if ctx.me.exists(_.marks.troll) then notFound else a
 
-  def NoPlayban(a: => Fu[Result])(using ctx: Context)(using Executor): Fu[Result] =
+  def NoPlayban(a: => Fu[Result])(using ctx: Context): Fu[Result] =
     ctx.userId
       .so(env.playban.api.currentBan)
       .flatMap:
         _.fold(a): ban =>
           negotiate(keyPages.home(Results.Forbidden), playbanJsonError(ban))
+
+  def AuthOrTrustedIp(f: => Fu[Result])(using ctx: Context): Fu[Result] =
+    if ctx.isAuth then f
+    else
+      env.security
+        .ip2proxy(ctx.ip)
+        .flatMap: ip =>
+          if ip.isSafeish then f
+          else Redirect(routes.Auth.login)
 
   private val csrfForbiddenResult = Forbidden("Cross origin request forbidden")
 
@@ -97,14 +97,14 @@ trait CtrlFilters extends ControllerHelpers with ResponseBuilder with CtrlConver
 
   def XhrOrRedirectHome(res: => Fu[Result])(using ctx: Context): Fu[Result] =
     if HTTPRequest.isXhr(ctx.req) then res
-    else Redirect(controllers.routes.Lobby.home)
+    else Redirect(routes.Lobby.home)
 
   def Reasonable(
       page: Int,
-      max: config.Max = config.Max(40),
+      max: Max = Max(40),
       errorPage: => Fu[Result] = BadRequest("resource too old")
   )(result: => Fu[Result]): Fu[Result] =
-    if page < max.value && page > 0 then result else errorPage
+    if page <= max.value && page > 0 then result else errorPage
 
   def NotForKids(f: => Fu[Result])(using ctx: Context): Fu[Result] =
     if ctx.kid.no then f else notFound
@@ -112,7 +112,10 @@ trait CtrlFilters extends ControllerHelpers with ResponseBuilder with CtrlConver
   def NoCrawlers(result: => Fu[Result])(using ctx: Context): Fu[Result] =
     if HTTPRequest.isCrawler(ctx.req).yes then notFound else result
 
-  def NotManaged(result: => Fu[Result])(using ctx: Context)(using Executor): Fu[Result] =
-    ctx.me.so(env.clas.api.student.isManaged(_)) flatMap {
+  def NoCrawlers[A](computation: => A)(using ctx: Context, default: Zero[A]): A =
+    if HTTPRequest.isCrawler(ctx.req).yes then default.zero else computation
+
+  def NotManaged(result: => Fu[Result])(using ctx: Context): Fu[Result] =
+    ctx.me.so(env.clas.api.student.isManaged(_)).flatMap {
       if _ then notFound else result
     }

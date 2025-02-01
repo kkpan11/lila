@@ -13,12 +13,11 @@ h3,
 h4 {
   @extend %roboto;
 
-  font-weight: normal;
   font-size: 1em;
 }
 
 h1 {
-  @include fluid-size('font-size', 20px, 40px);
+  @include fluid-size('font-size', 19px, 38px);
 
   a {
     color: $c-link-dim;
@@ -31,6 +30,10 @@ h1 {
 
 h2 {
   @include fluid-size('font-size', 16px, 30px);
+}
+
+.monospace {
+  font-family: monospace;
 }
 
 .ninja-title {

@@ -2,15 +2,17 @@ package lila.memo
 
 import alleycats.Zero
 
+import lila.core.config.RateLimit as Enforce
+
 /** Throttler that allows X operations per Y unit of time Not thread safe
   */
 final class RateLimit[K](
     credits: Int,
     duration: FiniteDuration,
     key: String,
-    enforce: Boolean = true,
     log: Boolean = true
-) extends RateLimit.RateLimiter[K]:
+)(using enforce: Enforce)(using Executor)
+    extends RateLimit.RateLimiter[K]:
   import RateLimit.*
 
   private val storage = lila.memo.CacheApi.scaffeineNoScheduler
@@ -31,17 +33,17 @@ final class RateLimit[K](
   def apply[A](k: K, default: => A, cost: Cost = 1, msg: => String = "")(op: => A): A =
     if cost < 1 then op
     else
-      storage getIfPresent k match
+      storage.getIfPresent(k) match
         case None =>
           storage.put(k, cost -> makeClearAt)
           op
-        case Some((a, clearAt)) if a < credits =>
+        case Some(a, clearAt) if a < credits =>
           storage.put(k, (a + cost) -> clearAt)
           op
-        case Some((_, clearAt)) if nowMillis > clearAt =>
+        case Some(_, clearAt) if nowMillis > clearAt =>
           storage.put(k, cost -> makeClearAt)
           op
-        case _ if enforce =>
+        case _ if enforce.yes =>
           if log then logger.info(s"$credits/$duration $k cost: $cost $msg")
           monitor.increment()
           default
@@ -61,23 +63,19 @@ object RateLimit:
     case Through, Limited
 
   trait RateLimiter[K]:
-
     def apply[A](k: K, default: => A, cost: Cost = 1, msg: => String = "")(op: => A): A
-
     def chargeable[A](k: K, default: => A, cost: Cost = 1, msg: => String = "")(op: ChargeWith => A): A
 
   def composite[K](
       key: String,
-      enforce: Boolean = true,
       log: Boolean = true
-  )(rules: (String, Int, FiniteDuration)*): RateLimiter[K] =
+  )(rules: (String, Int, FiniteDuration)*)(using Executor, Enforce): RateLimiter[K] =
 
     val limiters: Seq[RateLimit[K]] = rules.map: (subKey, credits, duration) =>
       RateLimit[K](
         credits = credits,
         duration = duration,
         key = s"$key.$subKey",
-        enforce = enforce,
         log = log
       )
 

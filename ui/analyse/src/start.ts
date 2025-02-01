@@ -1,8 +1,8 @@
 import makeCtrl from './ctrl';
 import menuHover from 'common/menuHover';
-import makeView from './view/view';
-import { AnalyseApi, AnalyseOpts } from './interfaces';
-import { VNode } from 'snabbdom';
+import makeView from './view/main';
+import type { AnalyseApi, AnalyseOpts } from './interfaces';
+import type { VNode } from 'snabbdom';
 import type * as studyDeps from './study/studyDeps';
 
 export default function (
@@ -11,9 +11,8 @@ export default function (
 ) {
   return function (opts: AnalyseOpts): AnalyseApi {
     opts.element = document.querySelector('main.analyse') as HTMLElement;
-    opts.trans = lichess.trans(opts.i18n);
 
-    const ctrl = (lichess.analysis = new makeCtrl(opts, redraw, deps?.StudyCtrl));
+    const ctrl = (site.analysis = new makeCtrl(opts, redraw, deps?.StudyCtrl));
     const view = makeView(deps);
 
     const blueprint = view(ctrl);

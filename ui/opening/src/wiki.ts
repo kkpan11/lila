@@ -1,6 +1,6 @@
-import { OpeningPage } from './interfaces';
+import type { OpeningPage } from './interfaces';
 
-export default async function wikiTheory(data: OpeningPage) {
+export default function wikiTheory(data: OpeningPage): void {
   $('.opening__wiki__markup__placeholder').each(function (this: HTMLDivElement) {
     const wrap = $(this);
     fetchAndRender(data, html => wrap.html(html));
@@ -9,7 +9,8 @@ export default async function wikiTheory(data: OpeningPage) {
 
 async function fetchAndRender(data: OpeningPage, render: (html: string) => void) {
   const wikiBooksUrl = 'https://en.wikibooks.org';
-  const apiArgs = 'redirects&origin=*&action=query&prop=extracts&formatversion=2&format=json&exchars=1200';
+  const apiArgs =
+    'redirects&origin=*&action=query&prop=extracts&formatversion=2&format=json&exchars=1200&stable=1';
 
   const removeH1 = (html: string) => html.replace(/<h1>.+<\/h1>/g, '');
   const removeEmptyParagraph = (html: string) => html.replace(/<p>(<br \/>|\s)*<\/p>/g, '');
@@ -48,8 +49,6 @@ async function fetchAndRender(data: OpeningPage, render: (html: string) => void)
         console.warn('error: unexpected API response:<br><pre>' + JSON.stringify(page) + '</pre>');
         return;
       } else {
-        console.log(page.extract, title);
-        console.log(transform(page.extract, title));
         return render(transform(page.extract, title));
       }
     } else return;

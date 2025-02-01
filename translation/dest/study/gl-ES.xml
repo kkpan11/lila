@@ -31,7 +31,7 @@
     <item quantity="other">%s Membros</item>
   </plurals>
   <string name="inviteToTheStudy">Invitar ao estudo</string>
-  <string name="pleaseOnlyInvitePeopleYouKnow">Por favor, convida só a persoas que coñezas e que desexen activamente unirse a este estudo.</string>
+  <string name="pleaseOnlyInvitePeopleYouKnow">Por favor, convida só a persoas que te coñezan e que desexen activamente unirse a este estudo.</string>
   <string name="searchByUsername">Buscar por nome de usuario</string>
   <string name="spectator">Espectador</string>
   <string name="contributor">Colaborador</string>
@@ -53,6 +53,8 @@
   <string name="allSyncMembersRemainOnTheSamePosition">Todos os membros sincronizados permanecen na mesma posición</string>
   <string name="shareChanges">Comparte os cambios cos espectadores e gárdaos no servidor</string>
   <string name="playing">En xogo</string>
+  <string name="showResults">Resultados</string>
+  <string name="showEvalBar">Indicadores de avaliación</string>
   <string name="first">Primeiro</string>
   <string name="previous">Anterior</string>
   <string name="next">Seguinte</string>
@@ -63,12 +65,11 @@
   <string name="downloadAllGames">Descargar todas as partidas</string>
   <string name="chapterPgn">PGN do capítulo</string>
   <string name="copyChapterPgn">Copiar PGN</string>
-  <string name="copyChapterPgnDescription">Copiar o PGN do capítulo no portapapeis.</string>
   <string name="downloadGame">Descargar partida</string>
   <string name="studyUrl">URL do estudo</string>
   <string name="currentChapterUrl">Ligazón do capítulo actual</string>
-  <string name="youCanPasteThisInTheForumToEmbed">Podes pegar isto no foro ou no teu blog de Lichess para incrustalo</string>
-  <string name="startAtInitialPosition">Comezar desde a posición inicial do estudo</string>
+  <string name="youCanPasteThisInTheForumToEmbed">Podes pegar esta URL no foro ou no teu blog de Lichess para incrustala</string>
+  <string name="startAtInitialPosition">Comezar desde a posición inicial</string>
   <string name="startAtX">Comezar en %s</string>
   <string name="embedInYourWebsite">Incrustar na túa páxina web ou blog</string>
   <string name="readMoreAboutEmbedding">Ler máis sobre como inserir contido</string>
@@ -167,4 +168,5 @@
   <string name="playAgain">Xogar de novo</string>
   <string name="whatWouldYouPlay">Que xogarías nesta posición?</string>
   <string name="youCompletedThisLesson">Parabéns! Completaches esta lección.</string>
+  <string name="perPage">%s por páxina</string>
 </resources>

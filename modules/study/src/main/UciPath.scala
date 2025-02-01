@@ -10,8 +10,8 @@ extension (e: UciPath)
   def isMainline(node: Node): Boolean =
     e.split match
       case None => true
-      case Some((id, rest)) =>
-        node.children.first match
+      case Some(id, rest) =>
+        node.children.mainlineFirst match
           case None        => false
           case Some(child) => child.id == id && rest.isMainline(child)
 

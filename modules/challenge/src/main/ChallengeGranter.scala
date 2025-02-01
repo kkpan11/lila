@@ -1,16 +1,9 @@
 package lila.challenge
 
-import play.api.i18n.Lang
-
-import lila.i18n.I18nKeys.{ challenge as trans }
-import lila.pref.Pref
+import lila.core.i18n.I18nKey.challenge as trans
+import lila.core.i18n.Translate
+import lila.core.relation.Relation.{ Block, Follow }
 import lila.rating.PerfType
-import lila.relation.{ Block, Follow }
-import lila.user.{ User, Me }
-import scala.util.Try
-import lila.user.UserPerfs
-import lila.rating.Perf
-import lila.Lila
 
 case class ChallengeDenied(dest: User, reason: ChallengeDenied.Reason)
 
@@ -26,7 +19,7 @@ object ChallengeDenied:
     case BotUltraBullet
     case SelfChallenge
 
-  def translated(d: ChallengeDenied)(using Lang): String =
+  def translated(d: ChallengeDenied)(using Translate): String =
     d.reason match
       case Reason.YouAreAnon               => trans.registerToSendChallenges.txt()
       case Reason.YouAreBlocked            => trans.youCannotChallengeX.txt(d.dest.titleUsername)
@@ -39,50 +32,53 @@ object ChallengeDenied:
       case Reason.SelfChallenge  => "You cannot challenge yourself."
 
 final class ChallengeGranter(
-    prefApi: lila.pref.PrefApi,
-    perfsRepo: lila.user.UserPerfsRepo,
-    relationApi: lila.relation.RelationApi
+    prefApi: lila.core.pref.PrefApi,
+    userApi: lila.core.user.UserApi,
+    relationApi: lila.core.relation.RelationApi
 ):
 
   import ChallengeDenied.Reason.*
 
   val ratingThreshold = 300
 
-  def isDenied(dest: User, perfType: PerfType)(using
+  def mayChallenge(dest: User)(using Executor)(using me: Option[Me]): Fu[Boolean] =
+    isDenied(dest, None).map(_.isEmpty)
+
+  // perfkey is None when we're not yet trying to challenge
+  def isDenied(dest: User, perfKey: Option[PerfKey])(using
       Executor
   )(using me: Option[Me]): Fu[Option[ChallengeDenied]] = me
-    .fold[Fu[Option[ChallengeDenied.Reason]]] {
-      prefApi.get(dest).map(_.challenge) map {
-        case Pref.Challenge.ALWAYS => none
-        case _                     => YouAreAnon.some
-      }
-    } { from =>
-      type Res = Option[ChallengeDenied.Reason]
-      given Conversion[Res, Fu[Res]] = fuccess
-      relationApi.fetchRelation(dest, from) zip
-        prefApi.get(dest).map(_.challenge) flatMap {
+    .match
+      case None =>
+        prefApi.getChallenge(dest.id).map {
+          case lila.core.pref.Challenge.ALWAYS => none
+          case _                               => YouAreAnon.some
+        }
+      case Some(from) =>
+        type Res = Option[ChallengeDenied.Reason]
+        given Conversion[Res, Fu[Res]] = fuccess
+        relationApi.fetchRelation(dest.id, from.userId).zip(prefApi.getChallenge(dest.id)).flatMap {
           case (Some(Block), _)                                  => YouAreBlocked.some
-          case (_, Pref.Challenge.NEVER)                         => TheyDontAcceptChallenges.some
+          case (_, lila.core.pref.Challenge.NEVER)               => TheyDontAcceptChallenges.some
           case (Some(Follow), _)                                 => none // always accept from followed
           case (_, _) if from.marks.engine && !dest.marks.engine => YouAreBlocked.some
-          case (_, Pref.Challenge.FRIEND)                        => FriendsOnly.some
-          case (_, Pref.Challenge.RATING) =>
-            perfsRepo
-              .perfsOf(from.value -> dest, _.sec)
-              .map: (fromPerfs, destPerfs) =>
-                if fromPerfs(perfType).provisional || destPerfs(perfType).provisional
-                then RatingIsProvisional(perfType).some
-                else
-                  val diff =
-                    math.abs(fromPerfs(perfType).intRating.value - destPerfs(perfType).intRating.value)
-                  (diff > ratingThreshold) option RatingOutsideRange(perfType)
-          case (_, Pref.Challenge.REGISTERED) => none
-          case _ if from == dest              => SelfChallenge.some
-          case _                              => none
+          case (_, lila.core.pref.Challenge.FRIEND)              => FriendsOnly.some
+          case (_, lila.core.pref.Challenge.RATING) =>
+            perfKey.so: pk =>
+              userApi
+                .perfsOf(from.value -> dest, primary = false)
+                .map: (fromPerfs, destPerfs) =>
+                  if (fromPerfs(pk).provisional || destPerfs(pk).provisional).value
+                  then RatingIsProvisional(pk).some
+                  else
+                    val diff = (fromPerfs(pk).intRating - destPerfs(pk).intRating).value
+                    (Math.abs(diff) > ratingThreshold).option(RatingOutsideRange(pk))
+          case (_, lila.core.pref.Challenge.REGISTERED) => none
+          case _ if from == dest                        => SelfChallenge.some
+          case _                                        => none
         }
-    }
     .map:
-      case None if dest.isBot && perfType == PerfType.UltraBullet => BotUltraBullet.some
-      case res                                                    => res
+      case None if dest.isBot && perfKey == PerfKey.ultraBullet => BotUltraBullet.some
+      case res                                                  => res
     .map:
       _.map { ChallengeDenied(dest, _) }

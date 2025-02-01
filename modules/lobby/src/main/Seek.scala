@@ -1,14 +1,17 @@
 package lila.lobby
 
-import chess.{ Mode, Speed }
+import chess.IntRating
+import chess.rating.RatingProvisional
 import chess.variant.Variant
+import chess.{ Mode, Speed }
 import play.api.libs.json.*
-import ornicar.scalalib.ThreadLocalRandom
+import scalalib.ThreadLocalRandom
+import scalalib.model.Days
 
-import lila.common.Days
 import lila.common.Json.given
-import lila.rating.{ PerfType, Perf, RatingRange }
-import lila.user.User
+import lila.core.perf.UserWithPerfs
+import lila.core.rating.RatingRange
+import lila.rating.PerfType
 
 // correspondence chess, persistent
 case class Seek(
@@ -16,24 +19,19 @@ case class Seek(
     variant: Variant.Id,
     daysPerTurn: Option[Days],
     mode: Int,
-    color: String,
     user: LobbyUser,
     ratingRange: String,
     createdAt: Instant
 ):
-
   inline def id = _id
-
-  val realColor = Color orDefault color
 
   val realVariant = Variant.orDefault(variant)
 
-  val realMode = Mode orDefault mode
+  val realMode = Mode.orDefault(mode)
 
   def compatibleWith(h: Seek) =
     user.id != h.user.id &&
       compatibilityProperties == h.compatibilityProperties &&
-      (realColor compatibleWith h.realColor) &&
       ratingRangeCompatibleWith(h) && h.ratingRangeCompatibleWith(this)
 
   private def ratingRangeCompatibleWith(s: Seek) =
@@ -41,7 +39,7 @@ case class Seek(
 
   private def compatibilityProperties = (variant, mode, daysPerTurn)
 
-  lazy val realRatingRange: Option[RatingRange] = RatingRange noneIfDefault ratingRange
+  lazy val realRatingRange: Option[RatingRange] = RatingRange.noneIfDefault(ratingRange)
 
   lazy val perfType = PerfType(realVariant, Speed.Correspondence)
 
@@ -56,8 +54,7 @@ case class Seek(
         "rating"   -> rating,
         "variant"  -> Json.obj("key" -> realVariant.key),
         "perf"     -> Json.obj("key" -> perfType.key),
-        "mode"     -> realMode.id,
-        "color"    -> (chess.Color.fromName(color).so(_.name): String)
+        "mode"     -> realMode.id
       )
       .add("days" -> daysPerTurn)
       .add("provisional" -> perf.provisional.yes)
@@ -67,32 +64,30 @@ object Seek:
   given UserIdOf[Seek] = _.user.id
 
   val idSize = 8
+  def makeId = ThreadLocalRandom.nextString(idSize)
 
   def make(
       variant: chess.variant.Variant,
       daysPerTurn: Option[Days],
       mode: Mode,
-      color: String,
-      user: User.WithPerfs,
+      user: UserWithPerfs,
       ratingRange: RatingRange,
-      blocking: lila.pool.Blocking
+      blocking: lila.core.pool.Blocking
   ): Seek = Seek(
-    _id = ThreadLocalRandom nextString idSize,
+    _id = makeId,
     variant = variant.id,
     daysPerTurn = daysPerTurn,
     mode = mode.id,
-    color = color,
     user = LobbyUser.make(user, blocking),
     ratingRange = ratingRange.toString,
     createdAt = nowInstant
   )
 
   def renew(seek: Seek) = Seek(
-    _id = ThreadLocalRandom nextString idSize,
+    _id = makeId,
     variant = seek.variant,
     daysPerTurn = seek.daysPerTurn,
     mode = seek.mode,
-    color = seek.color,
     user = seek.user,
     ratingRange = seek.ratingRange,
     createdAt = nowInstant
@@ -104,6 +99,6 @@ object Seek:
     b => LobbyPerf(IntRating(b.abs), RatingProvisional(b < 0)),
     x => x.rating.value * (if x.provisional.yes then -1 else 1)
   )
-  private given BSONHandler[Map[Perf.Key, LobbyPerf]] = typedMapHandler[Perf.Key, LobbyPerf]
+  private given BSONHandler[Map[PerfKey, LobbyPerf]]  = typedMapHandlerIso[PerfKey, LobbyPerf]
   private[lobby] given BSONDocumentHandler[LobbyUser] = Macros.handler
   private[lobby] given BSONDocumentHandler[Seek]      = Macros.handler

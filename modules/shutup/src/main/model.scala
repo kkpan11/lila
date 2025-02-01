@@ -1,6 +1,6 @@
 package lila.shutup
 
-import lila.hub.actorApi.shutup.PublicSource
+import lila.core.shutup.PublicSource
 
 case class UserRecord(
     _id: UserId,
@@ -24,10 +24,7 @@ case class UserRecord(
       TextReport(TextType.PublicChat, ~puc)
     )
 
-case class TextAnalysis(
-    text: String,
-    badWords: List[String]
-):
+case class TextAnalysis(text: String, badWords: List[String]) extends lila.core.shutup.TextAnalysis:
 
   lazy val nbWords = text.split("""\s+""").length
 
@@ -68,7 +65,7 @@ case class TextReport(textType: TextType, ratios: List[Double]):
 
   def minRatios   = textType.rotation / 15
   def nbBad       = ratios.count(_ > TextReport.unacceptableRatio)
-  def tolerableNb = (ratios.size / 10) atLeast 3
+  def tolerableNb = (ratios.size / 10).atLeast(3)
 
   def unacceptable = (ratios.sizeIs >= minRatios) && (nbBad > tolerableNb)
 

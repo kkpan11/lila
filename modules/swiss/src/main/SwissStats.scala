@@ -2,6 +2,7 @@ package lila.swiss
 
 import akka.stream.scaladsl.*
 import reactivemongo.api.bson.*
+import chess.IntRating
 
 import lila.db.dsl.{ *, given }
 
@@ -27,15 +28,15 @@ final class SwissStatsApi(
   import BsonHandlers.given
 
   def apply(swiss: Swiss): Fu[Option[SwissStats]] =
-    swiss.isFinished so cache.get(swiss.id).dmap(some).dmap(_.filter(_.games > 0))
+    swiss.isFinished.so(cache.get(swiss.id).dmap(some).dmap(_.filter(_.games > 0)))
 
   private given BSONDocumentHandler[SwissStats] = Macros.handler
 
-  private val cache = mongoCache[SwissId, SwissStats](64, "swiss:stats", 60 days, _.value): loader =>
-    _.expireAfterAccess(5 seconds).maximumSize(256).buildAsyncFuture(loader(fetch))
+  private val cache = mongoCache[SwissId, SwissStats](64, "swiss:stats", 60.days, _.value): loader =>
+    _.expireAfterAccess(5.seconds).maximumSize(256).buildAsyncFuture(loader(fetch))
 
   private def fetch(id: SwissId): Fu[SwissStats] =
-    mongo.swiss.byId[Swiss](id) flatMap {
+    mongo.swiss.byId[Swiss](id).flatMap {
       _.filter(_.nbPlayers > 0).fold(fuccess(SwissStats())) { swiss =>
         sheetApi
           .source(swiss, sort = $empty)

@@ -1,5 +1,5 @@
-import LobbyController from './ctrl';
-import { Hook } from './interfaces';
+import type LobbyController from './ctrl';
+import type { Hook } from './interfaces';
 
 function ratingOrder(a: Hook, b: Hook) {
   return (a.rating || 0) > (b.rating || 0) ? -1 : 1;
@@ -14,7 +14,7 @@ export function sort(ctrl: LobbyController, hooks: Hook[]) {
 }
 
 export function init(hook: Hook) {
-  hook.action = hook.sri === lichess.sri ? 'cancel' : 'join';
+  hook.action = hook.sri === site.sri ? 'cancel' : 'join';
   hook.variant = hook.variant || 'standard';
 }
 

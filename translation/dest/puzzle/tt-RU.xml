@@ -16,7 +16,7 @@
   <string name="findTheBestMoveForWhite">Тап якшы хәрәкәт аклар өчен.</string>
   <string name="findTheBestMoveForBlack">Тап якшы хәрәкәт каралар өчен.</string>
   <string name="toGetPersonalizedPuzzles">Персональләштерелгән башваткычлар алу өчен:</string>
-  <string name="puzzleId" comment="%s is the ID of the puzzle, something like #a1b2c3.">Башваткыч %s</string>
+  <string name="puzzleId">Башваткыч %s</string>
   <string name="puzzleOfTheDay">Бүгенге башваткыч</string>
   <string name="clickToSolve">Чишер өчен сук</string>
   <string name="goodMove">Якшы хәрәкәт</string>
@@ -26,9 +26,9 @@
   <string name="puzzleComplete">Башваткыч чишелгән!</string>
   <string name="notTheMove">Бу хәрәкәт түгел!</string>
   <string name="trySomethingElse">Башка нәрсәне сынап карагыз.</string>
-  <string name="ratingX" comment="Appears on pages of individual puzzles.&#10;&#10;%s is either:&#10;1. The word 'hidden', if you have not completed the puzzle yet.&#10;2. The rating of the puzzle, if you have completed it or seen the solution.">Рейтинг: %s</string>
-  <string name="hidden" comment="Puzzle rating: hidden&#10;&#10;Appears while solving puzzles. Lichess only displays the rating of the puzzle after you have solved it or asked to see the solution.">качырылган</string>
-  <plurals name="playedXTimes" comment="Appears on pages of individual puzzles.&#10;%s is the number of times the puzzle has been played.">
+  <string name="ratingX">Рейтинг: %s</string>
+  <string name="hidden">качырылган</string>
+  <plurals name="playedXTimes">
     <item quantity="other">Уйналган %s вакыт</item>
   </plurals>
   <string name="fromGameLink">%s уендан</string>
@@ -53,7 +53,7 @@
   <string name="strengths">Көчләр яклары</string>
   <string name="history">Башваткыч тарихы</string>
   <string name="solved">чишелгән</string>
-  <string name="failed">уңышсыз</string>
+  <string name="failed" comment="In the list of previously attempted puzzles, a tag indicating that the puzzle has been failed.&#10;&#10;The text will be automatically capitalised. If you have different ways to translate it, we suggest keeping it short.&#10;&#10;NOTE: This string previously said 'failed', but was changed to 'incorrect' to be more encouraging (https://github.com/lichess-org/lila/issues/11068)">уңышсыз</string>
   <string name="streakDescription">Акрынлап катлаулы башваткычларны чишегез һәм җиңү сызыгы төзегез. Сәгать юк, шуңа күрә вакытыгызны алыгыз. Бер ялгыш хәрәкәт, һәм бу уен бетте! Ләкин сез сессиягә бер хәрәкәтне калдыра аласыз.</string>
   <string name="yourStreakX">Сезнең юл %s</string>
   <string name="streakSkipExplanation">Сезнең юлны саклап калу өчен бу хәрәкәтне ташлагыз! Бер тапкыр гына эшли.</string>

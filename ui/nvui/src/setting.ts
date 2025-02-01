@@ -1,4 +1,5 @@
-import { h, VNode } from 'snabbdom';
+import { h, type VNode } from 'snabbdom';
+import type { LichessStorage } from 'common/storage';
 
 export interface Setting<A> {
   choices: Choices<A>;
@@ -18,9 +19,9 @@ interface Opts<A> {
 export function makeSetting<A>(opts: Opts<A>): Setting<A> {
   return {
     choices: opts.choices,
-    get: () => cast<A>(opts.storage.get()) || opts.default,
+    get: () => (opts.storage.get() as A) || opts.default,
     set(v: A) {
-      opts.storage.set(cast<string>(v));
+      opts.storage.set(v);
       return v;
     },
   };
@@ -34,7 +35,7 @@ export function renderSetting<A>(setting: Setting<A>, redraw: () => void): VNode
       hook: {
         insert(vnode) {
           (vnode.elm as HTMLSelectElement).addEventListener('change', e => {
-            setting.set(cast<A>((e.target as HTMLSelectElement).value));
+            setting.set((e.target as HTMLSelectElement).value as A);
             redraw();
           });
         },
@@ -42,20 +43,7 @@ export function renderSetting<A>(setting: Setting<A>, redraw: () => void): VNode
     },
     setting.choices.map(choice => {
       const [key, name] = choice;
-      return h(
-        'option',
-        {
-          attrs: {
-            value: '' + key,
-            selected: key === v,
-          },
-        },
-        name,
-      );
+      return h('option', { attrs: { value: '' + key, selected: key === v } }, name);
     }),
   );
-}
-
-function cast<T>(v: any): T {
-  return v;
 }

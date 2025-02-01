@@ -1,6 +1,7 @@
-import { LearnProgress } from './main';
-import m from './mithrilFix';
-import { Stage } from './stage/list';
+import * as xhr from 'common/xhr';
+import type { LearnProgress } from './learn';
+import type { Stage } from './stage/list';
+import { storage } from 'common/storage';
 
 export interface Storage {
   data: LearnProgress;
@@ -8,54 +9,41 @@ export interface Storage {
   reset(): void;
 }
 
-const key = 'learn.progress';
-
-const defaultValue: LearnProgress = {
-  stages: {},
-};
-
-function xhrSaveScore(stageKey: string, levelId: number, score: number) {
-  return m.request({
+const xhrSaveScore = (stageKey: string, levelId: number, score: number) =>
+  xhr.jsonAnyResponse('/learn/score', {
     method: 'POST',
-    url: '/learn/score',
-    data: {
+    body: xhr.form({
       stage: stageKey,
       level: levelId,
       score: score,
-    },
+    }),
   });
-}
 
-function xhrReset() {
-  return m.request({
-    method: 'POST',
-    url: '/learn/reset',
-  });
-}
+const xhrReset = () => xhr.jsonAnyResponse('/learn/reset', { method: 'POST' });
 
 export default function (d?: LearnProgress): Storage {
-  const data: LearnProgress = d || JSON.parse(lichess.storage.get(key)!) || defaultValue;
+  const key = 'learn.progress';
+  const defaultValue: LearnProgress = {
+    stages: {},
+  };
+  const data: LearnProgress = d || JSON.parse(storage.get(key)!) || defaultValue;
 
   return {
     data: data,
-    saveScore: function (stage: Stage, level: { id: number }, score: number) {
+    saveScore: (stage: Stage, level: { id: number }, score: number) => {
       if (!data.stages[stage.key])
         data.stages[stage.key] = {
           scores: [],
         };
       if (data.stages[stage.key].scores[level.id - 1] > score) return;
       data.stages[stage.key].scores[level.id - 1] = score;
-      if (data._id) xhrSaveScore(stage.key, level.id, score);
-      else lichess.storage.set(key, JSON.stringify(data));
+      data._id ? xhrSaveScore(stage.key, level.id, score) : storage.set(key, JSON.stringify(data));
     },
-    reset: function () {
+    reset: () => {
       data.stages = {};
-      if (data._id)
-        xhrReset().then(function () {
-          location.reload();
-        });
+      if (data._id) xhrReset().then(() => location.reload());
       else {
-        lichess.storage.remove(key);
+        storage.remove(key);
         location.reload();
       }
     },

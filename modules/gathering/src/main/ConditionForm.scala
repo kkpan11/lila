@@ -1,11 +1,13 @@
 package lila.gathering
 
 import play.api.data.Forms.*
-
-import lila.hub.LightTeam
-import lila.gathering.Condition.*
-import lila.common.Form.{ *, given }
 import play.api.data.Mapping
+import scalalib.model.Days
+import chess.IntRating
+
+import lila.common.Form.{ *, given }
+import lila.core.team.LightTeam
+import lila.gathering.Condition.*
 
 object ConditionForm:
 
@@ -39,7 +41,22 @@ object ConditionForm:
     mapping("rating" -> numberIn(minRatings).into[IntRating])(MinRating.apply)(_.rating.some)
 
   val titled: Mapping[Option[Titled.type]] =
-    optional(boolean).transform(_.contains(true) option Titled, _.isDefined option true)
+    optional(boolean).transform(_.contains(true).option(Titled), _.isDefined.option(true))
+
+  val accountAges = List(1, 3, 7, 14, 30, 60, 90, 180, 365, 365 * 2, 365 * 3)
+
+  val accountAgeChoices =
+    def pluralize(s: String, n: Int) = s"$n $s${if n != 1 then "s" else ""}"
+    ("", "No restriction") :: options(
+      accountAges,
+      format = days =>
+        if days < 30 then pluralize("day", days)
+        else if days < 365 then pluralize("month", days / 30)
+        else pluralize("year", days / 365)
+    ).toList
+
+  val accountAge: Mapping[Option[AccountAge]] = optional:
+    numberIn(accountAges).into[Days].transform(AccountAge.apply, _.days)
 
   def teamMember(leaderTeams: List[LightTeam]): Mapping[Option[TeamMember]] = optional:
     mapping(
@@ -49,6 +66,6 @@ object ConditionForm:
   def allowList = optional:
     nonEmptyText(maxLength = 100_1000)
       .transform[String](_.replace(',', '\n'), identity)
-      .transform[String](_.linesIterator.map(_.trim).filter(_.nonEmpty).distinct mkString "\n", identity)
+      .transform[String](_.linesIterator.map(_.trim).filter(_.nonEmpty).distinct.mkString("\n"), identity)
       .verifying("5000 usernames max", _.count('\n' == _) <= 5_000)
       .transform(AllowList(_), _.value)

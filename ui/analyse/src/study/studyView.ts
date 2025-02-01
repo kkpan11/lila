@@ -1,13 +1,11 @@
 import * as commentForm from './commentForm';
 import * as glyphForm from './studyGlyph';
 import * as practiceView from './practice/studyPracticeView';
-import AnalyseCtrl from '../ctrl';
-import { h, VNode } from 'snabbdom';
+import type AnalyseCtrl from '../ctrl';
 import * as licon from 'common/licon';
-import { iconTag, bind, dataIcon, MaybeVNodes } from 'common/snabbdom';
+import { type VNode, iconTag, bind, dataIcon, type MaybeVNodes, looseH as h } from 'common/snabbdom';
 import { playButtons as gbPlayButtons, overrideButton as gbOverrideButton } from './gamebook/gamebookButtons';
-import { rounds as relayTourRounds } from './relay/relayTourView';
-import { Tab, ToolTab } from './interfaces';
+import type { Tab, ToolTab } from './interfaces';
 import { view as chapterEditFormView } from './chapterEditForm';
 import { view as chapterNewFormView } from './chapterNewForm';
 import { view as chapterView } from './studyChapters';
@@ -22,7 +20,9 @@ import { view as studyShareView } from './studyShare';
 import { view as tagsView } from './studyTags';
 import { view as topicsView, formView as topicsFormView } from './topics';
 import { view as searchView } from './studySearch';
-import StudyCtrl from './studyCtrl';
+import { render as renderTrainingView } from '../view/roundTraining';
+import type StudyCtrl from './studyCtrl';
+import { shareIcon } from 'common/device';
 
 interface ToolButtonOpts {
   ctrl: StudyCtrl;
@@ -48,7 +48,7 @@ function toolButton(opts: ToolButtonOpts): VNode {
         opts.ctrl.redraw,
       ),
     },
-    [opts.count ? h('count.data-count', { attrs: { 'data-count': opts.count } }) : null, opts.icon],
+    [!!opts.count && h('count.data-count', { attrs: { 'data-count': opts.count } }), opts.icon],
   );
 }
 
@@ -56,84 +56,68 @@ function buttons(root: AnalyseCtrl): VNode {
   const ctrl: StudyCtrl = root.study!,
     canContribute = ctrl.members.canContribute(),
     showSticky = ctrl.data.features.sticky && (canContribute || (ctrl.vm.behind && ctrl.isUpdatedRecently())),
-    noarg = root.trans.noarg;
+    gbButton = gbOverrideButton(ctrl);
   return h('div.study__buttons', [
     h('div.left-buttons.tabs-horiz', { attrs: { role: 'tablist' } }, [
       // distinct classes (sync, write) allow snabbdom to differentiate buttons
-      showSticky
-        ? h(
-            'a.mode.sync',
-            {
-              attrs: { title: noarg('allSyncMembersRemainOnTheSamePosition') },
-              class: { on: ctrl.vm.mode.sticky },
-              hook: bind('click', ctrl.toggleSticky),
-            },
-            [ctrl.vm.behind ? h('span.behind', '' + ctrl.vm.behind) : h('i.is'), 'SYNC'],
-          )
-        : null,
-      ctrl.members.canContribute()
-        ? h(
-            'a.mode.write',
-            {
-              attrs: { title: noarg('shareChanges') },
-              class: { on: ctrl.vm.mode.write },
-              hook: bind('click', ctrl.toggleWrite),
-            },
-            [h('i.is'), 'REC'],
-          )
-        : null,
-      toolButton({
-        ctrl,
-        tab: 'tags',
-        hint: noarg('pgnTags'),
-        icon: iconTag(licon.Tag),
-      }),
-      toolButton({
-        ctrl,
-        tab: 'comments',
-        hint: noarg('commentThisPosition'),
-        icon: iconTag(licon.BubbleSpeech),
-        onClick() {
-          ctrl.commentForm.start(ctrl.vm.chapterId, root.path, root.node);
-        },
-        count: (root.node.comments || []).length,
-      }),
-      canContribute
-        ? toolButton({
-            ctrl,
-            tab: 'glyphs',
-            hint: noarg('annotateWithGlyphs'),
-            icon: h('i.glyph-icon'),
-            count: (root.node.glyphs || []).length,
-          })
-        : null,
-      toolButton({
-        ctrl,
-        tab: 'serverEval',
-        hint: noarg('computerAnalysis'),
-        icon: iconTag(licon.BarChart),
-        count: root.data.analysis && '✓',
-      }),
-      toolButton({
-        ctrl,
-        tab: 'multiBoard',
-        hint: 'Multiboard',
-        icon: iconTag(licon.Multiboard),
-      }),
-      toolButton({
-        ctrl,
-        tab: 'share',
-        hint: noarg('shareAndExport'),
-        icon: iconTag(licon.NodeBranching),
-      }),
-      !ctrl.relay && !ctrl.data.chapter.gamebook
-        ? h('span.help', {
-            attrs: { title: 'Need help? Get the tour!', ...dataIcon(licon.InfoCircle) },
-            hook: bind('click', ctrl.startTour),
-          })
-        : null,
+      !!showSticky &&
+        h(
+          'a.mode.sync',
+          {
+            attrs: { title: i18n.study.allSyncMembersRemainOnTheSamePosition },
+            class: { on: ctrl.vm.mode.sticky },
+            hook: bind('click', ctrl.toggleSticky),
+          },
+          [ctrl.vm.behind ? h('span.behind', '' + ctrl.vm.behind) : h('i.is'), 'SYNC'],
+        ),
+      canContribute &&
+        h(
+          'a.mode.write',
+          {
+            attrs: { title: i18n.study.shareChanges },
+            class: { on: ctrl.vm.mode.write },
+            hook: bind('click', ctrl.toggleWrite),
+          },
+          [h('i.is'), 'REC'],
+        ),
+      toolButton({ ctrl, tab: 'tags', hint: i18n.study.pgnTags, icon: iconTag(licon.Tag) }),
+      canContribute &&
+        toolButton({
+          ctrl,
+          tab: 'comments',
+          hint: i18n.study.commentThisPosition,
+          icon: iconTag(licon.BubbleSpeech),
+          onClick() {
+            ctrl.commentForm.start(ctrl.vm.chapterId, root.path, root.node);
+          },
+          count: (root.node.comments || []).length,
+        }),
+      canContribute &&
+        toolButton({
+          ctrl,
+          tab: 'glyphs',
+          hint: i18n.study.annotateWithGlyphs,
+          icon: h('i.glyph-icon'),
+          count: (root.node.glyphs || []).length,
+        }),
+      (canContribute || root.data.analysis) &&
+        toolButton({
+          ctrl,
+          tab: 'serverEval',
+          hint: i18n.site.computerAnalysis,
+          icon: iconTag(licon.BarChart),
+          count: root.data.analysis && '✓',
+        }),
+      toolButton({ ctrl, tab: 'multiBoard', hint: 'Multiboard', icon: iconTag(licon.Multiboard) }),
+      toolButton({ ctrl, tab: 'share', hint: i18n.study.shareAndExport, icon: iconTag(shareIcon()) }),
+      !ctrl.relay &&
+        !ctrl.data.chapter.gamebook &&
+        h('span.help', {
+          attrs: { title: 'Need help? Get the tour!', ...dataIcon(licon.InfoCircle) },
+          hook: bind('click', ctrl.startTour),
+        }),
     ]),
-    h('div.right', [gbOverrideButton(ctrl)]),
+    gbButton && h('div.right', gbButton),
   ]);
 }
 
@@ -142,14 +126,17 @@ function metadata(ctrl: StudyCtrl): VNode {
     title = `${d.name}: ${ctrl.currentChapter().name}`;
   return h('div.study__metadata', [
     h('h2', [
-      h('span.name', { attrs: { title } }, title),
+      h('span.name', { attrs: { title } }, [
+        d.flair && h('img.icon-flair', { attrs: { src: site.asset.flairSrc(d.flair) } }),
+        title,
+      ]),
       h(
         'span.liking.text',
         {
           class: { liked: d.liked },
           attrs: {
             ...dataIcon(d.liked ? licon.Heart : licon.HeartOutline),
-            title: ctrl.trans.noarg(d.liked ? 'unlike' : 'like'),
+            title: d.liked ? i18n.study.unlike : i18n.study.like,
           },
           hook: bind('click', ctrl.toggleLike),
         },
@@ -161,69 +148,40 @@ function metadata(ctrl: StudyCtrl): VNode {
   ]);
 }
 
-export function side(ctrl: StudyCtrl): VNode {
-  const activeTab = ctrl.vm.tab(),
-    tourShow = ctrl.relay?.tourShow,
-    tourShown = !!tourShow && tourShow();
+export function side(ctrl: StudyCtrl, withSearch: boolean): VNode {
+  const activeTab = ctrl.vm.tab();
 
   const makeTab = (key: Tab, name: string) =>
     h(
       `span.${key}`,
       {
-        class: { active: !tourShown && activeTab === key },
+        class: { active: activeTab === key },
         attrs: { role: 'tab' },
         hook: bind('mousedown', () => ctrl.setTab(key)),
       },
       name,
     );
 
-  const tourTab =
-    tourShow &&
-    h(
-      'span.relay-tour.text',
-      {
-        class: { active: tourShown },
-        hook: bind('mousedown', () => tourShow(true), ctrl.redraw),
-        attrs: {
-          ...dataIcon(licon.RadioTower),
-          role: 'tab',
-        },
-      },
-      'Broadcast',
-    );
-
   const chaptersTab =
-    tourShow && ctrl.looksNew() && !ctrl.members.canContribute()
-      ? null
-      : makeTab(
-          'chapters',
-          ctrl.trans.pluralSame(ctrl.relay ? 'nbGames' : 'nbChapters', ctrl.chapters.list().length),
-        );
+    (ctrl.chapters.list.looksNew() && !ctrl.members.canContribute()) ||
+    makeTab('chapters', i18n.study[ctrl.relay ? 'nbGames' : 'nbChapters'](ctrl.chapters.list.size()));
 
   const tabs = h('div.tabs-horiz', { attrs: { role: 'tablist' } }, [
-    tourTab,
     chaptersTab,
-    !tourTab || ctrl.members.canContribute() || ctrl.data.admin
-      ? makeTab('members', ctrl.trans.pluralSame('nbMembers', ctrl.members.size()))
-      : null,
-    h('span.search.narrow', {
-      attrs: {
-        ...dataIcon(licon.Search),
-        title: 'Search',
-      },
-      hook: bind('click', () => ctrl.search.open(true)),
-    }),
-    ctrl.members.isOwner()
-      ? h('span.more.narrow', {
-          attrs: { ...dataIcon(licon.Hamburger), title: 'Edit study' },
-          hook: bind('click', () => ctrl.form.open(!ctrl.form.open()), ctrl.redraw),
-        })
-      : null,
+    ctrl.members.size() > 0 && makeTab('members', i18n.study.nbMembers(ctrl.members.size())),
+    withSearch &&
+      h('span.search.narrow', {
+        attrs: { ...dataIcon(licon.Search), title: 'Search' },
+        hook: bind('click', () => ctrl.search.open(true)),
+      }),
+    ctrl.members.isOwner() &&
+      h('span.more.narrow', {
+        attrs: { ...dataIcon(licon.Hamburger), title: 'Edit study' },
+        hook: bind('click', () => ctrl.form.open(!ctrl.form.open()), ctrl.redraw),
+      }),
   ]);
 
-  const content = tourShown
-    ? relayTourRounds(ctrl)
-    : (activeTab === 'members' ? memberView : chapterView)(ctrl);
+  const content = (activeTab === 'members' ? memberView : chapterView)(ctrl);
 
   return h('div.study__side', [tabs, content]);
 }
@@ -237,10 +195,10 @@ export function contextMenu(ctrl: StudyCtrl, path: Tree.Path, node: Tree.Node): 
             attrs: dataIcon(licon.BubbleSpeech),
             hook: bind('click', () => {
               ctrl.vm.toolTab('comments');
-              ctrl.commentForm.start(ctrl.currentChapter()!.id, path, node);
+              ctrl.commentForm.start(ctrl.currentChapter().id, path, node);
             }),
           },
-          ctrl.trans.noarg('commentThisMove'),
+          i18n.study.commentThisMove,
         ),
         h(
           'a.glyph-icon',
@@ -250,7 +208,7 @@ export function contextMenu(ctrl: StudyCtrl, path: Tree.Path, node: Tree.Node): 
               ctrl.ctrl.userJump(path);
             }),
           },
-          ctrl.trans.noarg('annotateWithGlyphs'),
+          i18n.study.annotateWithGlyphs,
         ),
       ]
     : [];
@@ -260,16 +218,16 @@ export const overboard = (ctrl: StudyCtrl) =>
   ctrl.chapters.newForm.isOpen()
     ? chapterNewFormView(ctrl.chapters.newForm)
     : ctrl.chapters.editForm.current()
-    ? chapterEditFormView(ctrl.chapters.editForm)
-    : ctrl.members.inviteForm.open()
-    ? inviteFormView(ctrl.members.inviteForm)
-    : ctrl.topics.open()
-    ? topicsFormView(ctrl.topics, ctrl.members.opts.myId)
-    : ctrl.form.open()
-    ? studyFormView(ctrl.form)
-    : ctrl.search.open()
-    ? searchView(ctrl.search)
-    : undefined;
+      ? chapterEditFormView(ctrl.chapters.editForm)
+      : ctrl.members.inviteForm.open()
+        ? inviteFormView(ctrl.members.inviteForm)
+        : ctrl.topics.open()
+          ? topicsFormView(ctrl.topics, ctrl.members.opts.myId)
+          : ctrl.form.open()
+            ? studyFormView(ctrl.form)
+            : ctrl.search.open()
+              ? searchView(ctrl.search)
+              : undefined;
 
 export function underboard(ctrl: AnalyseCtrl): MaybeVNodes {
   if (ctrl.studyPractice) return practiceView.underboard(ctrl.study!);
@@ -301,6 +259,7 @@ export function underboard(ctrl: AnalyseCtrl): MaybeVNodes {
       break;
     case 'serverEval':
       panel = serverEvalView(study.serverEval);
+      if (study?.relay) panel = h('div.eval-chart-and-training', [panel, renderTrainingView(ctrl)]);
       break;
     case 'share':
       panel = studyShareView(study.share);
@@ -311,3 +270,5 @@ export function underboard(ctrl: AnalyseCtrl): MaybeVNodes {
   }
   return [notifView(study.notif), descView(study, true), descView(study, false), buttons(ctrl), panel];
 }
+
+export const resultTag = (s: any) => (s === '1' ? 'good' : s === '0' ? 'bad' : 'status');

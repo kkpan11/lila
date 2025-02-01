@@ -1,48 +1,35 @@
 import { h } from 'snabbdom';
-import LobbyController from '../../ctrl';
+import type LobbyController from '../../ctrl';
 import * as licon from 'common/licon';
 import { bind } from 'common/snabbdom';
 import { tds, perfNames } from '../util';
 import perfIcons from 'common/perfIcons';
 import * as hookRepo from '../../hookRepo';
-import { Hook } from '../../interfaces';
+import type { Hook } from '../../interfaces';
 
 function renderHook(ctrl: LobbyController, hook: Hook) {
-  const noarg = ctrl.trans.noarg;
   return h(
     'tr.hook.' + hook.action,
     {
       key: hook.id,
       class: { disabled: !!hook.disabled },
       attrs: {
+        role: 'button',
         title: hook.disabled
           ? ''
           : hook.action === 'join'
-          ? noarg('joinTheGame') + ' | ' + perfNames[hook.perf]
-          : noarg('cancel'),
+            ? i18n.site.joinTheGame + ' | ' + perfNames[hook.perf]
+            : i18n.site.cancel,
         'data-id': hook.id,
       },
     },
     tds([
-      h('span.is.color-icon.' + (hook.c || 'random')),
       hook.rating
-        ? h(
-            'span.ulink.ulpt',
-            {
-              attrs: { 'data-href': '/@/' + hook.u },
-            },
-            hook.u,
-          )
-        : noarg('anonymous'),
-      hook.rating && !ctrl.opts.hideRatings ? hook.rating + (hook.prov ? '?' : '') : '',
+        ? h('span.ulink.ulpt', { attrs: { 'data-href': '/@/' + hook.u } }, hook.u)
+        : i18n.site.anonymous,
+      hook.rating && ctrl.opts.showRatings ? hook.rating + (hook.prov ? '?' : '') : '',
       hook.clock,
-      h(
-        'span',
-        {
-          attrs: { 'data-icon': perfIcons[hook.perf] },
-        },
-        noarg(hook.ra ? 'rated' : 'casual'),
-      ),
+      h('span', { attrs: { 'data-icon': perfIcons[hook.perf] } }, i18n.site[hook.ra ? 'rated' : 'casual']),
     ]),
   );
 }
@@ -56,7 +43,7 @@ const isNotMine = (hook: Hook) => !isMine(hook);
 export const toggle = (ctrl: LobbyController) =>
   h('i.toggle', {
     key: 'set-mode-chart',
-    attrs: { title: ctrl.trans.noarg('graph'), 'data-icon': licon.LineGraph },
+    attrs: { title: i18n.site.graph, 'data-icon': licon.LineGraph },
     hook: bind('mousedown', _ => ctrl.setMode('chart'), ctrl.redraw),
   });
 
@@ -75,21 +62,9 @@ export const render = (ctrl: LobbyController, allHooks: Hook[]) => {
   const renderedHooks = [
     ...standards.map(render),
     variants.length
-      ? h(
-          'tr.variants',
-          {
-            key: 'variants',
-          },
-          [
-            h(
-              'td',
-              {
-                attrs: { colspan: 5 },
-              },
-              '— ' + ctrl.trans('variant') + ' —',
-            ),
-          ],
-        )
+      ? h('tr.variants', { key: 'variants' }, [
+          h('td', { attrs: { colspan: 5 } }, '— ' + i18n.site.variant + ' —'),
+        ])
       : null,
     ...variants.map(render),
   ];
@@ -99,30 +74,23 @@ export const render = (ctrl: LobbyController, allHooks: Hook[]) => {
       'thead',
       h('tr', [
         h('th'),
-        h('th', ctrl.trans('player')),
         h(
           'th',
           {
-            class: {
-              sortable: true,
-              sort: ctrl.sort === 'rating',
-            },
+            class: { sortable: true, sort: ctrl.sort === 'rating' },
             hook: bind('click', _ => ctrl.setSort('rating'), ctrl.redraw),
           },
-          [h('i.is'), ctrl.trans('rating')],
+          [h('i.is'), i18n.site.rating],
         ),
         h(
           'th',
           {
-            class: {
-              sortable: true,
-              sort: ctrl.sort === 'time',
-            },
+            class: { sortable: true, sort: ctrl.sort === 'time' },
             hook: bind('click', _ => ctrl.setSort('time'), ctrl.redraw),
           },
-          [h('i.is'), ctrl.trans('time')],
+          [h('i.is'), i18n.site.time],
         ),
-        h('th', ctrl.trans('mode')),
+        h('th', [h('i.is'), i18n.site.mode]),
       ]),
     ),
     h(
@@ -131,11 +99,11 @@ export const render = (ctrl: LobbyController, allHooks: Hook[]) => {
         class: { stepping: ctrl.stepping },
         hook: bind(
           'click',
-          e => {
+          async e => {
             let el = e.target as HTMLElement;
             do {
               el = el.parentNode as HTMLElement;
-              if (el.nodeName === 'TR') return ctrl.clickHook(el.getAttribute('data-id')!);
+              if (el.nodeName === 'TR') return ctrl.clickHook(el.dataset['id']!);
             } while (el.nodeName !== 'TABLE');
           },
           ctrl.redraw,

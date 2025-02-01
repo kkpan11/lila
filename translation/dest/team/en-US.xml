@@ -11,11 +11,11 @@
   <string name="newTeam">New team</string>
   <string name="myTeams">My teams</string>
   <string name="noTeamFound">No team found</string>
-  <string name="joinTeam">Join team</string>
+  <string name="joinTeam" comment="Appears as a button on team pages, and on pages of tournaments that require you to be a member of that team (e.g. Swiss tournaments).&#10;&#10;Please keep as short as possible.">Join team</string>
   <string name="onlyLeaderLeavesTeam">Please add a new team leader before leaving, or close the team.</string>
   <string name="quitTeam">Leave team</string>
   <string name="manuallyReviewAdmissionRequests">Manually review admission requests</string>
-  <string name="manuallyReviewAdmissionRequestsHelp">If checked, players will need to write a request to join the team, which you can decline or accept.</string>
+  <string name="manuallyReviewAdmissionRequestsHelp">If checked, players will need to request to join the team, which you can decline or accept.</string>
   <plurals name="teamLeaders">
     <item quantity="one">Team leader</item>
     <item quantity="other">Team leaders</item>
@@ -50,9 +50,26 @@ Players who don\'t like receiving your messages might leave the team.</string>
   <string name="entryCodeDescriptionForLeader">(Optional) An entry code that new members must know to join this team.</string>
   <string name="incorrectEntryCode">Incorrect entry code.</string>
   <string name="teamAlreadyExists">This team already exists.</string>
-  <string name="upcomingTourns">Upcoming tournaments</string>
+  <string name="upcomingTournaments">Upcoming tournaments</string>
   <string name="completedTourns">Completed tournaments</string>
   <string name="declinedRequests">Declined Requests</string>
   <string name="joinLichessVariantTeam">Join the official %s team for news and events</string>
   <string name="teamPage">Team page</string>
+  <string name="thisTeamBattleIsOver">This tournament is over, and the teams can no longer be updated.</string>
+  <string name="listTheTeamsThatWillCompete" comment="&quot;List&quot; is used as a verb in this sentence. You can alternatively translate as &quot;Fill out&quot;, as this is presented in the context of a form.">List the teams that will compete in this battle.</string>
+  <string name="oneTeamPerLine">One team per line. Use the auto-completion.</string>
+  <string name="oneTeamPerLineHelp">You can copy-paste this list from a tournament to another!
+
+You can\'t remove a team if a player has already joined the tournament.</string>
+  <string name="numberOfLeadsPerTeam">Number of leaders per team. The sum of their score is the score of the team.</string>
+  <string name="numberOfLeadsPerTeamHelp">You really shouldn\'t change this value after the tournament has started!</string>
+  <string name="innerTeam">Inner team</string>
+  <plurals name="battleOfNbTeams">
+    <item quantity="one">Battle of %s team</item>
+    <item quantity="other">Battle of %s teams</item>
+  </plurals>
+  <plurals name="nbLeadersPerTeam">
+    <item quantity="one">One leader per team</item>
+    <item quantity="other">%s leaders per team</item>
+  </plurals>
 </resources>

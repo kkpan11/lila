@@ -4,7 +4,8 @@
   <string name="playWithTheMachine">Juga contra la màquina</string>
   <string name="toInviteSomeoneToPlayGiveThisUrl">Per convidar algú a jugar, envia-li aquest enllaç</string>
   <string name="gameOver">Partida finalitzada</string>
-  <string name="waitingForOpponent">Esperant un adversari</string>
+  <string name="waitingForOpponent">Esperant a l\'oponent</string>
+  <string name="orLetYourOpponentScanQrCode">O deixeu que el vostre oponent escanegi aquest codi QR</string>
   <string name="waiting">Esperant</string>
   <string name="yourTurn">El teu torn</string>
   <string name="aiNameLevelAiLevel">%1$s nivell %2$s</string>
@@ -69,6 +70,8 @@
   <string name="promoteVariation">Promoure variant</string>
   <string name="makeMainLine">Convertir en línia principal</string>
   <string name="deleteFromHere">Esborrar des d\'aquí</string>
+  <string name="collapseVariations">Amagar variacions</string>
+  <string name="expandVariations">Expandir variacions</string>
   <string name="forceVariation">Forçar variant</string>
   <string name="copyVariationPgn">Copia el PGN de la variació</string>
   <string name="move">Moviment</string>
@@ -113,7 +116,6 @@
   <string name="replayMode">Mode de reproducció</string>
   <string name="realtimeReplay">En temps real</string>
   <string name="byCPL">Per CPL</string>
-  <string name="openStudy">Obrir estudi</string>
   <string name="enable">Habilitar</string>
   <string name="bestMoveArrow">Fletxa de la millor jugada</string>
   <string name="showVariationArrows">Mostrar fletxes de les variants</string>
@@ -123,7 +125,6 @@
   <string name="memory">Memòria</string>
   <string name="infiniteAnalysis">Anàlisi il·limitada</string>
   <string name="removesTheDepthLimit">Treu el límit de profunditat i escalfa el teu ordinador</string>
-  <string name="engineManager">Gestió del mòdul</string>
   <string name="blunder">Errada greu</string>
   <string name="mistake">Errada</string>
   <string name="inaccuracy">Imprecisió</string>
@@ -131,13 +132,25 @@
     <item quantity="one">%s errada greu</item>
     <item quantity="other">%s errades greus</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="one">%s Errada greu</item>
+    <item quantity="other">%s Errades greus</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="one">%s errada</item>
     <item quantity="other">%s errades</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="one">%s Errada</item>
+    <item quantity="other">%s Errades</item>
+  </plurals>
   <plurals name="nbInaccuracies">
     <item quantity="one">%s imprecisió</item>
     <item quantity="other">%s imprecisions</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
+    <item quantity="one">%s Imprecisió</item>
+    <item quantity="other">%s Imprecisions</item>
   </plurals>
   <string name="moveTimes">Temps dels moviments</string>
   <string name="flipBoard">Girar el tauler</string>
@@ -177,6 +190,7 @@
   <string name="latestForumPosts">Últimes publicacions al fòrum</string>
   <string name="players">Jugadors</string>
   <string name="friends">Amics</string>
+  <string name="otherPlayers">altres jugadors</string>
   <string name="discussions">Missatges</string>
   <string name="today">Avui</string>
   <string name="yesterday">Ahir</string>
@@ -256,6 +270,7 @@
     <item quantity="one">%s partida amb tu</item>
     <item quantity="other">%s partides amb tu</item>
   </plurals>
+  <string name="ok">D\'acord</string>
   <string name="cancel">Cancel·lar</string>
   <string name="whiteTimeOut">Les blanques han exhaurit el seu temps</string>
   <string name="blackTimeOut">Les negres perden per temps</string>
@@ -272,10 +287,10 @@
   <string name="playingRightNow">En joc</string>
   <string name="eventInProgress">Jugant-se ara mateix</string>
   <string name="finished">Acabat</string>
-  <string name="finishesX">finalitza %s</string>
   <string name="abortGame">Avortar la partida</string>
   <string name="gameAborted">Partida avortada</string>
   <string name="standard">Estàndard</string>
+  <string name="customPosition">Posició personalitzada</string>
   <string name="unlimited">Il·limitat</string>
   <string name="mode">Mode</string>
   <string name="casual">Amistosa</string>
@@ -325,8 +340,8 @@
   <string name="exportGames">Exporta les partides</string>
   <string name="ratingRange">Rang de puntuació</string>
   <plurals name="giveNbSeconds">
-    <item quantity="one">Dóna %s segons</item>
-    <item quantity="other">Dóna %s segons</item>
+    <item quantity="one">Dona %s segon</item>
+    <item quantity="other">Dona %s segons</item>
   </plurals>
   <string name="thisAccountViolatedTos">Aquest compte ha violat els Termes de Servei de Lichess</string>
   <string name="openingExplorerAndTablebase">Explorador d\'obertures &amp; taula de finals</string>
@@ -405,7 +420,7 @@
   <string name="importGame">Importa una partida</string>
   <string name="importGameExplanation">Enganxa el PGN d\'una partida per obtenir una repetició navegable, anàlisi computeritzada, xat de joc i enllaç per compartir.</string>
   <string name="importGameCaveat">S\'esborraran les variants. Per mantenir-les, importeu el PGN mitjançant un estudi.</string>
-  <string name="importGameCaveat2">El públic pot accedir a aquest PGN. Per a importar un joc de manera privada, utilitza un estudi.</string>
+  <string name="importGameDataPrivacyWarning">Aquest PGN és accessible públicament. Per a importar un joc de manera privada, utilitza un estudi.</string>
   <plurals name="nbImportedGames">
     <item quantity="one">%s partides importades</item>
     <item quantity="other">%s partides importades</item>
@@ -418,6 +433,7 @@
   <string name="blackCheckmatesInOneMove">Les negres fan escac i mat en una jugada</string>
   <string name="retry">Reintentar</string>
   <string name="reconnecting">S\'està reconnectant</string>
+  <string name="noNetwork">Desconnectat</string>
   <plurals name="nbFriendsOnline">
     <item quantity="one">%s amic connectat</item>
     <item quantity="other">%s amics connectats</item>
@@ -431,7 +447,6 @@
   <string name="block">Bloqueja</string>
   <string name="blocked">Bloquejat</string>
   <string name="unblock">Desbloqueja</string>
-  <string name="followsYou">T\'està seguint</string>
   <string name="xStartedFollowingY">%1$s ha començat a seguir %2$s</string>
   <plurals name="nbFollowers">
     <item quantity="one">%s seguidors</item>
@@ -463,9 +478,6 @@
   <string name="safeTournamentName">Trieu un nom segur per al torneig.</string>
   <string name="inappropriateNameWarning">Qualsevol comportament mínimament inadequat podria implicar el tancament del teu compte.</string>
   <string name="emptyTournamentName">Deixar en blanc per nombrar el torneig amb un Gran Mestre a l\'atzar.</string>
-  <string name="recommendNotTouching">No recomanem canviar aquestes preferències.</string>
-  <string name="fewerPlayers">Si s\'estableixen les condicions d\'entrada, el torneig tindrà menys jugadors.</string>
-  <string name="showAdvancedSettings">Configuració avançada</string>
   <string name="makePrivateTournament">Fes el torneig privat, i restringeix l\'accés amb clau d\'entrada</string>
   <string name="join">Inscriu-t\'hi</string>
   <string name="withdraw">Abandona</string>
@@ -505,9 +517,8 @@
   <string name="ifNoneLeaveEmpty">Si no en tens, deixa-ho buit</string>
   <string name="profile">Perfil</string>
   <string name="editProfile">Edita el perfil</string>
-  <string name="firstName">Nom</string>
-  <string name="lastName">Cognoms</string>
-  <string name="setFlair">Defineix el teu estil:</string>
+  <string name="realName">Nom real</string>
+  <string name="setFlair">Defineix el teu estil</string>
   <string name="flair">Icona</string>
   <string name="youCanHideFlair">Existeix una configuració per amagar els estils dels jugadors a tot el lloc web.</string>
   <string name="biography">Biografia</string>
@@ -530,18 +541,20 @@
   <string name="automaticallyProceedToNextGameAfterMoving">Anar automàticament a la següent partida després de cada moviment</string>
   <string name="autoSwitch">Canvi automàtic</string>
   <string name="puzzles">Problemes</string>
-  <string name="tournamentWinners">Guanyadors de torneigs</string>
+  <string name="onlineBots">Bots en línia</string>
   <string name="name">Nom</string>
   <string name="description">Descripció</string>
   <string name="descPrivate">Descripció privada</string>
   <string name="descPrivateHelp">Text que només veuran els membres de l\'equip. Si conté text, substituïrà la descripció pública pels membres de l\'equip.</string>
   <string name="no">No</string>
   <string name="yes">Sí</string>
+  <string name="website">Lloc web</string>
+  <string name="mobile">Mòbil</string>
   <string name="help">Ajuda:</string>
   <string name="createANewTopic">Crea un nou tema</string>
   <string name="topics">Temes</string>
   <string name="posts">Entrades</string>
-  <string name="lastPost">Darrer post</string>
+  <string name="lastPost">Última publicació</string>
   <string name="views">Visites</string>
   <string name="replies">Respostes</string>
   <string name="replyToThisTopic">Respon aquest tema</string>
@@ -553,11 +566,11 @@
   <string name="reason">Raó</string>
   <string name="whatIsIheMatter">Quin és el problema?</string>
   <string name="cheat">Trampós</string>
-  <string name="insult">Insult</string>
   <string name="troll">Troll</string>
-  <string name="ratingManipulation">Manipulació de la puntuació</string>
   <string name="other">Altres</string>
-  <string name="reportDescriptionHelp">Enganxa l\'enllaç de la partida (o partides) i explica el comportament negatiu d\'aquest usuari. No et limitis a dir que \"fa trampes\", i explica com has arribat a aquesta conclusió. El teu informe serà processat més ràpidament si l\'escrius en anglès.</string>
+  <string name="reportCheatBoostHelp">Enganxa l\'enllaç de la partida (o partides) i explica quin és el problema amb el comportament d\'aquest usuari. No et limitis a dir que \"fa trampes\", explica\'ns com has arribat a aquesta conclusió.</string>
+  <string name="reportUsernameHelp">Explica quin és el comportament ofensiu d\'aquest usuari. No et limitis a dir simplement \"és ofensiu/inapropiat\", explica\'ns com has arribat a aquesta conclusió, especialment si l\'insult està ofuscat, en un idioma diferent de l\'anglès, és un barbarisme o és una referència històrica o cultural.</string>
+  <string name="reportProcessedFasterInEnglish">El teu informe serà tractat més ràpidament si està escrit en anglès.</string>
   <string name="error.provideOneCheatedGameLink">Si us plau, proporcioneu com a mínim un enllaç a un joc on s\'han fet trampes.</string>
   <string name="by">per %s</string>
   <string name="importedByX">Importat per %s</string>
@@ -590,6 +603,7 @@
   <string name="slow">Lent</string>
   <string name="insideTheBoard">Dins del tauler</string>
   <string name="outsideTheBoard">Fora del tauler</string>
+  <string name="allSquaresOfTheBoard">Totes les caselles del tauler</string>
   <string name="onSlowGames">En els jocs lents</string>
   <string name="always">Sempre</string>
   <string name="never">Mai</string>
@@ -642,7 +656,7 @@
   <string name="whiteCastlingKingside">Blanques O-O</string>
   <string name="blackCastlingKingside">Negres O-O</string>
   <plurals name="nbForumPosts">
-    <item quantity="one">%s Missatges al Fòrum</item>
+    <item quantity="one">%s Missatge al Fòrum</item>
     <item quantity="other">%s Missatges al Fòrum</item>
   </plurals>
   <string name="tpTimeSpentPlaying">Temps passat jugant: %s</string>
@@ -704,6 +718,7 @@
   <string name="toggleVariationArrows">Mostra/amaga les fletxes de les variants</string>
   <string name="cyclePreviousOrNextVariation">Canvia la variació següent/anterior</string>
   <string name="toggleGlyphAnnotations">Mostra/amaga les anotacions glif</string>
+  <string name="togglePositionAnnotations">Mostra/amaga les anotacions de la posició</string>
   <string name="variationArrowsInfo">Les fletxes de variants et permeten navegar sense utilitzar la llista de moviments.</string>
   <string name="playSelectedMove">juga el moviment seleccionat</string>
   <string name="newTournament">Nou torneig</string>
@@ -769,6 +784,7 @@
   <string name="onlineAndOfflinePlay">Jugar en línia i desconectat</string>
   <string name="viewTheSolution">Veure la solució</string>
   <string name="followAndChallengeFriends">Seguiu i desafieu amics</string>
+  <string name="noChallenges">Sense desafiaments.</string>
   <plurals name="availableInNbLanguages">
     <item quantity="one">Disponible en %s idiomes</item>
     <item quantity="other">Disponible en %s idiomes</item>
@@ -788,9 +804,12 @@
   <string name="transparent">Transparent</string>
   <string name="deviceTheme">Tema del dispositiu</string>
   <string name="backgroundImageUrl">Imatge de fons URL:</string>
-  <string name="boardGeometry">Geometria del tauler</string>
-  <string name="boardTheme">Temàtica del tauler</string>
-  <string name="boardSize">Mida del tauler</string>
+  <string name="board">Tauler</string>
+  <string name="size">Mida</string>
+  <string name="opacity">Opacitat</string>
+  <string name="brightness">Brillantor</string>
+  <string name="hue">Tonalitat</string>
+  <string name="boardReset">Restableix els colors per defecte</string>
   <string name="pieceSet">Conjunt de peces</string>
   <string name="embedInYourWebsite">Integrar en el seu lloc web</string>
   <string name="usernameAlreadyUsed">Aquest nom d\'usuari ja està en ús. Si us plau, tria un altre nom.</string>
@@ -866,7 +885,6 @@
   <string name="clickHereToReadIt">Fes clic aquí per llegir-lo</string>
   <string name="sorry">Ho sentim :(</string>
   <string name="weHadToTimeYouOutForAWhile">Hem hagut de penalitzar-te una estona.</string>
-  <string name="timeoutExpires">La penalització acaba en %s.</string>
   <string name="why">Perquè?</string>
   <string name="pleasantChessExperience">Intentem donar una bona experiència d’escacs a tothom.</string>
   <string name="goodPractice">Per això, hem de garantir que tots els jugadors segueixin bones pràctiques.</string>
@@ -886,8 +904,8 @@
   <string name="agreementPolicy">Estic d’acord que seguiré totes les polítiques de Lichess.</string>
   <string name="searchOrStartNewDiscussion">Cerca o inicia una nova discusió</string>
   <string name="edit">Edita</string>
-  <string name="bullet" comment="Probably best left untranslated. Leave it as 'Bullet' unless your language has a better word for it.">Bullet</string>
-  <string name="blitz" comment="Probably best left untranslated. Leave it as 'Blitz' unless your language has a better word for it.">Blitz</string>
+  <string name="bullet" comment="Probably best left untranslated. Leave it as 'Bullet' unless your language has a better word for it.">Bala</string>
+  <string name="blitz" comment="Probably best left untranslated. Leave it as 'Blitz' unless your language has a better word for it.">Llampec</string>
   <string name="rapid">Ràpides</string>
   <string name="classical">Clàssic</string>
   <string name="ultraBulletDesc">Partides extramadament ràpides: menys de 30 segons</string>
@@ -939,8 +957,6 @@ i impacten les puntuacions dels jugadors</string>
   <string name="minimumRatedGames">Mínims partits puntuats</string>
   <string name="minimumRating">Puntuació mínima</string>
   <string name="maximumWeeklyRating">Puntuació màxima aquesta setmana</string>
-  <string name="onlyTitled">Només jugadors titulats</string>
-  <string name="onlyTitledHelp">Es necessita un títol oficial per entrar en el torneig</string>
   <string name="positionInputHelp">Enganxa un FEN vàlid per començar cada joc d\'una posició donada.
 Només funciona per jocs estàndard, no per a variants.
 Pots utilitzar l\'%s per generar una posició FEN, i després enganxar-ho aquí.
@@ -968,9 +984,7 @@ Deixa-ho en blanc per començar els jocs de la posició inicial.</string>
   <string name="focusChat">Enfocar el xat</string>
   <string name="showHelpDialog">Ensenya aquest missatge d\'ajuda</string>
   <string name="reopenYourAccount">Torna a obrir el teu compte</string>
-  <string name="closedAccountChangedMind">Si has tancat el teu compte, però des de llavors has cambiat d\'opinió, tens una oportunitat per recuperar el teu compte.</string>
-  <string name="onlyWorksOnce">Això només funcionarà un cop.</string>
-  <string name="cantDoThisTwice">Si tanques el teu compte per segon cop, no hi haurà manera de recuperar-ho.</string>
+  <string name="reopenYourAccountDescription">Si has tancat el teu compte, però des de llavors has canviat d\'opinió, tens l\'oportunitat de recuperar el teu compte.</string>
   <string name="emailAssociatedToaccount">Adreça de correu electrònic associat al teu compte</string>
   <string name="sentEmailWithLink">T\'hem enviat un correu amb un enllaç.</string>
   <string name="tournamentEntryCode">Codi per entrar el tornament</string>
@@ -989,4 +1003,6 @@ Deixa-ho en blanc per començar els jocs de la posició inicial.</string>
   <string name="showMeEverything">Mostrar tot</string>
   <string name="lichessPatronInfo">Lichess és una entitat sense ànim de lucre i un programari totalment lliure i de codi obert.
 Les despeses de funcionament, desenvolupament i continguts es financen exclusivament amb donacions d\'usuaris.</string>
+  <string name="nothingToSeeHere">Res a veure per aquí de moment.</string>
+  <string name="stats">Estadístiques</string>
 </resources>

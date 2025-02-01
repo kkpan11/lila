@@ -2,9 +2,9 @@ package lila.security
 
 import lila.common.constants.bannedYoutubeIds
 
-final class Spam(spamKeywords: () => lila.common.Strings):
+final class Spam(spamKeywords: () => lila.core.data.Strings) extends lila.core.security.SpamApi:
 
-  def detect(text: String) =
+  def detect(text: String): Boolean =
     staticBlacklist.exists(text.contains) ||
       spamKeywords().value.exists(text.contains)
 
@@ -13,8 +13,6 @@ final class Spam(spamKeywords: () => lila.common.Strings):
       /* While links to other chess websites are welcome,
        * refer links grant the referrer money or advantages,
        * effectively inducing spam */
-      "chess24.com?ref=",
-      "chess24.com/?ref=",
       "chess.com/register?refId=",
       "chess.com/register?ref_id=",
       "chess.com/membership?refId=",
@@ -35,14 +33,13 @@ final class Spam(spamKeywords: () => lila.common.Strings):
     "/password/reset/confirm/"
   ) ::: bannedYoutubeIds ::: referBlacklist
 
-  def replace(text: String) =
+  def replace(text: String): String =
     replacements.foldLeft(text) { case (t, (regex, rep)) =>
       regex.replaceAllIn(t, rep)
     }
 
   /* Keep the link to the website but remove the referrer ID */
   private val replacements = List(
-    """chess24.com/?\?ref=[\w-]+""".r                      -> "chess24.com",
     """chess.com/(register|membership)\?refId=[\w-]+""".r  -> "chess.com",
     """chess.com/(register|membership)\?ref_id=[\w-]+""".r -> "chess.com",
     """go.chess.com/[\w-]+""".r                            -> "chess.com",

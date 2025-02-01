@@ -1,14 +1,13 @@
 package lila.setup
 
 import chess.format.Fen
-import chess.{ Clock, ByColor }
 import chess.variant.Variant
+import chess.{ ByColor, Clock }
+import scalalib.model.Days
 
-import lila.common.Days
-import lila.game.{ Game, IdGenerator, Player, Pov, Source }
-import lila.lobby.Color
-import lila.user.{ User, GameUser }
-import lila.rating.PerfType
+import lila.core.game.{ IdGenerator, NewPlayer, Player, Source }
+import lila.core.user.GameUser
+import lila.lobby.TriColor
 
 case class AiConfig(
     variant: chess.variant.Variant,
@@ -17,34 +16,35 @@ case class AiConfig(
     increment: Clock.IncrementSeconds,
     days: Days,
     level: Int,
-    color: Color,
-    fen: Option[Fen.Epd] = None
+    color: TriColor,
+    fen: Option[Fen.Full] = None
 ) extends Config
-    with Positional:
+    with Positional
+    with WithColor:
 
   val strictFen = true
 
   def >> = (variant.id, timeMode.id, time, increment, days, level, color.name, fen).some
 
-  private def game(user: GameUser)(using IdGenerator): Fu[Game] =
+  private def game(user: GameUser)(using idGenerator: IdGenerator, newPlayer: NewPlayer): Fu[Game] =
     fenGame: chessGame =>
-      val pt = PerfType(chessGame.situation.board.variant, chess.Speed(chessGame.clock.map(_.config)))
-      Game
-        .make(
-          chess = chessGame,
-          players = ByColor: c =>
-            if creatorColor == c
-            then Player.make(c, user)
-            else Player.makeAnon(c, level.some),
-          mode = chess.Mode.Casual,
-          source = if chessGame.board.variant.fromPosition then Source.Position else Source.Ai,
-          daysPerTurn = makeDaysPerTurn,
-          pgnImport = None
-        )
-        .withUniqueId
+      lila.rating.PerfType(chessGame.situation.board.variant, chess.Speed(chessGame.clock.map(_.config)))
+      idGenerator.withUniqueId:
+        lila.core.game
+          .newGame(
+            chess = chessGame,
+            players = ByColor: c =>
+              if creatorColor == c
+              then newPlayer(c, user)
+              else newPlayer.anon(c, level.some),
+            mode = chess.Mode.Casual,
+            source = if chessGame.board.variant.fromPosition then Source.Position else Source.Ai,
+            daysPerTurn = makeDaysPerTurn,
+            pgnImport = None
+          )
     .dmap(_.start)
 
-  def pov(user: GameUser)(using IdGenerator) = game(user) dmap { Pov(_, creatorColor) }
+  def pov(user: GameUser)(using IdGenerator, NewPlayer) = game(user).dmap { Pov(_, creatorColor) }
 
   def timeControlFromPosition =
     timeMode != TimeMode.RealTime || variant != chess.variant.FromPosition || time >= 1
@@ -59,16 +59,16 @@ object AiConfig extends BaseConfig:
       d: Days,
       level: Int,
       c: String,
-      fen: Option[Fen.Epd]
+      fen: Option[Fen.Full]
   ) =
     new AiConfig(
       variant = chess.variant.Variant.orDefault(v),
-      timeMode = TimeMode(tm) err s"Invalid time mode $tm",
+      timeMode = TimeMode(tm).err(s"Invalid time mode $tm"),
       time = t,
       increment = i,
       days = d,
       level = level,
-      color = Color(c) err "Invalid color " + c,
+      color = TriColor(c).err("Invalid color " + c),
       fen = fen
     )
 
@@ -79,12 +79,12 @@ object AiConfig extends BaseConfig:
     increment = Clock.IncrementSeconds(8),
     days = Days(2),
     level = 1,
-    color = Color.default
+    color = TriColor.default
   )
 
   val levels = (1 to 8).toList
 
-  val levelChoices = levels map { l =>
+  val levelChoices = levels.map { l =>
     (l.toString, l.toString, none)
   }
 
@@ -95,14 +95,14 @@ object AiConfig extends BaseConfig:
 
     def reads(r: BSON.Reader): AiConfig =
       AiConfig(
-        variant = Variant idOrDefault r.getO[Variant.Id]("v"),
-        timeMode = TimeMode.orDefault(r int "tm"),
-        time = r double "t",
-        increment = r get "i",
+        variant = Variant.idOrDefault(r.getO[Variant.Id]("v")),
+        timeMode = TimeMode.orDefault(r.int("tm")),
+        time = r.double("t"),
+        increment = r.get("i"),
         days = r.get("d"),
-        level = r int "l",
-        color = Color.White,
-        fen = r.getO[Fen.Epd]("f").filter(_.value.nonEmpty)
+        level = r.int("l"),
+        color = TriColor.White,
+        fen = r.getO[Fen.Full]("f").filter(_.value.nonEmpty)
       )
 
     def writes(w: BSON.Writer, o: AiConfig) =

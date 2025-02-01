@@ -13,7 +13,7 @@
   <string name="specialMoves">tonSaw\' le\'</string>
   <string name="didYouLikeThisPuzzle">ngajrun DatIv\'a\'?</string>
   <string name="voteToLoadNextOne">ngajrun veb Danaw\'meH yIlap!</string>
-  <string name="puzzleId" comment="%s is the ID of the puzzle, something like #a1b2c3.">ngajrun %s</string>
+  <string name="puzzleId">ngajrun %s</string>
   <string name="puzzleOfTheDay">jajvam ngajrun</string>
   <string name="clickToSolve">DapanmeH yIwIv</string>
   <string name="goodMove">tonSaw\' QaQ</string>
@@ -23,9 +23,9 @@
   <string name="puzzleComplete">rIn ngajrun!</string>
   <string name="notTheMove">tonSaw\' lugh \'oHbe\'!</string>
   <string name="trySomethingElse">tonSaw\' latlh yInID</string>
-  <string name="ratingX" comment="Appears on pages of individual puzzles.&#10;&#10;%s is either:&#10;1. The word 'hidden', if you have not completed the puzzle yet.&#10;2. The rating of the puzzle, if you have completed it or seen the solution.">patlh: %s</string>
-  <string name="hidden" comment="Puzzle rating: hidden&#10;&#10;Appears while solving puzzles. Lichess only displays the rating of the puzzle after you have solved it or asked to see the solution.">So\'lu\'</string>
-  <plurals name="playedXTimes" comment="Appears on pages of individual puzzles.&#10;%s is the number of times the puzzle has been played.">
+  <string name="ratingX">patlh: %s</string>
+  <string name="hidden">So\'lu\'</string>
+  <plurals name="playedXTimes">
     <item quantity="one">%slogh Qujpu\'</item>
     <item quantity="other">%slogh Qujpu\'</item>
   </plurals>
@@ -41,7 +41,7 @@
   <string name="addAnotherTheme">latlh Segh chel</string>
   <string name="nextPuzzle">ngajrun veb</string>
   <string name="solved">panpu\'</string>
-  <string name="failed">muj</string>
+  <string name="failed" comment="In the list of previously attempted puzzles, a tag indicating that the puzzle has been failed.&#10;&#10;The text will be automatically capitalised. If you have different ways to translate it, we suggest keeping it short.&#10;&#10;NOTE: This string previously said 'failed', but was changed to 'incorrect' to be more encouraging (https://github.com/lichess-org/lila/issues/11068)">muj</string>
   <string name="searchPuzzles">ngajrun nej</string>
   <plurals name="nbPlayed">
     <item quantity="one">%s Qujpu\'</item>

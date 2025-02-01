@@ -1,9 +1,7 @@
 package controllers
 
-import play.api.data.*, Forms.*
-import views.*
-
-import lila.app.{ given, * }
+import lila.app.*
+import play.api.libs.json.*
 
 final class Dev(env: Env) extends LilaController(env):
 
@@ -21,66 +19,64 @@ final class Dev(env: Env) extends LilaController(env):
     env.round.selfReportMarkUser,
     env.streamer.homepageMaxSetting,
     env.streamer.alwaysFeaturedSetting,
-    env.rating.ratingFactorsSetting,
+    env.round.ratingFactorsSetting,
     env.plan.donationGoalSetting,
-    env.apiTimelineSetting,
-    env.apiExplorerGamesPerSecond,
     env.fishnet.openingBookDepth,
-    env.noDelaySecretSetting,
-    env.prizeTournamentMakers,
-    env.pieceImageExternal,
+    env.web.settings.apiTimeline,
+    env.web.settings.apiExplorerGamesPerSecond,
+    env.web.settings.noDelaySecret,
+    env.web.settings.prizeTournamentMakers,
+    env.web.settings.sitewideCoepCredentiallessHeader,
     env.tournament.reloadEndpointSetting,
     env.tutor.nbAnalysisSetting,
     env.tutor.parallelismSetting,
-    env.firefoxOriginTrial,
-    env.credentiallessUaRegex
+    env.recap.parallelismSetting,
+    env.relay.proxyDomainRegex,
+    env.relay.proxyHostPort,
+    env.relay.proxyCredentials
   )
 
   def settings = Secure(_.Settings) { _ ?=> _ ?=>
     Ok.page:
-      html.dev.settings(settingsList)
+      views.dev.settings(settingsList)
   }
 
   def settingsPost(id: String) = SecureBody(_.Settings) { _ ?=> me ?=>
-    settingsList.find(_.id == id) so { setting =>
-      setting.form
-        .bindFromRequest()
-        .fold(
-          _ => BadRequest.page(html.dev.settings(settingsList)),
-          v =>
-            lila
-              .log("setting")
-              .info(s"${me.username} changes $id from ${setting.get()} to ${v.toString}")
-            setting.setString(v.toString) inject Redirect(routes.Dev.settings)
-        )
+    settingsList.find(_.id == id).so { setting =>
+      bindForm(setting.form)(
+        _ => BadRequest.page(views.dev.settings(settingsList)),
+        v =>
+          lila
+            .log("setting")
+            .info(s"${me.username} changes $id from ${setting.get()} to ${v.toString}")
+          setting.setString(v.toString).inject(Redirect(routes.Dev.settings))
+      )
     }
   }
 
-  private val commandForm = Form(single("command" -> nonEmptyText))
-
   def cli = Secure(_.Cli) { _ ?=> _ ?=>
     Ok.page:
-      html.dev.cli(commandForm, none)
+      views.dev.cli(env.api.cli.form, none)
   }
 
   def cliPost = SecureBody(_.Cli) { _ ?=> me ?=>
-    commandForm
-      .bindFromRequest()
-      .fold(
-        err => BadRequest.page(html.dev.cli(err, "Invalid command".some)),
-        command =>
-          Ok.pageAsync:
-            runCommand(command).map: res =>
-              html.dev.cli(commandForm fill command, s"$command\n\n$res".some)
-      )
+    bindForm(env.api.cli.form)(
+      err => BadRequest.page(views.dev.cli(err, "Invalid command".some)),
+      command =>
+        Ok.async:
+          runCommand(command).map: res =>
+            views.dev.cli(env.api.cli.form.fill(command), s"$command\n\n$res".some)
+    )
   }
 
-  def command = ScopedBody(parse.tolerantText)(Seq(_.Preference.Write)) { ctx ?=> me ?=>
-    lila.security.Granter(_.Cli).so {
-      runCommand(ctx.body.body) map { Ok(_) }
+  def command = ScopedBody(parse.tolerantText)(Seq(_.Preference.Write)) { ctx ?=> _ ?=>
+    isGranted(_.Cli).so {
+      runCommand(ctx.body.body).map { Ok(_) }
     }
   }
 
   private def runCommand(command: String)(using Me): Fu[String] =
     env.mod.logApi.cli(command) >>
       env.api.cli(command.split(" ").toList)
+
+end Dev

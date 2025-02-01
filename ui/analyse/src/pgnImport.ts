@@ -1,10 +1,17 @@
-import { AnalyseData, Game } from './interfaces';
+import type { AnalyseData, Game } from './interfaces';
 import { makeFen } from 'chessops/fen';
 import { makeSanAndPlay, parseSan } from 'chessops/san';
 import { makeUci, Rules } from 'chessops';
-import { makeVariant, parsePgn, parseVariant, startingPosition, ChildNode, PgnNodeData } from 'chessops/pgn';
-import { Position } from 'chessops/chess';
-import { Player } from 'game';
+import {
+  makeVariant,
+  parsePgn,
+  parseVariant,
+  startingPosition,
+  type ChildNode,
+  type PgnNodeData,
+} from 'chessops/pgn';
+import { IllegalSetup, type Position } from 'chessops/chess';
+import type { Player } from 'game';
 import { scalachessCharPair } from 'chessops/compat';
 import { makeSquare } from 'chessops/util';
 
@@ -15,7 +22,7 @@ const readNode = (
   withChildren = true,
 ): Tree.Node => {
   const move = parseSan(pos, node.data.san);
-  if (!move) throw `Can't replay move ${node.data.san} at ply ${ply}`;
+  if (!move) throw new Error(`Can't play ${node.data.san} at move ${Math.ceil(ply / 2)}, ply ${ply}`);
   return {
     id: scalachessCharPair(move),
     ply,
@@ -85,3 +92,14 @@ const rulesToVariantKey: { [key: string]: VariantKey } = {
   '3check': 'threeCheck',
   racingkings: 'racingKings',
 };
+
+export const renderPgnError = (error: string = '') =>
+  `PGN error: ${
+    {
+      [IllegalSetup.Empty]: 'empty board',
+      [IllegalSetup.OppositeCheck]: 'king in check',
+      [IllegalSetup.PawnsOnBackrank]: 'pawns on back rank',
+      [IllegalSetup.Kings]: 'king(s) missing',
+      [IllegalSetup.Variant]: 'invalid Variant header',
+    }[error] ?? error
+  }`;

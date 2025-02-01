@@ -1,31 +1,31 @@
 package lila.team
 
+import lila.core.socket.{ protocol as P, * }
 import lila.room.RoomSocket.{ Protocol as RP, * }
-import lila.socket.RemoteSocket.{ Protocol as P, * }
 
 final private class TeamSocket(
-    remoteSocketApi: lila.socket.RemoteSocket,
-    chat: lila.chat.ChatApi,
+    socketKit: SocketKit,
+    chat: lila.core.chat.ChatApi,
     api: TeamApi
-)(using Executor, lila.user.FlairApi.Getter):
+)(using Executor, lila.core.user.FlairGet):
 
   lazy val rooms = makeRoomMap(send)
 
-  subscribeChat(rooms, _.Team)
+  subscribeChat(rooms, _.team)
 
-  private lazy val handler: Handler = roomHandler(
+  private lazy val handler: SocketHandler = roomHandler(
     rooms,
     chat,
     logger,
-    roomId => _.Team(roomId into TeamId).some,
+    roomId => _.Team(roomId.into(TeamId)).some,
     localTimeout = Some: (roomId, modId, suspectId) =>
-      api.hasPerm(roomId into TeamId, modId, _.Comm) >>&
-        !api.hasPerm(roomId into TeamId, suspectId, _.Comm),
-    chatBusChan = _.Team
+      api.hasPerm(roomId.into(TeamId), modId, _.Comm) >>&
+        api.hasPerm(roomId.into(TeamId), suspectId, _.Comm).not,
+    chatBusChan = _.team
   )
 
-  private lazy val send: String => Unit = remoteSocketApi.makeSender("team-out").apply
+  private lazy val send = socketKit.send("team-out")
 
-  remoteSocketApi.subscribe("team-in", RP.In.reader)(
-    handler orElse remoteSocketApi.baseHandler
-  ) andDo send(P.Out.boot)
+  socketKit
+    .subscribe("team-in", RP.In.reader)(handler.orElse(socketKit.baseHandler))
+    .andDo(send.exec(P.Out.boot))

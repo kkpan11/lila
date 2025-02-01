@@ -1,37 +1,29 @@
 package lila.game
 
-import play.api.libs.json.*
-
+import chess.bitboard.Bitboard
+import chess.format.pgn.SanStr
+import chess.format.{ BoardFen, Fen }
 import chess.variant.Crazyhouse
+import chess.rating.IntRatingDiff
 import chess.{
-  Ply,
-  Check,
   Centis,
+  Check,
   Clock as ChessClock,
   Color,
   Drop as ChessDrop,
   Move as ChessMove,
-  Square,
+  Ply,
   PromotableRole,
   Situation,
+  Square,
   Status
 }
-import chess.format.{ Fen, BoardFen }
-import chess.format.pgn.SanStr
-import chess.bitboard.Bitboard
-import JsonView.{ *, given }
-import lila.chat.{ PlayerLine, UserLine }
-import lila.common.ApiVersion
-import lila.common.Json.given
+import play.api.libs.json.*
 
-sealed trait Event:
-  def typ: String
-  def data: JsValue
-  def only: Option[Color]   = None
-  def owner: Boolean        = false
-  def watcher: Boolean      = false
-  def troll: Boolean        = false
-  def moveBy: Option[Color] = None
+import lila.common.Json.given
+import lila.core.game.{ Event, Game }
+
+import JsonView.{ *, given }
 
 object Event:
 
@@ -47,6 +39,7 @@ object Event:
         fen: BoardFen,
         check: Check,
         threefold: Boolean,
+        fiftyMoves: Boolean,
         state: State,
         clock: Option[ClockEvent],
         possibleMoves: Map[Square, Bitboard],
@@ -64,6 +57,7 @@ object Event:
         .add("winner" -> state.winner)
         .add("check" -> check)
         .add("threefold" -> threefold)
+        .add("fiftyMoves" -> fiftyMoves)
         .add("wDraw" -> state.whiteOffersDraw)
         .add("bDraw" -> state.blackOffersDraw)
         .add("crazyhouse" -> crazyData)
@@ -77,6 +71,7 @@ object Event:
       fen: BoardFen,
       check: Check,
       threefold: Boolean,
+      fiftyMoves: Boolean,
       promotion: Option[Promotion],
       enpassant: Option[Enpassant],
       castle: Option[Castling],
@@ -87,7 +82,17 @@ object Event:
       crazyData: Option[Crazyhouse.Data]
   ) extends Event:
     def typ = "move"
-    def data = MoveOrDrop.data(fen, check, threefold, state, clock, possibleMoves, possibleDrops, crazyData):
+    def data = MoveOrDrop.data(
+      fen,
+      check,
+      threefold,
+      fiftyMoves,
+      state,
+      clock,
+      possibleMoves,
+      possibleDrops,
+      crazyData
+    ):
       Json
         .obj(
           "uci" -> s"${orig.key}${dest.key}",
@@ -97,6 +102,7 @@ object Event:
         .add("enpassant" -> enpassant.map(_.data))
         .add("castle" -> castle.map(_.data))
     override def moveBy = Some(!state.turns.turn)
+
   object Move:
     def apply(
         move: ChessMove,
@@ -111,9 +117,10 @@ object Event:
       fen = Fen.writeBoard(situation.board),
       check = situation.check,
       threefold = situation.threefoldRepetition,
+      fiftyMoves = situation.variant.fiftyMoves(situation.history),
       promotion = move.promotion.map { Promotion(_, move.dest) },
       enpassant = move.capture.ifTrue(move.enpassant).map(Event.Enpassant(_, !move.color)),
-      castle = move.castle.map(_.value).map((king, rook) => Castling(king, rook, move.color)),
+      castle = move.castle.map(Castling(_, move.color)),
       state = state,
       clock = clock,
       possibleMoves = situation.destinations,
@@ -135,12 +142,13 @@ object Event:
       possibleDrops: Option[List[Square]]
   ) extends Event:
     def typ = "drop"
-    def data = MoveOrDrop.data(fen, check, threefold, state, clock, possibleMoves, possibleDrops, crazyData):
-      Json.obj(
-        "role" -> role.name,
-        "uci"  -> s"${role.pgn}@${pos.key}",
-        "san"  -> san
-      )
+    def data =
+      MoveOrDrop.data(fen, check, threefold, false, state, clock, possibleMoves, possibleDrops, crazyData):
+        Json.obj(
+          "role" -> role.name,
+          "uci"  -> s"${role.pgn}@${pos.key}",
+          "san"  -> san
+        )
     override def moveBy = Some(!state.turns.turn)
   object Drop:
     def apply(
@@ -164,6 +172,7 @@ object Event:
     )
 
   object PossibleMoves:
+    // We need to keep this implementation for compatibility
     def json(moves: Map[Square, Bitboard]): JsValue =
       if moves.isEmpty then JsNull
       else
@@ -171,8 +180,8 @@ object Event:
         var first = true
         moves.foreach: (orig, dests) =>
           if first then first = false
-          else sb append " "
-          sb append orig.key
+          else sb.append(" ")
+          sb.append(orig.key)
           dests.foreach(s => sb.append(s.key))
         JsString(sb.toString)
 
@@ -190,12 +199,13 @@ object Event:
         "color" -> color
       )
 
-  case class Castling(king: (Square, Square), rook: (Square, Square), color: Color) extends Event:
+  case class Castling(castle: ChessMove.Castle, color: Color) extends Event:
     def typ = "castling"
     def data =
+      import castle.*
       Json.obj(
-        "king"  -> Json.arr(king._1.key, king._2.key),
-        "rook"  -> Json.arr(rook._1.key, rook._2.key),
+        "king"  -> Json.arr(king.key, kingTo.key),
+        "rook"  -> Json.arr(rook.key, rookTo.key),
         "color" -> color
       )
 
@@ -232,7 +242,7 @@ object Event:
     override def watcher = w
     override def owner   = !w
 
-  case class EndData(game: Game, ratingDiff: Option[RatingDiffs]) extends Event:
+  case class EndData(game: Game, ratingDiff: Option[chess.ByColor[IntRatingDiff]]) extends Event:
     def typ = "endData"
     def data =
       Json
@@ -294,13 +304,13 @@ object Event:
           "white" -> white.toSeconds,
           "black" -> black.toSeconds
         )
-        .add("lag" -> nextLagComp.filter(_ > 1))
+        .add("lag" -> nextLagComp.filter(_ > Centis(1)))
   object Clock:
     def apply(clock: ChessClock): Clock =
       Clock(
-        clock remainingTime Color.White,
-        clock remainingTime Color.Black,
-        clock lagCompEstimate clock.color
+        clock.remainingTime(Color.White),
+        clock.remainingTime(Color.Black),
+        clock.lagCompEstimate(clock.color)
       )
 
   case class Berserk(color: Color) extends Event:
@@ -311,7 +321,7 @@ object Event:
     def typ  = "cclock"
     def data = Json.obj("white" -> white, "black" -> black)
   object CorrespondenceClock:
-    def apply(clock: lila.game.CorrespondenceClock): CorrespondenceClock =
+    def apply(clock: chess.CorrespondenceClock): CorrespondenceClock =
       CorrespondenceClock(clock.whiteTime, clock.blackTime)
 
   case class CheckCount(white: Int, black: Int) extends Event:

@@ -20,13 +20,13 @@
   <string name="displayBoardResizeHandle">Vis brætstørrelse justering</string>
   <string name="onlyOnInitialPosition">Kun ved indledende position</string>
   <string name="inGameOnly">Kun i spillet</string>
-  <string name="blindfoldChess">Blindskak</string>
+  <string name="exceptInGame">Undtagen i spillet</string>
   <string name="chessClock">Skakur</string>
   <string name="tenthsOfSeconds">Tiendedele sekunder</string>
-  <string name="whenTimeRemainingLessThanTenSeconds" comment="whenTimeRemainingLessThanTenSeconds&#10;&#10;The &amp;lt; symbol is not required (you can write it as a word), just do NOT use &lt; in its place.&#10;&#10;Technical information: &lt; is a reserved character in HTML, which is why it cannot be used.">Når resterende tid &lt; 10 sekunder</string>
+  <string name="whenTimeRemainingLessThanTenSeconds" comment="The &amp;lt; symbol becomes &quot;&lt;&quot; (less than symbol).&#10;It is not required in your translation; you can write it as a word for example. Just do NOT use &lt; in its place, or your translation will have to be removed.&#10;&#10;Technical information: &lt; is a reserved character in HTML, which is why it cannot be used.">Når resterende tid &lt; 10 sekunder</string>
   <string name="horizontalGreenProgressBars">Horisontale grønne statuslinjer</string>
   <string name="soundWhenTimeGetsCritical">Lyd, når tiden bliver kritisk</string>
-  <string name="giveMoreTime">Give mere tid</string>
+  <string name="giveMoreTime">Giv mere tid</string>
   <string name="gameBehavior" comment="gameBehavior&#10;&#10;In the user settings page, &quot;Game behavior&quot; is the title of the tab for configuring how the player can interact with the game.">Spiladfærd</string>
   <string name="howDoYouMovePieces">Hvordan flytter du brikker?</string>
   <string name="clickTwoSquares">Klik på to felter</string>
@@ -35,11 +35,11 @@
   <string name="premovesPlayingDuringOpponentTurn">Forhåndstræk (spilles på modstanderens tur)</string>
   <string name="takebacksWithOpponentApproval">Fortrydelse af træk (med modstanderens accept)</string>
   <string name="inCasualGamesOnly">Kun i ikke-ratede spil</string>
-  <string name="promoteToQueenAutomatically">Forfrem til Dronning automatisk</string>
+  <string name="promoteToQueenAutomatically">Forfrem til dronning automatisk</string>
   <string name="explainPromoteToQueenAutomatically">Hold &lt;ctrl&gt;-tasten nede, mens du forfremmer for midlertidigt at deaktivere auto-forfremmelse</string>
   <string name="whenPremoving">Ved forhåndstræk</string>
   <string name="claimDrawOnThreefoldRepetitionAutomatically">Kræv automatisk remis ved trækgentagelse</string>
-  <string name="whenTimeRemainingLessThanThirtySeconds">Når tilbageværende tid &lt; 30 sekunder</string>
+  <string name="whenTimeRemainingLessThanThirtySeconds" comment="The &amp;lt; symbol becomes &quot;&lt;&quot; (less than symbol).&#10;It is not required in your translation; you can write it as a word for example. Just do NOT use &lt; in its place, or your translation will have to be removed.&#10;&#10;Technical information: &lt; is a reserved character in HTML, which is why it cannot be used.">Når tilbageværende tid &lt; 30 sekunder</string>
   <string name="moveConfirmation">Bekræft træk</string>
   <string name="explainCanThenBeTemporarilyDisabled">Kan deaktiveres i løbet af et parti med brætmenuen</string>
   <string name="inCorrespondenceGames">I korrespondancepartier</string>
@@ -50,7 +50,7 @@
   <string name="castleByMovingOntoTheRook">Flyt kongen over på tårn</string>
   <string name="inputMovesWithTheKeyboard">Lav træk med tastaturet</string>
   <string name="inputMovesWithVoice">Angiv træk med din stemme</string>
-  <string name="snapArrowsToValidMoves" comment="snapArrowsToValidMoves&#10;&#10;The 'arrows' are for quick annotations you can do on the board, by holding right mouse button. With this setting enabled, it means the arrows will align themselves to places were pieces can move.">Marker lovlige træk med pile</string>
+  <string name="snapArrowsToValidMoves" comment="snapArrowsToValidMoves&#10;&#10;The 'arrows' are for quick annotations you can do on the board, by holding right mouse button. With this setting enabled, it means the arrows will align themselves to places were pieces can move.">Markér lovlige træk med pile</string>
   <string name="sayGgWpAfterLosingOrDrawing" comment="sayGgWpAfterLosingOrDrawing&#10;&#10;When enabled, this setting will automatically send 'Good game, well played' to your opponent if you are lose or draw the game. It's meant as a courtesy message.&#10;&#10;The message will be sent in ENGLISH.&#10;&#10;It is up to you how to deal with this. For example, you may want to put '(message will be sent in English)' in your translated text as one example. Or you can leave the actual English text and put a brief translation in your own language.">Sig \"Good game, well played\" (Godt parti, godt spillet) ved nederlag eller remis</string>
   <string name="yourPreferencesHaveBeenSaved">Dine præferencer er blevet gemt.</string>
   <string name="scrollOnTheBoardToReplayMoves">Brug musens scrollhjul på brættet for at afspille træk</string>
@@ -68,4 +68,5 @@
   <string name="notifyWeb">Browser</string>
   <string name="notifyDevice">Enhed</string>
   <string name="bellNotificationSound">Notifikationslyd</string>
+  <string name="blindfold" comment="As in Blindfold chess">Blindskak</string>
 </resources>

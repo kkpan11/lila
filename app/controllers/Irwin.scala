@@ -1,15 +1,15 @@
 package controllers
 
-import lila.app.{ given, * }
+import lila.app.*
 
 final class Irwin(env: Env) extends LilaController(env):
 
   import lila.irwin.JSONHandlers.given
 
   def dashboard = Secure(_.MarkEngine) { ctx ?=> _ ?=>
-    Ok.pageAsync:
+    Ok.async:
       env.irwin.irwinApi.dashboard.map:
-        views.html.irwin.dashboard
+        views.irwin.dashboard
   }
 
   def saveReport = ScopedBody(parse.json)(Nil) { ctx ?=> me ?=>
@@ -18,8 +18,9 @@ final class Irwin(env: Env) extends LilaController(env):
         .validate[lila.irwin.IrwinReport]
         .fold(
           err => BadRequest(err.toString).toFuccess,
-          report => env.irwin.irwinApi.reports.insert(report) inject Ok
-        ) map (_ as TEXT)
+          report => env.irwin.irwinApi.reports.insert(report).inject(Ok)
+        )
+        .map(_.as(TEXT))
   }
 
   def eventStream = Scoped() { _ ?=> me ?=>
@@ -28,7 +29,7 @@ final class Irwin(env: Env) extends LilaController(env):
   }
 
   def kaladin = Secure(_.MarkEngine) { ctx ?=> _ ?=>
-    Ok.pageAsync:
+    Ok.async:
       env.irwin.kaladinApi.dashboard.map:
-        views.html.kaladin.dashboard
+        views.irwin.kaladin.dashboard
   }

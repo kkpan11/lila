@@ -1,15 +1,16 @@
-import * as round from './round';
 import * as util from './util';
+import { onInsert } from 'common/snabbdom';
 import resizeHandle from 'common/resize';
-import RoundController from './ctrl';
-import { Config } from 'chessground/config';
-import { h } from 'snabbdom';
-import { plyStep } from './round';
-import { RoundData } from './interfaces';
+import type RoundController from './ctrl';
+import { h, type VNode } from 'snabbdom';
+import { plyStep } from './util';
+import type { RoundData } from './interfaces';
 import { uciToMove } from 'chessground/util';
-import * as Prefs from 'common/prefs';
+import { ShowResizeHandle, Coords, MoveEvent } from 'common/prefs';
+import { storage } from 'common/storage';
+import { Chessground as makeChessground } from 'chessground';
 
-export function makeConfig(ctrl: RoundController): Config {
+export function makeConfig(ctrl: RoundController): CgConfig {
   const data = ctrl.data,
     hooks = ctrl.makeCgHooks(),
     step = plyStep(data, ctrl.ply),
@@ -20,7 +21,8 @@ export function makeConfig(ctrl: RoundController): Config {
     turnColor: step.ply % 2 === 0 ? 'white' : 'black',
     lastMove: uciToMove(step.uci),
     check: !!step.check,
-    coordinates: data.pref.coords !== Prefs.Coords.Hidden,
+    coordinates: data.pref.coords !== Coords.Hidden,
+    coordinatesOnSquares: data.pref.coords === Coords.All,
     addPieceZIndex: ctrl.data.pref.is3d,
     addDimensionsCssVarsTo: document.body,
     highlight: {
@@ -31,12 +33,12 @@ export function makeConfig(ctrl: RoundController): Config {
       move: hooks.onMove,
       dropNewPiece: hooks.onNewPiece,
       insert(elements) {
-        const firstPly = round.firstPly(ctrl.data);
+        const firstPly = util.firstPly(ctrl.data);
         const isSecond = (firstPly % 2 === 0 ? 'white' : 'black') !== data.player.color;
         const showUntil = firstPly + 2 + +isSecond;
         resizeHandle(
           elements,
-          playing ? ctrl.data.pref.resizeHandle : Prefs.ShowResizeHandle.Always,
+          playing ? ctrl.data.pref.resizeHandle : ShowResizeHandle.Always,
           ctrl.ply,
           p => p <= showUntil,
         );
@@ -46,7 +48,7 @@ export function makeConfig(ctrl: RoundController): Config {
       free: false,
       color: playing ? data.player.color : undefined,
       dests: playing ? util.parsePossibleMoves(data.possibleMoves) : new Map(),
-      showDests: data.pref.destination,
+      showDests: data.pref.destination && !ctrl.blindfold(),
       rookCastle: data.pref.rookCastle,
       events: {
         after: hooks.onUserMove,
@@ -59,7 +61,7 @@ export function makeConfig(ctrl: RoundController): Config {
     },
     premovable: {
       enabled: data.pref.enablePremove,
-      showDests: data.pref.destination,
+      showDests: data.pref.destination && !ctrl.blindfold(),
       castle: data.game.variant.key !== 'antichess',
       events: {
         set: hooks.onPremove,
@@ -76,21 +78,21 @@ export function makeConfig(ctrl: RoundController): Config {
       },
     },
     draggable: {
-      enabled: data.pref.moveEvent !== Prefs.MoveEvent.Click,
+      enabled: data.pref.moveEvent !== MoveEvent.Click,
       showGhost: data.pref.highlight,
     },
     selectable: {
-      enabled: data.pref.moveEvent !== Prefs.MoveEvent.Drag,
+      enabled: data.pref.moveEvent !== MoveEvent.Drag,
     },
     drawable: {
       enabled: true,
-      defaultSnapToValidMove: lichess.storage.boolean('arrow.snap').getOrDefault(true),
+      defaultSnapToValidMove: storage.boolean('arrow.snap').getOrDefault(true),
     },
     disableContextMenu: true,
   };
 }
 
-export const reload = (ctrl: RoundController) => ctrl.chessground.set(makeConfig(ctrl));
+export const reload = (ctrl: RoundController): void => ctrl.chessground.set(makeConfig(ctrl));
 
 export const boardOrientation = (data: RoundData, flip: boolean): Color =>
   data.game.variant.key === 'racingKings'
@@ -98,10 +100,10 @@ export const boardOrientation = (data: RoundData, flip: boolean): Color =>
       ? 'black'
       : 'white'
     : flip
-    ? data.opponent.color
-    : data.player.color;
+      ? data.opponent.color
+      : data.player.color;
 
-export const render = (ctrl: RoundController) =>
+export const render = (ctrl: RoundController): VNode =>
   h('div.cg-wrap', {
-    hook: util.onInsert(el => ctrl.setChessground(lichess.makeChessground(el, makeConfig(ctrl)))),
+    hook: onInsert(el => ctrl.setChessground(makeChessground(el, makeConfig(ctrl)))),
   });

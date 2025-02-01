@@ -2,6 +2,7 @@ package lila.security
 
 import reactivemongo.api.bson.*
 
+import lila.core.security.FingerHash
 import lila.db.dsl.{ *, given }
 
 final class PrintBan(coll: Coll)(using Executor):

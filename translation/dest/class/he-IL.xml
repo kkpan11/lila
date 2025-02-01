@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="lichessClasses">כיתות</string>
-  <string name="teachClassesOfChessStudents">למד/י כיתות של תלמידי שחמט עם כלי הכיתות ש-Lichess מעמיד לרשותך.</string>
+  <string name="teachClassesOfChessStudents">למד/י כיתות של תלמידי שחמט עם כלי הכיתות ש־Lichess מעמיד לרשותך.</string>
   <string name="features">תכונות</string>
   <string name="quicklyGenerateSafeUsernames">הפיקו במהירות שמות משתמשים וסיסמאות בטוחות לתלמידים</string>
   <string name="trackStudentProgress">עקבו אחר ההתקדמות של התלמידים במשחקים ובחידות</string>
   <string name="messageAllStudents">שלחו הודעה לכל התלמידים על חומר לימוד חדש בכיתה</string>
-  <string name="freeForAllForever">חינמי לחלוטין לכולם, לנצח, בלי פרסומות וכלי מעקב</string>
+  <string name="freeForAllForever" comment="The automated QA checker treats &quot;100%&quot; as if it is a variable, and will give a warning if you change it.&#10;It is not a variable.&#10;&#10;You can still save your translation writing it as &quot;%100&quot; for example, in case this is more valid in your language.">חינמי לחלוטין לכולם, לנצח, בלי פרסומות וכלי מעקב</string>
   <string name="applyToBeLichessTeacher">הגישו בקשה להיות מורה בליצ\'ס</string>
   <string name="noClassesYet">אין עדיין כיתות.</string>
   <string name="teachersX">מורים: %s</string>
@@ -59,6 +59,8 @@
     <item quantity="many">%s הזמנות ממתינות</item>
     <item quantity="other">%s הזמנות ממתינות</item>
   </plurals>
+  <string name="pending">ממתין</string>
+  <string name="declined">נדחה</string>
   <string name="onlyVisibleToTeachers">גלוי רק למורי הכיתה</string>
   <string name="lastActiveDate">נכנס/ה לאחרונה</string>
   <string name="managed">מנוהל</string>
@@ -110,14 +112,16 @@
   <string name="youAcceptedThisInvitation">קיבלת את ההזמנה הזו.</string>
   <string name="youDeclinedThisInvitation">סירבת להזמנה הזו.</string>
   <string name="orSeparator" comment="Used as separator between invite sections. Shown as large '~ or ~'.">או</string>
-  <string name="createMultipleAccounts">צרו חשבונות Lichess מרובים בו-זמנית</string>
+  <string name="createMultipleAccounts">צרו חשבונות Lichess מרובים בו־זמנית</string>
   <string name="multipleAccsFormDescription" comment="%s is a link and will be replaced with the translation of useThisForm. Make sure both strings fit together.">את/ה יכול/ה גם %s כדי ליצור חשבונות Lichess מרובים מרשימה של שמות תלמידים.</string>
   <string name="useThisForm" comment="Link text in multipleAccsFromDescription">להשתמש בטופס הזה</string>
   <string name="maxStudentsNote" comment="%1$s will be replaced with a large number (currently 100).\n%2$s is a link and will be replaced with the translation of createMoreClasses. Make sure both strings fit together.">שימו לב שבכיתה יכולים להיות עד %1$s תלמידים. כדי לטפל ביותר תלמידים, %2$s.</string>
   <string name="createMoreClasses" comment="Link text in maxStudentsNote">צרו עוד כיתות</string>
   <string name="studentsRealNamesOnePerLine">שמות התלמידים האמיתיים, אחד בכל שורה</string>
   <string name="xisNowAStudentOfTheClass">%s הוא עכשיו תלמיד בכיתה</string>
-  <string name="anInvitationHasBeenSentToX">נשלחה הזמנה ל-%s</string>
-  <string name="xAlreadyHasAPendingInvitation">ל-%s כבר יש הזמנה בהמתנה לתשובה</string>
+  <string name="anInvitationHasBeenSentToX">נשלחה הזמנה ל־%s</string>
+  <string name="xAlreadyHasAPendingInvitation">ל־%s כבר יש הזמנה בהמתנה לתשובה</string>
   <string name="xIsAKidAccountWarning">%1$s הוא חשבון של ילד/ה ולא יכול לקבל את ההודעה שלך. עליך לתת להם את קישור ההזמנה באופן ידני: %2$s</string>
+  <string name="moveToClass">עבור ל-%s</string>
+  <string name="moveToAnotherClass">עבור לכיתה אחרת</string>
 </resources>

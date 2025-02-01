@@ -1,7 +1,5 @@
 package lila.insight
 
-import lila.game.{ Game, Pov }
-
 case class Answer[X](
     question: Question[X],
     clusters: List[Cluster[X]],
@@ -17,7 +15,7 @@ case class Cluster[X](
     insightIds: List[String]
 ):
 
-  def gameIds = insightIds map GameId.take
+  def gameIds = insightIds.map(GameId.take)
 
 enum Insight:
   case Single(point: Point)

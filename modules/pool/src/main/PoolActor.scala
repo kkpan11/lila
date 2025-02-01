@@ -1,11 +1,11 @@
 package lila.pool
 
-import ornicar.scalalib.ThreadLocalRandom
-
 import akka.actor.*
 import akka.pattern.pipe
+import scalalib.ThreadLocalRandom
 
-import lila.socket.Socket.Sris
+import lila.core.pool.{ HookThieve, Joiner, PoolMember }
+import lila.core.socket.Sris
 
 final private class PoolActor(
     config: PoolConfig,
@@ -19,7 +19,7 @@ final private class PoolActor(
 
   private var lastPairedUserIds = Set.empty[UserId]
 
-  var nextWave: Cancellable = _
+  var nextWave: Cancellable = scala.compiletime.uninitialized
 
   given Executor = context.dispatcher
 
@@ -38,16 +38,16 @@ final private class PoolActor(
     // don't pair someone twice in a row, it's probably a client error
 
     case Join(joiner, rageSit) =>
-      members.find(joiner.is) match
+      members.find(joiner.is(_)) match
         case None =>
-          members = members :+ PoolMember(joiner, rageSit)
+          members = members :+ lila.pool.PoolMember(joiner, rageSit)
           if members.sizeIs >= config.wave.players.value then self ! FullWave
         case Some(member) if member.ratingRange != joiner.ratingRange =>
           members = members.map: m =>
-            if m == member then m withRange joiner.ratingRange else m
+            if m == member then m.withRange(joiner.ratingRange) else m
         case _ => // no change
     case Leave(userId) =>
-      members.find(_.userId == userId) foreach { member =>
+      members.find(_.userId == userId).foreach { member =>
         members = members.filter(member !=)
       }
 
@@ -61,7 +61,7 @@ final private class PoolActor(
 
     case RunWave =>
       nextWave.cancel()
-      hookThieve.candidates(config.clock) pipeTo self
+      hookThieve.candidates(config.clock).pipeTo(self)
       ()
 
     case HookThieve.PoolHooks(hooks) =>
@@ -75,7 +75,7 @@ final private class PoolActor(
 
       hookThieve.stolen(
         hooks.filter: h =>
-          pairedMembers.exists(h.is),
+          pairedMembers.exists(h.is(_)),
         monId
       )
 
@@ -102,7 +102,7 @@ final private class PoolActor(
 
 private object PoolActor:
 
-  case class Join(joiner: PoolApi.Joiner, rageSit: lila.playban.RageSit)
+  case class Join(joiner: Joiner, rageSit: lila.core.playban.RageSit)
   case class Leave(userId: UserId) extends AnyVal
 
   case object ScheduledWave

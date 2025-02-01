@@ -1,30 +1,35 @@
 package lila.streamer
 
+import play.api.i18n.Lang
 import play.api.libs.json.*
 
+import lila.common.Json.given
 import lila.common.String.html.unescapeHtml
 import lila.common.String.removeMultibyteSymbols
-import lila.common.Json.given
+import lila.core.config.NetDomain
+import lila.core.i18n.Language
 
 trait Stream:
   def serviceName: String
   val status: Html
   val streamer: Streamer
-  val language: String
+  val lang: Lang
+  def urls: Stream.Urls
 
-  def is(s: Streamer): Boolean    = streamer is s
-  def is(userId: UserId): Boolean = streamer is userId
-  def twitch                      = serviceName == "twitch"
-  def youTube                     = serviceName == "youTube"
+  def is[U: UserIdOf](u: U): Boolean = streamer.is(u)
+  def twitch                         = serviceName == "twitch"
+  def youTube                        = serviceName == "youTube"
+  def language                       = Language(lang)
 
   lazy val cleanStatus = status.map(s => removeMultibyteSymbols(s).trim)
-
-  lazy val lang: String = (language.length == 2) so language.toLowerCase
 
 object Stream:
 
   case class Keyword(value: String) extends AnyRef with StringValue:
     def toLowerCase = value.toLowerCase
+
+  case class Urls(embed: NetDomain => String, redirect: String):
+    def toPair(domain: NetDomain) = (embed(domain), redirect)
 
   object Twitch:
     case class TwitchStream(user_name: String, title: Html, `type`: String, language: String):
@@ -33,9 +38,13 @@ object Stream:
     case class Pagination(cursor: Option[String])
     case class Result(data: Option[List[TwitchStream]], pagination: Option[Pagination]):
       def liveStreams = (~data).filter(_.isLive)
-    case class Stream(userId: String, status: Html, streamer: Streamer, language: String)
+    case class Stream(userId: String, status: Html, streamer: Streamer, lang: Lang)
         extends lila.streamer.Stream:
       def serviceName = "twitch"
+      def urls = Urls(
+        embed = parent => s"https://player.twitch.tv/?channel=${userId}&parent=${parent}",
+        redirect = s"https://www.twitch.tv/${userId}"
+      )
     private given Reads[TwitchStream] = Json.reads
     private given Reads[Pagination]   = Json.reads
     given Reads[Result]               = Json.reads
@@ -56,13 +65,13 @@ object Stream:
             item.snippet.title.value.toLowerCase.contains(keyword.toLowerCase)
           }
           .flatMap { item =>
-            streamers.find(s => s.youTube.exists(_.channelId == item.snippet.channelId)) map {
+            streamers.find(s => s.youTube.exists(_.channelId == item.snippet.channelId)).map {
               Stream(
                 item.snippet.channelId,
                 unescapeHtml(item.snippet.title),
                 item.id,
                 _,
-                ~item.snippet.defaultAudioLanguage
+                item.snippet.defaultAudioLanguage.flatMap(Lang.get) | lila.core.i18n.defaultLang
               )
             }
           }
@@ -71,9 +80,13 @@ object Stream:
         status: Html,
         videoId: String,
         streamer: Streamer,
-        language: String
+        lang: Lang
     ) extends lila.streamer.Stream:
       def serviceName = "youTube"
+      def urls = Urls(
+        embed = _ => s"https://www.youtube.com/embed/${videoId}?autoplay=1&disablekb=1&color=white",
+        redirect = s"https://www.youtube.com/watch?v=${videoId}"
+      )
 
     private given Reads[Snippet] = Json.reads
     private given Reads[Item]    = Json.reads

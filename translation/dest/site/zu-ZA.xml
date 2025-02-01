@@ -100,7 +100,6 @@
   <string name="replayMode">Phinda wenze imodi</string>
   <string name="realtimeReplay">Isikhathi sangempela</string>
   <string name="byCPL">Ngu-CPL</string>
-  <string name="openStudy">Vula isifundo</string>
   <string name="enable">Nika amandla</string>
   <string name="bestMoveArrow">Umcibisholo wokuhambisa ohamba phambili</string>
   <string name="evaluationGauge">Igeji yokuhlola</string>
@@ -199,7 +198,6 @@
   <string name="playingRightNow">Iyadlala manje</string>
   <string name="eventInProgress">Iyadlala manje</string>
   <string name="finished">Kuqediwe</string>
-  <string name="finishesX">kuqeda %s</string>
   <string name="abortGame">Lahla umdlalo</string>
   <string name="gameAborted">Umdlalo uhoxisiwe</string>
   <string name="standard">Okujwayelekile</string>

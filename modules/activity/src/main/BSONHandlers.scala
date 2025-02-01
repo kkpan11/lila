@@ -2,23 +2,24 @@ package lila.activity
 
 import reactivemongo.api.bson.*
 import scala.util.Success
+import chess.IntRating
 
-import lila.common.{ Iso, LichessDay }
+import lila.common.LichessDay
+import lila.core.chess.Rank
+import lila.core.rating.{ RatingProg, Score }
 import lila.db.dsl.{ *, given }
-import lila.rating.{ Perf, PerfType }
 
 private object BSONHandlers:
 
   import Activity.*
   import activities.*
-  import model.*
 
   val idSep                         = ':'
-  def regexId(userId: UserId): Bdoc = "_id" $startsWith s"$userId$idSep"
+  def regexId(userId: UserId): Bdoc = "_id".$startsWith(s"$userId$idSep")
 
   given BSONHandler[Id] = tryHandler(
     { case BSONString(v) =>
-      v split idSep match
+      v.split(idSep) match
         case Array(userId, dayStr) => Success(Id(UserId(userId), LichessDay(Integer.parseInt(dayStr))))
         case _                     => handlerBadValue(s"Invalid activity id $v")
     },
@@ -55,9 +56,8 @@ private object BSONHandlers:
       rp   -> o.rp
     )
 
-  private given Iso.StringIso[PerfType] =
-    Iso.string[PerfType](str => PerfType(Perf.Key(str)) err s"No such perf $str", _.key.value)
-  private[activity] given BSONHandler[Games] = typedMapHandlerIso[PerfType, Score].as(Games(_), _.value)
+  private[activity] given BSONHandler[Games] =
+    typedMapHandlerIso[PerfKey, Score].as(Games(_), _.value)
 
   given lila.db.BSON[Storm] with
     def reads(r: lila.db.BSON.Reader)            = Storm(r.intD("r"), r.intD("s"))

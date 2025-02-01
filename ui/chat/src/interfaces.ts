@@ -1,25 +1,26 @@
-import { VNode } from 'snabbdom';
-import { Prop } from 'common';
+import type { VNode } from 'snabbdom';
+import type { Prop } from 'common';
 
 import type { Palantir } from 'palantir';
+import type { EnhanceOpts } from 'common/richText';
 
 export interface ChatOpts {
-  el: Element;
+  el: HTMLElement;
   data: ChatData;
   writeable: boolean;
   kobold: boolean;
   blind: boolean;
   timeout: boolean;
-  parseMoves: boolean;
+  enhance?: EnhanceOpts;
   public: boolean;
   permissions: Permissions;
   timeoutReasons?: ModerationReason[];
-  i18n: I18nDict;
   preset?: string;
   noteId?: string;
   noteText?: string;
   plugin?: ChatPlugin;
   alwaysEnabled: boolean;
+  kidMode: boolean;
 }
 
 export interface ChatPlugin {
@@ -71,7 +72,6 @@ export interface ChatPalantir {
 export interface ViewModel {
   tab: Tab;
   enabled: boolean;
-  placeholderKey: string;
   loading: boolean;
   autofocus: boolean;
   timeout: boolean;
@@ -82,13 +82,11 @@ export interface ViewModel {
 export interface NoteOpts {
   id: string;
   text?: string;
-  trans: Trans;
   redraw: Redraw;
 }
 
 export interface NoteCtrl {
   id: string;
-  trans: Trans;
   text(): string | undefined;
   fetch(): void;
   post(text: string): void;

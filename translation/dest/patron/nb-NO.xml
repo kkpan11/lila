@@ -3,6 +3,7 @@
   <string name="donate">Bidra</string>
   <string name="donateAsX">Bidra som %s</string>
   <string name="lichessPatron">Lichess-patron</string>
+  <string name="patronSince" comment="%s is a date">Patron siden %s</string>
   <string name="freeAccount">Gratis konto</string>
   <string name="becomePatron">Bli Lichess-patron</string>
   <string name="xBecamePatron">%s ble Lichess-patron</string>
@@ -80,4 +81,7 @@ Patroner kan like fullt briske seg med et tøft, nytt profilikon.</string>
   <string name="nowOneMonth">Du er nå Lichess-patron i en måned!</string>
   <string name="downgradeNextMonth">Om en måned blir du IKKE belastet på nytt, og Lichess-kontoen din blir tilbakestilt til gratis-nivået.</string>
   <string name="changeCurrency">Endre valuta</string>
+  <string name="paymentDetails">Betalingsdetaljer</string>
+  <string name="updatePaymentMethod">Oppdater betalingsmåte</string>
+  <string name="stripeManageSub">Administrer abonnementet ditt og last ned fakturaer og kvitteringer</string>
 </resources>

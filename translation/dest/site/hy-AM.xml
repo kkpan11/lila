@@ -112,7 +112,6 @@
   <string name="replayMode">Դիտել կրկնապատկերը</string>
   <string name="realtimeReplay">Ինչպես պարտիայում</string>
   <string name="byCPL">Ըստ սխալների</string>
-  <string name="openStudy">Բացել ուսուցումը</string>
   <string name="enable">Միացնել</string>
   <string name="bestMoveArrow">Լավագույն քայլի սլաքը</string>
   <string name="showVariationArrows">Ցուցադրել տարբերակների սլաքները</string>
@@ -122,7 +121,6 @@
   <string name="memory">Հիշողություն</string>
   <string name="infiniteAnalysis">Անվերջ վերլուծություն</string>
   <string name="removesTheDepthLimit">Վերացնում է խորության սահմանափակումը և տաք պահում ձեր համակարգիչը</string>
-  <string name="engineManager">Շարժիչի մենեջեր</string>
   <string name="blunder">Վրիպում</string>
   <string name="mistake">Սխալ</string>
   <string name="inaccuracy">Անճշտություն</string>
@@ -130,13 +128,25 @@
     <item quantity="one">%s վրիպում</item>
     <item quantity="other">%s վրիպում</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="one">%s Վրիպում</item>
+    <item quantity="other">%s Վրիպում</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="one">%s սխալ</item>
     <item quantity="other">%s սխալ</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="one">%s Սխալ</item>
+    <item quantity="other">%s Սխալ</item>
+  </plurals>
   <plurals name="nbInaccuracies">
     <item quantity="one">%s անճշտություն</item>
     <item quantity="other">%s անճշտություն</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
+    <item quantity="one">%s Անճշտություն</item>
+    <item quantity="other">%s Անճշտություն</item>
   </plurals>
   <string name="moveTimes">Քայլի տևողություն</string>
   <string name="flipBoard">Շրջել խաղատախտակը</string>
@@ -271,7 +281,6 @@
   <string name="playingRightNow">Այս պահին խաղում են</string>
   <string name="eventInProgress">Խաղում են այս պահին</string>
   <string name="finished">Ավարտվել է</string>
-  <string name="finishesX">ավարտվում է %s</string>
   <string name="abortGame">Կասեցնել խաղը</string>
   <string name="gameAborted">Խաղը կասեցված է</string>
   <string name="standard">Ստանդարտ</string>
@@ -416,6 +425,7 @@
   <string name="blackCheckmatesInOneMove">Սևերը մատ են անում մեկ քայլից</string>
   <string name="retry">Կրկին փորձել</string>
   <string name="reconnecting">Կապի միացում</string>
+  <string name="noNetwork">Օֆլայն</string>
   <plurals name="nbFriendsOnline">
     <item quantity="one">%s ընկեր առցանց է</item>
     <item quantity="other">%s ընկեր առցանց է</item>
@@ -429,7 +439,6 @@
   <string name="block">Արգելափակել</string>
   <string name="blocked">Արգելափակված է</string>
   <string name="unblock">Հանել արգելափակումը</string>
-  <string name="followsYou">Հետևում են ձեզ</string>
   <string name="xStartedFollowingY">%1$s-ը այժմ հետևում է %2$s-ին</string>
   <plurals name="nbFollowers">
     <item quantity="one">%s հետևողներ</item>
@@ -461,9 +470,6 @@
   <string name="safeTournamentName">Ընտրեք շատ ապահով անվանում մրցաշարի համար։</string>
   <string name="inappropriateNameWarning">Եթե անվանումը թվա նույնիսկ փոքր-ինչ անհարիր, Ձեզ կարող են արգելափակել։</string>
   <string name="emptyTournamentName">Թողեք դատարկ` մրցաշարը պատահական գրոսմայստերի պատվին կոչելու համար։</string>
-  <string name="recommendNotTouching">Խորհուրդ չենք տալիս սահմանել այդ պայմանները։</string>
-  <string name="fewerPlayers">Եթե Դուք սահմանեք մասնակցության պայմանները, Ձեր մրցաշարին կարող են մասնակցել ավելի քիչ թվով խաղացողներ։</string>
-  <string name="showAdvancedSettings">Ցույց տալ ընդլայնված կարգավորումները</string>
   <string name="makePrivateTournament">Մրցաշարը դարձնել փակ և մուտքը սահմանափակել գաղտնաբառով</string>
   <string name="join">Միանալ</string>
   <string name="withdraw">Չեղարկել</string>
@@ -502,8 +508,6 @@
   <string name="ifNoneLeaveEmpty">Կամ թողնել դատարկ</string>
   <string name="profile">Պրոֆիլ</string>
   <string name="editProfile">Խմբագրել անձնագիրը</string>
-  <string name="firstName">Անուն</string>
-  <string name="lastName">Ազգանուն</string>
   <string name="biography">Կենսագրություն</string>
   <string name="thankYou">Շնորհակալությո՛ւն։</string>
   <string name="socialMediaLinks">Հղումներ սոցցանցերին</string>
@@ -523,7 +527,6 @@
   <string name="automaticallyProceedToNextGameAfterMoving">Հակառակորդի քայլից հետո ավտոմատ կերպով անցնել հաջորդ քայլին</string>
   <string name="autoSwitch">միանգամից անցնել հաջորդ խաղին</string>
   <string name="puzzles">Խնդիրներ</string>
-  <string name="tournamentWinners">Մրցաշարերի հաղթողները</string>
   <string name="name">Անուն</string>
   <string name="description">Նկարագրություն</string>
   <string name="descPrivate">Մասնավոր նկարագրություն</string>
@@ -546,11 +549,8 @@
   <string name="reason">Պատճառ</string>
   <string name="whatIsIheMatter">Ի՞նչ է պատահել</string>
   <string name="cheat">խաբեբա</string>
-  <string name="insult">վիրավորանք</string>
   <string name="troll">Թրոլինգ</string>
-  <string name="ratingManipulation">Կեղծարարություններ վարկանիշի հետ</string>
   <string name="other">այլ</string>
-  <string name="reportDescriptionHelp">Կիսվեք մեզ հետ Այն խաղերի հղումներով, որտեղ կարծում եք, որ կանոնները խախտվել են և նկարագրեք, թե ինչն է սխալ: Բավական չէ պարզապես գրել \"Նա խարդախում է\", խնդրում ենք նկարագրել, թե ինչպես եք եկել այս եզրակացության: Մենք ավելի արագ կաշխատենք, եթե գրեք անգլերեն:</string>
   <string name="error.provideOneCheatedGameLink">Խնդրում ենք ավելացնել առնվազն մեկ խաղի հղում, որտեղ ձեր կարծիքով խախտվել են կանոնները:</string>
   <string name="by">ըստ %s</string>
   <string name="importedByX">Ներմուծվել է %s-ի կողմից</string>
@@ -769,9 +769,6 @@
   <string name="transparent">Թափանցիկ</string>
   <string name="deviceTheme">Սարքի թեման</string>
   <string name="backgroundImageUrl">Հետնաշերտի պատկերի հղում`</string>
-  <string name="boardGeometry">Խաղատախտակի տեսքն ու չափսը</string>
-  <string name="boardTheme">Խաղատախտակի ձևավորումը</string>
-  <string name="boardSize">Խաղատախտակի չափսը</string>
   <string name="pieceSet">Խաղաքարերի ձևավորումը</string>
   <string name="embedInYourWebsite">Ստանալ կոդ՝ կայքում տեղադրելու համար</string>
   <string name="usernameAlreadyUsed">Մասնակցային այս անունն արդեն զբաղված է։ Խնդրում ենք փորձել ուրիշը</string>
@@ -845,7 +842,6 @@
   </plurals>
   <string name="sorry">Ներողություն :(</string>
   <string name="weHadToTimeYouOutForAWhile">Մենք ստիպված ենք անջատել Ձեզ որոշ ժամանակով։</string>
-  <string name="timeoutExpires">Դուք կարող եք վերադառնալ %s անց։</string>
   <string name="why">Ինչու՞</string>
   <string name="pleasantChessExperience">Մեր նպատակը շախմատը բոլորի համար հետաքրքիր դարձնելն է։</string>
   <string name="goodPractice">Դրան հասնելու համար մենք պետք է այնպես անենք, որ բոլոր խաղացողները հետևեն բարեկրթության կանոններին։</string>
@@ -916,8 +912,6 @@
   <string name="minimumRatedGames">Նվազագույն վարկանիշային խաղեր</string>
   <string name="minimumRating">Նվազագույն վարկանիշ</string>
   <string name="maximumWeeklyRating">Առավելագույն ամենշաբաթյա վարկանիշ</string>
-  <string name="onlyTitled">Միայն տիտղոսավոր խաղացողներ</string>
-  <string name="onlyTitledHelp">Պահանջում է պաշտոնական տիտղոս մրցաշարին մասնակցելու համար</string>
   <string name="positionInputHelp">Տեղադրեք FEN-ի ճիշտ տողը, որպեսզի յուրաքանչյուր խաղ սկսվի տվյալ դիրքից:
 Սա աշխատում է միայն ստանդարտ խաղերի համար, բայց ոչ տարբերակների հետ:
 Դուք կարող եք օգտագործել %s՝ FEN դիրքը ստեղծելու համար, այնուհետև տեղադրեք այն այստեղ:
@@ -945,9 +939,6 @@
   <string name="focusChat">Տեղափոխվել զրուցարանի պատուհան</string>
   <string name="showHelpDialog">Ցույց տալ օգնությունը</string>
   <string name="reopenYourAccount">Վերաբացեք Ձեր մասնակցային հաշիվը</string>
-  <string name="closedAccountChangedMind">Եթե Դուք փակել եք Ձեր մասնակցային հաշիվը, բայց մտափոխվել եք, մեկ անգամ այն վերականգնելու հնարավորություն ունեք։</string>
-  <string name="onlyWorksOnce">Սա կաշխատի միայն մեկ անգամ։</string>
-  <string name="cantDoThisTwice">Եթե Դուք ևս մեկ անգամ փակեք Ձեր մասնակցային հաշիվը, այն վերաբացելու հնարավորություն այլևս չեք ունենա։</string>
   <string name="emailAssociatedToaccount">Այս մասնակցային հաշվին կցված էլ. փոստի հասցեն։</string>
   <string name="sentEmailWithLink">Ձեզ ուղարկել ենք հղումով նամակ։</string>
   <string name="tournamentEntryCode">Մրցաշարին մասնակցելու կոդ</string>

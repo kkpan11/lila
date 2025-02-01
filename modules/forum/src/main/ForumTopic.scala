@@ -1,13 +1,10 @@
 package lila.forum
 
-import scala.util.chaining.*
-import ornicar.scalalib.ThreadLocalRandom
-
-import lila.common.config.MaxPerPage
-import lila.user.User
+import reactivemongo.api.bson.Macros.Annotations.Key
+import scalalib.ThreadLocalRandom
 
 case class ForumTopic(
-    _id: ForumTopicId,
+    @Key("_id") id: ForumTopicId,
     categId: ForumCategId,
     slug: String,
     name: String,
@@ -22,11 +19,8 @@ case class ForumTopic(
     closed: Boolean,
     sticky: Option[Boolean],
     userId: Option[UserId] = None, // only since SB mutes
-    ublogId: Option[String] = None
+    ublogId: Option[UblogPostId] = None
 ):
-
-  inline def id = _id
-
   def updatedAt(forUser: Option[User]): Instant =
     if forUser.exists(_.marks.troll) then updatedAtTroll else updatedAt
   def nbPosts(forUser: Option[User]): Int   = if forUser.exists(_.marks.troll) then nbPostsTroll else nbPosts
@@ -37,8 +31,6 @@ case class ForumTopic(
   def open = !closed
 
   def isTooBig = nbPosts > (if isTeam then 500 else 50)
-
-  def possibleTeamId = ForumCateg toTeamId categId
 
   def isSticky = ~sticky
 
@@ -59,10 +51,10 @@ case class ForumTopic(
 
   def incNbPosts = copy(nbPosts = nbPosts + 1)
 
-  def isOld = updatedAt isBefore nowInstant.minusMonths:
+  def isOld = updatedAt.isBefore(nowInstant.minusMonths:
     if isUblog then 12 * 5
     else if isTeam then 6
-    else 1
+    else 1)
 
   def lastPage(maxPerPage: MaxPerPage): Int =
     (nbPosts + maxPerPage.value - 1) / maxPerPage.value
@@ -70,10 +62,9 @@ case class ForumTopic(
 object ForumTopic:
 
   def nameToId(name: String) =
-    (lila.common.String slugify name) pipe { slug =>
-      // if most chars are not latin, go for random slug
-      if slug.lengthIs > (name.lengthIs / 2) then slug else ThreadLocalRandom nextString 8
-    }
+    val slug = scalalib.StringOps.slug(name)
+    // if most chars are not latin, go for random slug
+    if slug.lengthIs > (name.lengthIs / 2) then slug else ThreadLocalRandom.nextString(8)
 
   val idSize = 8
 
@@ -82,10 +73,10 @@ object ForumTopic:
       slug: String,
       name: String,
       userId: UserId,
-      troll: Boolean,
-      ublogId: Option[String] = None
+      troll: Boolean = false,
+      ublogId: Option[UblogPostId] = None
   ): ForumTopic = ForumTopic(
-    _id = ForumTopicId(ThreadLocalRandom nextString idSize),
+    id = ForumTopicId(ThreadLocalRandom.nextString(idSize)),
     categId = categId,
     slug = slug,
     name = name,

@@ -3,40 +3,33 @@
   "version": "2.0.0",
   "private": true,
   "description": "lichess.org local computer analysis",
-  "type": "module",
-  "module": "dist/main.js",
-  "types": "dist/main.d.ts",
-  "keywords": [
-    "chess",
-    "lichess",
-    "play",
-    "replay"
-  ],
   "author": "Thibault Duplessis",
   "license": "AGPL-3.0-or-later",
+  "typings": "ceval",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/*"
+      ]
+    }
+  },
+  "exports": {
+    ".": "./src/ceval.ts",
+    "./*": "./src/*.ts"
+  },
   "dependencies": {
     "@badrap/result": "^0.2.13",
-    "chessops": "^0.13.0",
     "common": "workspace:*",
     "idb-keyval": "^6.2.1",
-    "snabbdom": "^3.5.1",
-    "stockfish.js": "^10.0.2",
-    "stockfish.wasm": "^0.10.0",
+    "lila-stockfish-web": "^0.0.8",
     "stockfish-mv.wasm": "^0.6.1",
     "stockfish-nnue.wasm": "1.0.0-1946a675.smolnet",
-    "lila-stockfish-web": "0.0.3"
+    "stockfish.js": "^10.0.2",
+    "stockfish.wasm": "^0.10.0"
   },
-  "scripts": {
-    "compile": "tsc",
-    "dev": "tsc",
-    "prod": "tsc"
-  },
-  "lichess": {
-    "copy": [
-      {
-        "src": "node_modules/*stockfish*/*.{js,wasm}",
-        "dest": "../../public/npm"
-      }
-    ]
+  "build": {
+    "sync": {
+      "node_modules/*stockfish*/*.{js,wasm}": "/public/npm"
+    }
   }
 }

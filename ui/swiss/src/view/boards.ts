@@ -1,6 +1,6 @@
-import { Board, SwissOpts } from '../interfaces';
-import { renderClock } from 'common/mini-board';
-import { h, VNode } from 'snabbdom';
+import type { Board, SwissOpts } from '../interfaces';
+import { renderClock } from 'common/miniBoard';
+import { h, type VNode } from 'snabbdom';
 import { opposite } from 'chessground/util';
 import { player as renderPlayer } from './util';
 
@@ -19,23 +19,16 @@ const renderBoard =
       `div.swiss__board.mini-game.mini-game-${board.id}.mini-game--init.is2d`,
       {
         key: board.id,
-        attrs: {
-          'data-state': `${board.fen},${board.orientation},${board.lastMove}`,
-          'data-live': board.id,
-        },
+        attrs: { 'data-state': `${board.fen},${board.orientation},${board.lastMove}`, 'data-live': board.id },
         hook: {
           insert(vnode) {
-            lichess.powertip.manualUserIn(vnode.elm as HTMLElement);
+            site.powertip.manualUserIn(vnode.elm as HTMLElement);
           },
         },
       },
       [
         boardPlayer(board, opposite(board.orientation), opts),
-        h('a.cg-wrap', {
-          attrs: {
-            href: `/${board.id}/${board.orientation}`,
-          },
-        }),
+        h('a.cg-wrap', { attrs: { href: `/${board.id}/${board.orientation}` } }),
         boardPlayer(board, board.orientation, opts),
       ],
     );
@@ -46,6 +39,6 @@ function boardPlayer(board: Board, color: Color, opts: SwissOpts) {
     h('span.mini-game__user', [h('strong', '#' + player.rank), renderPlayer(player, true, opts.showRatings)]),
     board.clock
       ? renderClock(color, board.clock[color])
-      : h('span.mini-game__result', board.winner ? (board.winner == color ? 1 : 0) : '½'),
+      : h('span.mini-game__result', board.winner ? (board.winner === color ? 1 : 0) : '½'),
   ]);
 }

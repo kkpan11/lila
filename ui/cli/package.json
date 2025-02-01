@@ -9,16 +9,7 @@
     "common": "workspace:*",
     "dasher": "workspace:*"
   },
-  "scripts": {
-    "compile": "tsc",
-    "dev": "tsc",
-    "prod": "tsc"
-  },
-  "lichess": {
-    "modules": {
-      "esm": {
-        "src/main.ts": "cli"
-      }
-    }
+  "build": {
+    "bundle": "src/cli.ts"
   }
 }

@@ -1,18 +1,19 @@
 import { h } from 'snabbdom';
 import * as licon from 'common/licon';
-import LobbyController from '../../../ctrl';
+import type LobbyController from '../../../ctrl';
+import { initMiniBoard } from 'common/miniBoard';
 
 export const fenInput = (ctrl: LobbyController) => {
-  const { trans, setupCtrl } = ctrl;
+  const { setupCtrl } = ctrl;
   if (setupCtrl.variant() !== 'fromPosition') return null;
   const fen = setupCtrl.fen();
   return h('div.fen.optional-config', [
     h('div.fen__form', [
       h('input#fen-input', {
-        attrs: { placeholder: trans('pasteTheFenStringHere'), value: fen },
+        attrs: { placeholder: i18n.site.pasteTheFenStringHere, value: fen },
         on: {
           input: (e: InputEvent) => {
-            setupCtrl.fen((e.target as HTMLInputElement).value.trim());
+            setupCtrl.fen((e.target as HTMLInputElement).value.replace(/_/g, ' ').trim());
             setupCtrl.validateFen();
           },
         },
@@ -22,14 +23,14 @@ export const fenInput = (ctrl: LobbyController) => {
       h('a.button.button-empty', {
         attrs: {
           'data-icon': licon.Pencil,
-          title: trans('boardEditor'),
-          href: '/editor' + (fen && !setupCtrl.fenError ? `/${fen.replace(' ', '_')}` : ''),
+          title: i18n.site.boardEditor,
+          href: '/editor' + (fen && !setupCtrl.fenError ? `/${fen.replace(/ /g, '_')}` : ''),
         },
       }),
     ]),
     h(
       'a.fen__board',
-      { attrs: { href: `/editor/${setupCtrl.lastValidFen.replace(' ', '_')}` } },
+      { attrs: { href: `/editor/${setupCtrl.lastValidFen.replace(/ /g, '_')}` } },
       !setupCtrl.lastValidFen || !setupCtrl.validFen()
         ? null
         : h(
@@ -37,8 +38,8 @@ export const fenInput = (ctrl: LobbyController) => {
             h('div.position.mini-board.cg-wrap.is2d', {
               attrs: { 'data-state': `${setupCtrl.lastValidFen},white` },
               hook: {
-                insert: vnode => lichess.miniBoard.init(vnode.elm as HTMLElement),
-                update: vnode => lichess.miniBoard.init(vnode.elm as HTMLElement),
+                insert: vnode => initMiniBoard(vnode.elm as HTMLElement),
+                update: vnode => initMiniBoard(vnode.elm as HTMLElement),
               },
             }),
           ),

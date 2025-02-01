@@ -1,10 +1,10 @@
 import { prop } from 'common';
 import { bind } from 'common/snabbdom';
-import throttle from 'common/throttle';
+import { throttle } from 'common/timing';
 import { spinnerVdom as spinner } from 'common/spinner';
-import { h, VNode } from 'snabbdom';
-import AnalyseCtrl from '../ctrl';
-import * as xhr from './studyXhr';
+import { h, type VNode } from 'snabbdom';
+import type AnalyseCtrl from '../ctrl';
+import { glyphs as xhrGlyphs } from './studyXhr';
 
 interface AllGlyphs {
   move: Tree.Glyph[];
@@ -18,9 +18,7 @@ const renderGlyph = (ctrl: GlyphForm, node: Tree.Node) => (glyph: Tree.Glyph) =>
     {
       hook: bind('click', () => ctrl.toggleGlyph(glyph.id)),
       attrs: { 'data-symbol': glyph.symbol, type: 'button' },
-      class: {
-        active: !!node.glyphs && !!node.glyphs.find(g => g.id === glyph.id),
-      },
+      class: { active: !!node.glyphs && !!node.glyphs.find(g => g.id === glyph.id) },
     },
     [glyph.name],
   );
@@ -32,7 +30,7 @@ export class GlyphForm {
 
   loadGlyphs = () => {
     if (!this.all())
-      xhr.glyphs().then(gs => {
+      xhrGlyphs().then(gs => {
         this.all(gs);
         this.root.redraw();
       });
@@ -52,9 +50,7 @@ export function view(ctrl: GlyphForm): VNode {
 
   return h(
     'div.study__glyphs' + (all ? '' : '.empty'),
-    {
-      hook: { insert: ctrl.loadGlyphs },
-    },
+    { hook: { insert: ctrl.loadGlyphs } },
     all
       ? [
           h('div.move', all.move.map(renderGlyph(ctrl, node))),

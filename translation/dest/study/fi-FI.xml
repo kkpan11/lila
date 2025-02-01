@@ -53,6 +53,8 @@
   <string name="allSyncMembersRemainOnTheSamePosition">Kaikki SYNC-jäsenet pysyvät samassa asemassa</string>
   <string name="shareChanges">Anna katsojien nähdä muutokset ja tallenna ne palvelimelle</string>
   <string name="playing">Meneillään</string>
+  <string name="showResults">Tulokset</string>
+  <string name="showEvalBar">Arviopalkit</string>
   <string name="first">Alkuun</string>
   <string name="previous">Edellinen</string>
   <string name="next">Seuraava</string>
@@ -63,7 +65,6 @@
   <string name="downloadAllGames">Lataa kaikki pelit</string>
   <string name="chapterPgn">Luvun PGN</string>
   <string name="copyChapterPgn">Kopioi PGN</string>
-  <string name="copyChapterPgnDescription">Kopioi tämän luvun PGN leikepöydälle.</string>
   <string name="downloadGame">Lataa peli</string>
   <string name="studyUrl">Tutkielman URL</string>
   <string name="currentChapterUrl">Tämän luvun URL</string>
@@ -131,7 +132,7 @@
   <string name="deleteTheStudyChatHistory">Haluatko poistaa tutkielman keskusteluhistorian? Et voi palauttaa sitä enää!</string>
   <string name="deleteStudy">Poista tutkielma</string>
   <string name="confirmDeleteStudy" comment="%s is replaced with the name of the study">Poistetaanko koko tutkielma? Et voi palauttaa sitä enää. Vahvista poisto kirjoittamalla tutkielman nimen: %s</string>
-  <string name="whereDoYouWantToStudyThat">Missä haluat tutkia?</string>
+  <string name="whereDoYouWantToStudyThat">Missä haluat tutkia tätä?</string>
   <string name="goodMove">Hyvä siirto</string>
   <string name="mistake">Virhe</string>
   <string name="brilliantMove">Loistava siirto</string>
@@ -167,4 +168,5 @@
   <string name="playAgain">Pelaa uudelleen</string>
   <string name="whatWouldYouPlay">Mitä pelaisit tässä asemassa?</string>
   <string name="youCompletedThisLesson">Onnittelut! Olet suorittanut tämän oppiaiheen.</string>
+  <string name="perPage">%s per sivu</string>
 </resources>

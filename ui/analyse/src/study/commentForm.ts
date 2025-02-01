@@ -1,9 +1,10 @@
 import { prop } from 'common';
 import { onInsert } from 'common/snabbdom';
-import throttle from 'common/throttle';
-import { h, VNode } from 'snabbdom';
-import AnalyseCtrl from '../ctrl';
+import { throttle } from 'common/timing';
+import { h, type VNode } from 'snabbdom';
+import type AnalyseCtrl from '../ctrl';
 import { currentComments, isAuthorObj } from './studyComments';
+import { storage } from 'common/storage';
 
 interface Current {
   chapterId: string;
@@ -20,21 +21,12 @@ export class CommentForm {
 
   doSubmit = throttle(500, (text: string) => {
     const cur = this.current();
-    if (cur)
-      this.root.study!.makeChange('setComment', {
-        ch: cur.chapterId,
-        path: cur.path,
-        text,
-      });
+    if (cur) this.root.study!.makeChange('setComment', { ch: cur.chapterId, path: cur.path, text });
   });
 
   start = (chapterId: string, path: Tree.Path, node: Tree.Node): void => {
     this.opening(true);
-    this.current({
-      chapterId,
-      path,
-      node,
-    });
+    this.current({ chapterId, path, node });
     this.root.userJump(path);
   };
 
@@ -47,11 +39,7 @@ export class CommentForm {
     }
   };
   delete = (chapterId: string, path: Tree.Path, id: string) => {
-    this.root.study!.makeChange('deleteComment', {
-      ch: chapterId,
-      path,
-      id,
-    });
+    this.root.study!.makeChange('deleteComment', { ch: chapterId, path, id });
   };
 }
 
@@ -68,7 +56,7 @@ export function view(root: AnalyseCtrl): VNode {
     const newKey = current.chapterId + current.path;
 
     if (old?.data!.path !== newKey) {
-      const mine = (current!.node.comments || []).find(function (c) {
+      const mine = (current.node.comments || []).find(function (c) {
         return isAuthorObj(c.by) && c.by.id && c.by.id === ctrl.root.opts.userId;
       });
       el.value = mine ? mine.text : '';
@@ -83,9 +71,7 @@ export function view(root: AnalyseCtrl): VNode {
 
   return h(
     'div.study__comments',
-    {
-      hook: onInsert(() => root.enableWiki(root.data.game.variant.key === 'standard')),
-    },
+    { hook: onInsert(() => root.enableWiki(root.data.game.variant.key === 'standard')) },
     [
       currentComments(root, !study.members.canContribute()),
       h('form.form3', [
@@ -95,7 +81,7 @@ export function view(root: AnalyseCtrl): VNode {
               setupTextarea(vnode);
               const el = vnode.elm as HTMLInputElement;
               el.oninput = () => setTimeout(() => ctrl.submit(el.value), 50);
-              const heightStore = lichess.storage.make('study.comment.height');
+              const heightStore = storage.make('study.comment.height');
               el.onmouseup = () => heightStore.set('' + el.offsetHeight);
               el.style.height = parseInt(heightStore.get() || '80') + 'px';
 

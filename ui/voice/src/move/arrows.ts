@@ -1,7 +1,6 @@
-import { DrawBrush, DrawShape } from 'chessground/draw';
-import { to, from } from 'chess';
+import type { DrawBrush, DrawShape } from 'chessground/draw';
 
-export const brushes = new Map<string, DrawBrush>([
+export const brushes: Map<string, DrawBrush> = new Map<string, DrawBrush>([
   ['green', { key: 'vgn', color: '#15781B', opacity: 0.8, lineWidth: 12 }],
   ['blue', { key: 'vbl', color: '#003088', opacity: 0.8, lineWidth: 12 }],
   ['purple', { key: 'vpu', color: '#68217a', opacity: 0.85, lineWidth: 12 }],
@@ -20,8 +19,8 @@ export function numberedArrows(choices: [string, Uci][], timer: number | undefin
   const preferred = choices[0][0] === 'yes' ? choices.shift()?.[1] : undefined;
   choices.forEach(([, uci], i) => {
     shapes.push({
-      orig: from(uci),
-      dest: to(uci),
+      orig: uci.slice(0, 2) as Key,
+      dest: uci.slice(2, 4) as Key,
       brush: `v-grey`,
       modifiers: { hilite: uci === preferred },
       label: choices.length > 1 ? { text: `${i + 1}` } : undefined,
@@ -41,35 +40,37 @@ export function coloredArrows(choices: [string, Uci][], timer: number | undefine
   const preferred = choices[0][0] === 'yes' ? choices.shift()?.[1] : undefined;
   choices.forEach(([c, uci]) => {
     shapes.push({
-      orig: from(uci),
-      dest: to(uci),
+      orig: uci.slice(0, 2) as Key,
+      dest: uci.slice(2, 4) as Key,
       brush: `v-${c}`,
       modifiers: { hilite: uci === preferred },
     });
   });
-  if (timer)
+  if (timer) {
+    const [mainBrush] = [...brushes.values()];
     shapes[0].customSvg = {
       center: 'orig',
-      html: timerShape(timer, brushes.values().next().value.color),
+      html: timerShape(timer, mainBrush.color),
     };
+  }
   return shapes.reverse();
 }
 
 function timerShape(duration: number, color: string, alpha = 0.4) {
   // works around a firefox stroke-dasharray animation bug
   setTimeout(() => {
-    for (const anim of $('.voice-timer-arc').get() as any[]) {
-      anim?.beginElement();
-      anim?.parentElement!.setAttribute('visibility', 'visible');
+    for (const anim of document.querySelectorAll<SVGAnimateElement>('.voice-timer-arc')) {
+      anim.beginElement();
+      anim.parentElement?.setAttribute('visibility', 'visible');
       if (color === 'grey') return; // don't show numbered arrow outlines
     }
   });
-  return `
+  return $html`
     <svg width="100" height="100">
       <circle cx="50" cy="50" r="25" fill="transparent" stroke="${color}" transform="rotate(270,50,50)"
               stroke-width="50" stroke-opacity="${alpha}" begin="indefinite" visibility="hidden">
         <animate class="voice-timer-arc" attributeName="stroke-dasharray" dur="${duration}s"
-          values="0 ${Math.PI * 50}; ${Math.PI * 50} ${Math.PI * 50}"/>
+                 values="0 ${Math.PI * 50}; ${Math.PI * 50} ${Math.PI * 50}"/>
       </circle>
       <circle cx="50" cy="50" r="50" fill="transparent" stroke="white" transform="rotate(270,50,50)"
               stroke-width="4" stroke-opacity="0.7" begin="indefinite" visibility="hidden">

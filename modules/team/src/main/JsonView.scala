@@ -3,10 +3,9 @@ package lila.team
 import play.api.libs.json.*
 
 import lila.common.Json.given
-import lila.common.LightUser.lightUserWrites
-import lila.user.LightUserApi
+import lila.core.user.LightUserApi
 
-final class JsonView(lightUserApi: LightUserApi, userJson: lila.user.JsonView):
+final class JsonView(lightUserApi: LightUserApi, userJson: lila.core.user.JsonView):
 
   given teamWrites: OWrites[Team] = OWrites: team =>
     Json
@@ -18,6 +17,7 @@ final class JsonView(lightUserApi: LightUserApi, userJson: lila.user.JsonView):
         "leader"      -> lightUserApi.sync(team.createdBy), // for BC
         "nbMembers"   -> team.nbMembers
       )
+      .add("flair" -> team.flair)
 
   given memberWithPermsWrites: OWrites[TeamMember] = OWrites: m =>
     Json.obj("user" -> lightUserApi.syncFallback(m.user), "perms" -> m.perms.map(_.key))

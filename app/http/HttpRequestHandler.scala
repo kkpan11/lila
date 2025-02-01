@@ -12,12 +12,12 @@ final class HttpRequestHandler(
     filters: Seq[EssentialFilter],
     controllerComponents: ControllerComponents
 ) extends DefaultHttpRequestHandler(() => router, errorHandler, configuration, filters)
-    with ResponseHeaders:
+    with lila.web.ResponseHeaders:
 
   override def routeRequest(request: RequestHeader): Option[Handler] =
     if request.method == "OPTIONS"
     then optionsHandler.some
-    else router handlerFor request
+    else router.handlerFor(request)
 
   // should be handled by nginx in production
   private val optionsHandler =
@@ -26,4 +26,4 @@ final class HttpRequestHandler(
       then Results.NoContent.withHeaders(optionsHeaders*)
       else Results.NotFound
 
-  private val allowMethods = List("OPTIONS", "GET", "POST", "PUT", "DELETE") mkString ", "
+  List("OPTIONS", "GET", "POST", "PUT", "DELETE").mkString(", ")

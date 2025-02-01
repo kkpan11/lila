@@ -2,11 +2,10 @@ package controllers
 
 import play.api.libs.json.*
 import play.api.mvc.*
-import views.*
 
-import lila.app.{ given, * }
-import lila.streamer.{ Streamer as StreamerModel, StreamerForm }
+import lila.app.{ *, given }
 import lila.common.Json.given
+import lila.streamer.{ Streamer as StreamerModel, StreamerForm }
 
 final class Streamer(env: Env, apiC: => Api) extends LilaController(env):
 
@@ -21,17 +20,17 @@ final class Streamer(env: Env, apiC: => Api) extends LilaController(env):
           liveStreams <- env.streamer.liveStreamApi.all
           live        <- api.withUsers(liveStreams)
           pager       <- env.streamer.pager.get(page, liveStreams, requests)
-          page        <- renderPage(html.streamer.index(live, pager, requests))
+          page        <- renderPage(views.streamer.index(live, pager, requests))
         yield Ok(page)
 
-  def featured = Anon:
+  def featured = Anon: ctx ?=>
     env.streamer.liveStreamApi.all.map: streams =>
       val max      = env.streamer.homepageMaxSetting.get()
-      val featured = streams.homepage(max, req, none) withTitles env.user.lightUserApi
+      val featured = streams.homepage(max, ctx.acceptLanguages).withTitles(env.user.lightUserApi)
       JsonOk:
         featured.live.streams.map: s =>
           Json.obj(
-            "url"    -> routes.Streamer.redirect(s.streamer.id.value).absoluteURL(),
+            "url"    -> routes.Streamer.redirect(s.streamer.userId).absoluteURL(),
             "status" -> s.status,
             "user" -> Json
               .obj(
@@ -44,43 +43,46 @@ final class Streamer(env: Env, apiC: => Api) extends LilaController(env):
   def live = apiC.ApiRequest:
     for
       s     <- env.streamer.liveStreamApi.all
-      users <- env.user.lightUserApi asyncManyFallback s.streams.map(_.streamer.userId)
+      users <- env.user.lightUserApi.asyncManyFallback(s.streams.map(_.streamer.userId))
     yield apiC.toApiResult:
-      (s.streams zip users).map: (stream, user) =>
-        lila.common.LightUser.write(user) ++
-          lila.streamer.Stream.toJson(env.memo.picfitUrl, stream)
+      (s.streams
+        .zip(users))
+        .map: (stream, user) =>
+          Json.toJsObject(user) ++
+            lila.streamer.Stream.toJson(env.memo.picfitUrl, stream)
 
   def show(username: UserStr) = Open:
     Found(api.forSubscriber(username)): s =>
       WithVisibleStreamer(s):
         for
-          sws      <- env.streamer.liveStreamApi of s
+          sws      <- env.streamer.liveStreamApi.of(s)
           activity <- env.activity.read.recentAndPreload(sws.user)
           perfs    <- env.user.perfsRepo.perfsOf(sws.user)
-          page     <- renderPage(html.streamer.show(sws, perfs, activity))
+          page     <- renderPage(views.streamer.show(sws, perfs, activity))
         yield Ok(page)
 
   def redirect(username: UserStr) = Open:
     Found(api.forSubscriber(username)): s =>
       WithVisibleStreamer(s):
-        env.streamer.liveStreamApi of s map { sws =>
-          Redirect(sws.redirectToLiveUrl | routes.Streamer.show(username.value).url)
+        env.streamer.liveStreamApi.of(s).map { sws =>
+          Redirect(sws.redirectToLiveUrl | routes.Streamer.show(username).url)
         }
 
   def create = AuthBody { _ ?=> me ?=>
     ctx.kid.no.so:
       NoLameOrBot:
-        api find me flatMap {
-          case None => api.create(me) inject Redirect(routes.Streamer.edit)
+        api.find(me).flatMap {
+          case None => api.create(me).inject(Redirect(routes.Streamer.edit))
           case _    => Redirect(routes.Streamer.edit)
         }
   }
 
-  private def modData(streamer: StreamerModel)(using Context) =
-    isGrantedOpt(_.ModLog).soFu:
-      logApi.userHistory(streamer.userId) zip
-        env.user.noteApi.byUserForMod(streamer.userId) zip
-        env.streamer.api.sameChannels(streamer)
+  private def modData(streamer: StreamerModel)(using ctx: Context) =
+    (isGrantedOpt(_.ModLog) && ctx.isnt(streamer)).soFu:
+      logApi
+        .userHistory(streamer.userId)
+        .zip(env.user.noteApi.toUserForMod(streamer.userId))
+        .zip(env.streamer.api.sameChannels(streamer))
 
   def edit = Auth { ctx ?=> _ ?=>
     AsStreamer: s =>
@@ -88,64 +90,51 @@ final class Streamer(env: Env, apiC: => Api) extends LilaController(env):
         _      <- env.msg.twoFactorReminder(s.user.id)
         sws    <- env.streamer.liveStreamApi.of(s)
         forMod <- modData(s.streamer)
-        page   <- renderPage(html.streamer.edit(sws, StreamerForm userForm sws.streamer, forMod))
+        page   <- renderPage(views.streamer.edit(sws, StreamerForm.userForm(sws.streamer), forMod))
       yield Ok(page).noCache
   }
 
   def editApply = AuthBody { _ ?=> me ?=>
     AsStreamer: s =>
-      env.streamer.liveStreamApi of s flatMap { sws =>
-        StreamerForm
-          .userForm(sws.streamer)
-          .bindFromRequest()
-          .fold(
-            error =>
-              modData(s.streamer).flatMap: forMod =>
-                BadRequest.page(html.streamer.edit(sws, error, forMod)),
-            data =>
-              api.update(sws.streamer, data, isGranted(_.Streamers)) flatMap { change =>
-                if change.decline then logApi.streamerDecline(s.user.id)
-                change.list foreach { logApi.streamerList(s.user.id, _) }
-                change.tier foreach { logApi.streamerTier(s.user.id, _) }
-                if data.approval.flatMap(_.quick).isDefined
-                then
-                  env.streamer.pager.nextRequestId.map: nextId =>
-                    Redirect:
-                      nextId.fold(s"${routes.Streamer.index()}?requests=1"): id =>
-                        s"${routes.Streamer.edit.url}?u=$id"
-                else
-                  val next = if sws.streamer is me then "" else s"?u=${sws.user.id}"
-                  Redirect(s"${routes.Streamer.edit.url}$next")
-              }
-          )
+      env.streamer.liveStreamApi.of(s).flatMap { sws =>
+        bindForm(StreamerForm.userForm(sws.streamer))(
+          error =>
+            modData(s.streamer).flatMap: forMod =>
+              BadRequest.page(views.streamer.edit(sws, error, forMod)),
+          data =>
+            api
+              .update(sws.streamer, data, isGranted(_.Streamers))
+              .flatMap:
+                case Some(change) =>
+                  if change.decline then logApi.streamerDecline(s.user.id, change.reason)
+                  change.list.foreach { logApi.streamerList(s.user.id, _) }
+                  change.tier.foreach { logApi.streamerTier(s.user.id, _) }
+                  if data.approval.quick.isDefined
+                  then
+                    env.streamer.pager.nextRequestId.map: nextId =>
+                      Redirect:
+                        nextId.fold(s"${routes.Streamer.index()}?requests=1"): id =>
+                          s"${routes.Streamer.edit.url}?u=$id"
+                  else
+                    val next = if sws.streamer.is(me) then "" else s"?u=${sws.user.id}"
+                    Redirect(s"${routes.Streamer.edit.url}$next")
+                case _ =>
+                  Redirect(routes.Streamer.edit)
+        )
       }
   }
-
-  def approvalRequest = AuthBody { _ ?=> me ?=>
-    NoBot:
-      api.approval.request(me) inject Redirect(routes.Streamer.edit)
-  }
-
-  def picture = Auth { ctx ?=> _ ?=>
-    AsStreamer: s =>
-      Ok.page(html.streamer.picture(s)).map(_.noCache)
-  }
-
-  private val ImageRateLimitPerIp = lila.memo.RateLimit.composite[lila.common.IpAddress](
-    key = "streamer.image.ip"
-  )(
-    ("fast", 10, 2.minutes),
-    ("slow", 30, 1.day)
-  )
 
   def pictureApply = AuthBody(parse.multipartFormData) { ctx ?=> me ?=>
     AsStreamer: s =>
       ctx.body.body.file("picture") match
         case Some(pic) =>
-          ImageRateLimitPerIp(ctx.ip, rateLimited):
-            api.uploadPicture(s.streamer, pic, me) recoverWith { case e: Exception =>
-              BadRequest.page(html.streamer.picture(s, e.getMessage.some))
-            } inject Redirect(routes.Streamer.edit)
+          limit.imageUpload(ctx.ip, rateLimited):
+            api
+              .uploadPicture(s.streamer, pic, me)
+              .recoverWith { case e: Exception =>
+                Redirect(routes.Streamer.edit).flashFailure
+              }
+              .inject(Ok)
         case None => Redirect(routes.Streamer.edit).flashFailure
   }
 
@@ -154,6 +143,19 @@ final class Streamer(env: Env, apiC: => Api) extends LilaController(env):
     then env.relation.subs.subscribe(me, streamer.id)
     else env.relation.subs.unsubscribe(me, streamer.id)
     Ok
+  }
+
+  def checkOnline(streamer: UserStr) = Auth { _ ?=> me ?=>
+    val uid   = streamer.id
+    val isMod = isGranted(_.ModLog)
+    if ctx.is(uid) || isMod then
+      limit
+        .streamerOnlineCheck(uid, rateLimited)(env.streamer.api.forceCheck(uid))
+        .inject(
+          Redirect(routes.Streamer.show(uid).url)
+            .flashSuccess(s"Please wait one minute while we check, then reload the page.")
+        )
+    else Unauthorized
   }
 
   def onYouTubeVideo = AnonBodyOf(parse.tolerantXml): body =>
@@ -172,16 +174,16 @@ final class Streamer(env: Env, apiC: => Api) extends LilaController(env):
   private def AsStreamer(f: StreamerModel.WithContext => Fu[Result])(using ctx: Context): Fu[Result] =
     ctx.me.foldUse(notFound): me ?=>
       if StreamerModel.canApply(me) || isGranted(_.Streamers) then
-        api.find(getUserStr("u").ifTrue(isGranted(_.Streamers)).map(_.id) | me.userId) flatMap {
-          _.fold(Ok.page(html.streamer.bits.create))(f)
+        api.find(getUserStr("u").ifTrue(isGranted(_.Streamers)).map(_.id) | me.userId).flatMap {
+          _.fold(Ok.page(views.streamer.create))(f)
         }
       else
         Ok.page:
-          html.site.message("Too soon"):
+          views.site.message("Too soon"):
             scalatags.Text.all.raw("You are not yet allowed to create a streamer profile.")
 
   private def WithVisibleStreamer(s: StreamerModel.WithContext)(f: Fu[Result])(using ctx: Context) =
     ctx.kid.no.so:
-      if s.streamer.isListed || ctx.me.exists(_ is s.streamer) || isGrantedOpt(_.Admin)
+      if s.streamer.isListed || ctx.me.exists(_.is(s.streamer)) || isGrantedOpt(_.Admin)
       then f
       else notFound

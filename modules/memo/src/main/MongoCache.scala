@@ -1,10 +1,11 @@
 package lila.memo
 
-import CacheApi.*
 import com.github.blemale.scaffeine.AsyncLoadingCache
 import reactivemongo.api.bson.*
 
 import lila.db.dsl.{ *, given }
+
+import CacheApi.*
 
 /** To avoid recomputing very expensive values after deploy
   */
@@ -22,16 +23,18 @@ final class MongoCache[K, V: BSONHandler] private (
 
   private val cache = build { loader => k =>
     val dbKey = makeDbKey(k)
-    coll.one[Entry]($id(dbKey)) flatMap {
+    coll.one[Entry]($id(dbKey)).flatMap {
       case None =>
         lila.mon.mongoCache.request(name, hit = false).increment()
         loader(k)
           .flatMap { v =>
-            coll.update.one(
-              $id(dbKey),
-              Entry(dbKey, v, nowInstant.plus(dbTtl)),
-              upsert = true
-            ) inject v
+            coll.update
+              .one(
+                $id(dbKey),
+                Entry(dbKey, v, nowInstant.plus(dbTtl)),
+                upsert = true
+              )
+              .inject(v)
           }
           .mon(_.mongoCache.compute(name))
       case Some(entry) =>
@@ -43,8 +46,8 @@ final class MongoCache[K, V: BSONHandler] private (
   def get = cache.get
 
   def invalidate(key: K): Funit =
-    coll.delete.one($id(makeDbKey(key))).void andDo
-      cache.invalidate(key)
+    for _ <- coll.delete.one($id(makeDbKey(key)))
+    yield cache.invalidate(key)
 
   private def makeDbKey(key: K) = s"$name:${keyToString(key)}"
 
@@ -88,7 +91,7 @@ object MongoCache:
         keyToString: K => String
     )(f: K => Fu[V]): MongoCache[K, V] =
       apply[K, V](8, name, dbTtl, keyToString): loader =>
-        _.expireAfterWrite(1 second).buildAsyncFuture(loader(f))
+        _.expireAfterWrite(1.second).buildAsyncFuture(loader(f))
 
     // AsyncLoadingCache for single entry with DB persistence
     def unit[V: BSONHandler](
@@ -109,4 +112,4 @@ object MongoCache:
         dbTtl: FiniteDuration
     )(f: Unit => Fu[V]): MongoCache[Unit, V] =
       unit[V](name, dbTtl): loader =>
-        _.expireAfterWrite(1 second).buildAsyncFuture(loader(f))
+        _.expireAfterWrite(1.second).buildAsyncFuture(loader(f))

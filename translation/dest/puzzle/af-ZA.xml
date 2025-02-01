@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="puzzles">Raaisels</string>
-  <string name="puzzleThemes">Raaisel temas</string>
-  <string name="recommended">Aanbeveeldede</string>
+  <string name="puzzleThemes">Raaisel Temas</string>
+  <string name="recommended">Aanbeveelde</string>
   <string name="phases">Fases</string>
   <string name="motifs">Redes</string>
   <string name="advanced">Gevorderd</string>
@@ -19,7 +19,7 @@
   <string name="findTheBestMoveForWhite">Vind die beste skuif vir wit.</string>
   <string name="findTheBestMoveForBlack">Vind die beste skuif vir swart.</string>
   <string name="toGetPersonalizedPuzzles">Om persoonlike raaisels te kry:</string>
-  <string name="puzzleId" comment="%s is the ID of the puzzle, something like #a1b2c3.">Raaisels %s</string>
+  <string name="puzzleId">Raaisels %s</string>
   <string name="puzzleOfTheDay">Raaisels van die dag</string>
   <string name="dailyPuzzle">Daaglikse Raaisel</string>
   <string name="clickToSolve">Druk om op te los</string>
@@ -31,13 +31,13 @@
   <string name="byOpenings">Vir openinge</string>
   <string name="puzzlesByOpenings">Raaisels vir openinge</string>
   <string name="openingsYouPlayedTheMost">Openinge wat jy die meeste in gradeerde spelle speel</string>
-  <string name="useFindInPage" comment="useFindInPage&#10;&#10;Appears on https://lichess.org/training/openings&#10;Encourages players to use the built-in browser feature (Ctrl+F on most desktop computers) to find the opening they want to practice.">Gebruik die \"Find in page\" in die blaaier se gids om jou gunsteling opening te vind!</string>
-  <string name="useCtrlF">Gebruik Ctrl+f om jou gensteling opening te vind!</string>
+  <string name="useFindInPage" comment="useFindInPage&#10;&#10;Appears on https://lichess.org/training/openings for mobile and tablet users&#10;Encourages players to use the built-in browser feature (Ctrl+F on most desktop computers) to find the opening they want to practise.">Gebruik die \"Find in page\" in die blaaier se gids om jou gunsteling opening te vind!</string>
+  <string name="useCtrlF" comment="Appears on https://lichess.org/training/openings for desktop and laptop users.&#10;Encourages players to use the built-in browser feature (Ctrl+F on most desktop computers) to find the opening they want to practise.">Gebruik Ctrl+f om jou gensteling opening te vind!</string>
   <string name="notTheMove">Dit is nie die skuif nie!</string>
   <string name="trySomethingElse">Probeer iets anders.</string>
-  <string name="ratingX" comment="Appears on pages of individual puzzles.&#10;&#10;%s is either:&#10;1. The word 'hidden', if you have not completed the puzzle yet.&#10;2. The rating of the puzzle, if you have completed it or seen the solution.">Gradering: %s</string>
-  <string name="hidden" comment="Puzzle rating: hidden&#10;&#10;Appears while solving puzzles. Lichess only displays the rating of the puzzle after you have solved it or asked to see the solution.">verborge</string>
-  <plurals name="playedXTimes" comment="Appears on pages of individual puzzles.&#10;%s is the number of times the puzzle has been played.">
+  <string name="ratingX">Gradering: %s</string>
+  <string name="hidden">verborge</string>
+  <plurals name="playedXTimes">
     <item quantity="one">%s keer gespeel</item>
     <item quantity="other">%s keer gespeel</item>
   </plurals>
@@ -60,13 +60,13 @@
   <string name="example">Voorbeeld</string>
   <string name="addAnotherTheme">Voeg nog \'n tema by</string>
   <string name="nextPuzzle">Volgende raaisel</string>
-  <string name="jumpToNextPuzzleImmediately">Spring onmiddellik na die volgende kopkrapper</string>
-  <string name="puzzleDashboard">Kopkrapper paneelbord</string>
+  <string name="jumpToNextPuzzleImmediately">Spring onmiddellik na die volgende raaisel</string>
+  <string name="puzzleDashboard">Raaisel Paneelbord</string>
   <string name="improvementAreas">Areas van verbetering</string>
   <string name="strengths">Sterkpunte</string>
-  <string name="history">Kopkrapper geskiedenis</string>
+  <string name="history">Raaisel geskiedenis</string>
   <string name="solved">opgelos</string>
-  <string name="failed">gefaal</string>
+  <string name="failed" comment="In the list of previously attempted puzzles, a tag indicating that the puzzle has been failed.&#10;&#10;The text will be automatically capitalised. If you have different ways to translate it, we suggest keeping it short.&#10;&#10;NOTE: This string previously said 'failed', but was changed to 'incorrect' to be more encouraging (https://github.com/lichess-org/lila/issues/11068)">gefaal</string>
   <string name="streakDescription">Los toenemend moeiliker raaisels op en bou \'n wen reeks. Daar is nie \'n tydsfaktor nie, so vat dit rustig. Een verkeerde skuif en dit stuit! Maar jy kan \'n skuif per sessie oorslaan.</string>
   <string name="yourStreakX">Jou wen reeks: %s</string>
   <string name="streakSkipExplanation">Slaan die skuif oor, om jou reeks te behou! Werk slegs een keer per ronde.</string>

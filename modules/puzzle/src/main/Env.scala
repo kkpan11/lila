@@ -1,10 +1,10 @@
 package lila.puzzle
 
 import com.softwaremill.macwire.*
-import lila.common.autoconfig.{ *, given }
 import play.api.Configuration
 
-import lila.common.config.*
+import lila.common.autoconfig.{ *, given }
+import lila.core.config.*
 import lila.db.AsyncColl
 
 @Module
@@ -18,78 +18,94 @@ private class PuzzleConfig(
 @Module
 final class Env(
     appConfig: Configuration,
-    renderer: lila.hub.actors.Renderer,
-    historyApi: lila.history.HistoryApi,
-    lightUserApi: lila.user.LightUserApi,
+    historyApi: lila.core.history.HistoryApi,
+    lightUserApi: lila.core.user.LightUserApi,
+    userApi: lila.core.user.UserApi,
     cacheApi: lila.memo.CacheApi,
     mongoCacheApi: lila.memo.MongoCache.Api,
-    gameRepo: lila.game.GameRepo,
-    userRepo: lila.user.UserRepo,
-    perfsRepo: lila.user.UserPerfsRepo,
+    gameRepo: lila.core.game.GameRepo,
     mongo: lila.db.Env
-)(using
-    ec: Executor,
-    system: akka.actor.ActorSystem,
+)(using Executor, akka.actor.ActorSystem, akka.stream.Materializer, lila.core.i18n.Translator)(using
     scheduler: Scheduler,
-    materializer: akka.stream.Materializer,
     mode: play.api.Mode
 ):
 
   private val config = appConfig.get[PuzzleConfig]("puzzle")(AutoConfig.loader)
 
-  private lazy val db = mongo.asyncDb("puzzle", config.mongoUri)
+  private val db = mongo.asyncDb("puzzle", config.mongoUri)
 
-  lazy val colls = new PuzzleColls(
+  val colls = PuzzleColls(
     puzzle = db(config.puzzleColl),
     round = db(config.roundColl),
     path = db(config.pathColl)
   )
 
-  private lazy val gameJson: GameJson = wire[GameJson]
+  private val gameJson: GameJson = wire[GameJson]
 
-  lazy val jsonView = wire[JsonView]
+  val jsonView = wire[JsonView]
 
-  private lazy val pathApi = wire[PuzzlePathApi]
+  private val pathApi = wire[PuzzlePathApi]
 
-  private lazy val trustApi = wire[PuzzleTrustApi]
+  private val trustApi = wire[PuzzleTrustApi]
 
-  private lazy val countApi = wire[PuzzleCountApi]
+  val opening = wire[PuzzleOpeningApi]
 
-  lazy val api: PuzzleApi = wire[PuzzleApi]
+  private val countApi = wire[PuzzleCountApi]
 
-  lazy val session: PuzzleSessionApi = wire[PuzzleSessionApi]
+  val api: PuzzleApi = wire[PuzzleApi]
 
-  lazy val selector: PuzzleSelector = wire[PuzzleSelector]
+  val session: PuzzleSessionApi = wire[PuzzleSessionApi]
 
-  lazy val anon: PuzzleAnon = wire[PuzzleAnon]
+  val selector: PuzzleSelector = wire[PuzzleSelector]
 
-  lazy val batch: PuzzleBatch = wire[PuzzleBatch]
+  val anon: PuzzleAnon = wire[PuzzleAnon]
 
-  lazy val finisher = wire[PuzzleFinisher]
+  val batch: PuzzleBatch = wire[PuzzleBatch]
 
-  lazy val forms = PuzzleForm
+  val finisher = wire[PuzzleFinisher]
 
-  lazy val daily = wire[DailyPuzzle]
+  val forms = PuzzleForm
 
-  lazy val activity = wire[PuzzleActivity]
+  val daily = wire[DailyPuzzle]
 
-  lazy val dashboard = wire[PuzzleDashboardApi]
+  val activity = wire[PuzzleActivity]
 
-  lazy val replay = wire[PuzzleReplayApi]
+  val dashboard = wire[PuzzleDashboardApi]
 
-  lazy val history = wire[PuzzleHistoryApi]
+  val replay = wire[PuzzleReplayApi]
 
-  lazy val streak = wire[PuzzleStreakApi]
+  val history = wire[PuzzleHistoryApi]
 
-  lazy val opening = wire[PuzzleOpeningApi]
+  val streak = wire[PuzzleStreakApi]
 
-  private lazy val tagger = wire[PuzzleTagger]
+  private val tagger = wire[PuzzleTagger]
 
-  scheduler.scheduleAtFixedRate(10 minutes, 1 day): () =>
+  val tryDailyPuzzle: lila.puzzle.DailyPuzzle.Try = () =>
+    Future {
+      daily.get
+    }.flatMap(identity)
+      .withTimeoutDefault(50.millis, none)
+      .recover { case e: Exception =>
+        logger.warn("daily", e)
+        none
+      }
+
+  def cli = new lila.common.Cli:
+    def process =
+      case "puzzle" :: "opening" :: "recompute" :: "all" :: Nil =>
+        opening.recomputeAll
+        fuccess("started in background")
+      case "puzzle" :: "issue" :: id :: issue :: Nil =>
+        api.puzzle
+          .setIssue(PuzzleId(id), issue)
+          .map: res =>
+            if res then "done" else "not found"
+
+  scheduler.scheduleAtFixedRate(10.minutes, 1.day): () =>
     tagger.addAllMissing
 
-  if mode == play.api.Mode.Prod then
-    scheduler.scheduleAtFixedRate(1 hour, 1 hour): () =>
+  if mode.isProd then
+    scheduler.scheduleAtFixedRate(10.minutes, 10.minutes): () =>
       pathApi.isStale.foreach: stale =>
         if stale then logger.error("Puzzle paths appear to be stale! check that the regen cron is up")
 

@@ -3,8 +3,7 @@ package lila.practice
 import lila.common.Bus
 import lila.db.dsl.{ *, given }
 import lila.memo.CacheApi.*
-import lila.study.{ Chapter, Study }
-import lila.user.User
+import lila.study.{ ChapterPreview, Study }
 
 final class PracticeApi(
     coll: Coll,
@@ -22,9 +21,9 @@ final class PracticeApi(
 
   def getStudyWithFirstOngoingChapter(user: Option[User], studyId: StudyId): Fu[Option[UserStudy]] = for
     up       <- get(user)
-    chapters <- studyApi.chapterMetadatas(studyId)
-    chapter = up.progress firstOngoingIn chapters
-    studyOption <- chapter.fold(studyApi byIdWithFirstChapter studyId) { chapter =>
+    chapters <- studyApi.chapterPreviews(studyId)
+    chapter = up.progress.firstOngoingIn(chapters)
+    studyOption <- chapter.fold(studyApi.byIdWithFirstChapter(studyId)) { chapter =>
       studyApi.byIdWithChapterOrFallback(studyId, chapter.id)
     }
   yield makeUserStudy(studyOption, up, chapters)
@@ -35,71 +34,70 @@ final class PracticeApi(
       chapterId: StudyChapterId
   ): Fu[Option[UserStudy]] = for
     up          <- get(user)
-    chapters    <- studyApi.chapterMetadatas(studyId)
+    chapters    <- studyApi.chapterPreviews(studyId)
     studyOption <- studyApi.byIdWithChapterOrFallback(studyId, chapterId)
   yield makeUserStudy(studyOption, up, chapters)
 
   private def makeUserStudy(
       studyOption: Option[Study.WithChapter],
       up: UserPractice,
-      chapters: List[Chapter.Metadata]
+      chapters: List[ChapterPreview]
   ) = for
     rawSc <- studyOption
     sc = rawSc.copy(
-      study = rawSc.study.rewindTo(rawSc.chapter).withoutMembers,
+      study = rawSc.study.rewindTo(rawSc.chapter.id).withoutMembers,
       chapter = rawSc.chapter.withoutChildrenIfPractice
     )
-    practiceStudy <- up.structure study sc.study.id
-    section       <- up.structure findSection sc.study.id
-    publishedChapters = chapters.filterNot { c =>
-      PracticeStructure isChapterNameCommented c.name
-    }
+    practiceStudy <- up.structure.study(sc.study.id)
+    section       <- up.structure.findSection(sc.study.id)
+    publishedChapters = chapters.filterNot: c =>
+      PracticeStructure.isChapterNameCommented(c.name)
     if publishedChapters.exists(_.id == sc.chapter.id)
-  yield UserStudy(up, practiceStudy, publishedChapters, sc, section)
+    previews =
+      import ChapterPreview.json.given
+      import play.api.libs.json.Json
+      Json.toJson(publishedChapters)
+  yield UserStudy(up, practiceStudy, previews, sc, section)
 
   object config:
-    def get  = configStore.get dmap (_ | PracticeConfig.empty)
+    def get  = configStore.get.dmap(_ | PracticeConfig.empty)
     def set  = configStore.set
     def form = configStore.makeForm
 
   object structure:
-    private val cache = cacheApi.unit[PracticeStructure] {
-      _.expireAfterAccess(3.hours)
-        .buildAsyncFuture { _ =>
-          for
-            conf     <- config.get
-            chapters <- studyApi.chapterIdNames(conf.studyIds)
-          yield PracticeStructure.make(conf, chapters)
-        }
-    }
-
+    private val cache = cacheApi.unit[PracticeStructure]:
+      _.expireAfterAccess(3.hours).buildAsyncFuture: _ =>
+        for
+          conf     <- config.get
+          chapters <- studyApi.chapterIdNames(conf.studyIds)
+        yield PracticeStructure.make(conf, chapters)
     def get     = cache.getUnit
     def clear() = cache.invalidateUnit()
     def onSave(study: Study) =
-      get foreach { structure =>
+      get.foreach: structure =>
         if structure.hasStudy(study.id) then clear()
-      }
+
+    val getStudies: lila.core.practice.GetStudies = () => get.map(_.study)
 
   object progress:
+
+    lila.common.Bus.sub[lila.core.user.UserDelete]: del =>
+      coll.delete.one($id(del.id)).void
 
     import PracticeProgress.NbMoves
 
     def get(user: User): Fu[PracticeProgress] =
-      coll.one[PracticeProgress]($id(user.id)) dmap {
-        _ | PracticeProgress.empty(user.id)
-      }
+      coll.one[PracticeProgress]($id(user.id)).dmap(_ | PracticeProgress.empty(user.id))
 
     private def save(p: PracticeProgress): Funit =
       coll.update.one($id(p.id), p, upsert = true).void
 
-    def setNbMoves(user: User, chapterId: StudyChapterId, score: NbMoves): Funit =
-      get(user).flatMap { prog =>
-        save(prog.withNbMoves(chapterId, score))
-      } andDo studyApi
-        .studyIdOf(chapterId)
-        .foreach:
-          _.so: studyId =>
-            Bus.publish(PracticeProgress.OnComplete(user.id, studyId, chapterId), "finishPractice")
+    def setNbMoves(user: User, chapterId: StudyChapterId, score: NbMoves): Funit = for
+      prog    <- get(user)
+      _       <- save(prog.withNbMoves(chapterId, score))
+      studyId <- studyApi.studyIdOf(chapterId)
+    yield studyId.so: studyId =>
+      Bus.publish(lila.core.practice.OnComplete(user.id, studyId, chapterId), "finishPractice")
 
     def reset(user: User) =
       coll.delete.one($id(user.id)).void
@@ -108,7 +106,7 @@ final class PracticeApi(
       coll
         .aggregateList(Int.MaxValue, _.sec): framework =>
           import framework.*
-          Match($doc("_id" $in userIds)) -> List(
+          Match($doc("_id".$in(userIds))) -> List(
             Project(
               $doc(
                 "nb" -> $doc(

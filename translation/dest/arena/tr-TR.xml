@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="arena">Arena</string>
   <string name="arenaTournaments">Arena turnuvaları</string>
   <string name="isItRated">Bu turnuva puanlı mı?</string>
   <string name="willBeNotified">Turnuva başladığında sana haber vereceğiz, bu süre zarfında başka bir sekmede oynamanın bir sakıncası yok.</string>
@@ -58,4 +59,27 @@ Daha fazla oyun oynayıp daha çok puan kazanmak için hızlıca oynayın ve lob
   <string name="averagePerformance">Ortalama performans</string>
   <string name="averageScore">Ortalama skor</string>
   <string name="myTournaments">Turnuvalarım</string>
+  <string name="editTournament">Turnuvayı düzenle</string>
+  <string name="editTeamBattle">Takım savaşını düzenle</string>
+  <string name="defender">Savunucu</string>
+  <string name="pickYourTeam">Takımınızı seçin</string>
+  <string name="whichTeamWillYouRepresentInThisBattle">Bu mücadelede hangi takımı temsil edeceksiniz?</string>
+  <string name="youMustJoinOneOfTheseTeamsToParticipate">Katılmak için bu takımlardan birine katılmanız gerekir!</string>
+  <string name="created">Oluşturuldu</string>
+  <string name="recentlyPlayed">Son oynananlar</string>
+  <string name="bestResults">En iyi sonuçlar</string>
+  <string name="tournamentStats">Turnuva istatistikleri</string>
+  <string name="rankAvgHelp">Sıralama ortalaması, sıralamanızın yüzdesidir. Daha düşük olması daha iyidir.
+
+Örneğin, 100 oyunculu bir turnuvada 3. sırada olmak = %3. 1000 oyunculu bir turnuvada 10. sırada olmak = %1.</string>
+  <string name="medians">ortancadır</string>
+  <string name="allAveragesAreX">Bu sayfadaki tüm değerler %s.</string>
+  <string name="total">Toplam</string>
+  <string name="pointsAvg">Puan ortalaması</string>
+  <string name="pointsSum">Puan toplamı</string>
+  <string name="rankAvg">Sıralama ortalaması</string>
+  <string name="tournamentWinners">Turnuva şampiyonları</string>
+  <string name="tournamentShields">Turnuva kalkanları</string>
+  <string name="onlyTitled">Sadece unvanlı oyuncular</string>
+  <string name="onlyTitledHelp">Turnuvaya katılmak için resmî bir unvana sahip olmayı iste</string>
 </resources>

@@ -7,9 +7,9 @@ package lila.shutup
 private object Dictionary:
 
   def en = dict("""
-(burn|die) in hell
+(burn|die|rot) in hell
 (f++|ph)(u++|e++|a++)c?k(er|r|u|k|t|ing?|ign|en|tard?|face|off?|e?d|)
-(f|ph)agg?([oi]t|)
+go to hell
 (kill|hang|neck) my ?self
 [ck]um(shot|)
 [ck]unt(ing|)
@@ -55,6 +55,7 @@ cunn?ilingu
 dic?k(head|face|suc?ker|)
 dildo
 dogg?ystyle
+dogshit
 douche(bag|)
 downsie?
 dumb(ass?|)
@@ -68,6 +69,7 @@ go (and )?bomb
 gobshite?
 gook
 gypo
+gypsy
 handjob
 hitler++
 homm?o(sexual|)
@@ -91,7 +93,7 @@ milf
 molest(er|ed|)
 mong
 monkey
-moron
+morr?on
 mother(fuc?k(er|)|)
 mthrfckr
 nazi
@@ -244,6 +246,7 @@ uebok
 """)
 
   def es = dict("""
+bolud[oa]
 cabr[oó]na?
 cag[oó]n
 ching(ue|a)
@@ -253,17 +256,21 @@ cobarde
 est[úu]pid[ao]
 gilipollas
 hdp
-hijo de put\w*
+hijo de (put\w*|per+a)
+hijueputa
 idiota
 imbecil
 madre
+malparid[ao]
 maric[oó]na?
 maric[ao]
 mierda
 moduler[ao]
 payas[ao]
 pendejo
+po(ll|y)a
 put[ao]
+putica
 trampa
 trampos[ao]
 tu eres put\w*
@@ -296,6 +303,7 @@ gaa?ndu?
   def fr = dict("""
 batard
 connard
+cr[eé]tin
 encul[eé]
 fdp
 pd
@@ -320,14 +328,15 @@ schwanzlutscher
 schwuchtel
 trottel
 untermensch
-wichser
+wi(chs|x++)er
 """)
 
   def tr = dict("""
-am[iı]na ((koyay[iı]m|koy?dum)|(sokay[iı]m)|([cç]akay[iı]m))
+am[iı]na ((koy?dum)|(koya(y[iı]m|m))|(soka(y[iı]m|m))|([cç]aka(y[iı]m|m)))
 amc[iı]k
 anan[iı]n am[iı]
 ((ann?an[iı](z[iı])?)|(kar[iı]n[iı](z[iı])?)|(avrad[iı]n[iı](z[iı])?)|(bac[ıi]n[iı](z[iı])?)) (s[ii̇]k[ei](yim|cem|rim|m))
+((ann?an(a|[iı]za))|(kar[iı]n(a|[iı]za))|(avrad[iı]n(a|[iı]za))|(bac[ıi]n(a|[iı]za))) ((koya(y[iı]m|m))|(soka(y[iı]m|m))|([cç]aka(y[iı]m|m)))
 aptal
 beyinsiz
 bok yedin
@@ -342,24 +351,25 @@ piç(lik)?
 pu[sş]t
 salak
 s[ii̇]k[ei](yim|cem|rim|m|k)
-sikiyonuz
 s[ii̇]kt[ii̇]r
-yarra[gğ][iı] yediniz
+yar+a[gğ][iı] yediniz
+yar+ak kafa(l[iı]|s[iı])
 """)
 
   def critical = dict("""
-cancer
+(die|burn)s? irl
+(f|ph)a++gg?([oi]t|)
 (go|pl(ea)?[sz]e?) (a?nd)? ?(die|burn|suicide)
 (ho?pe|wish) ((yo?)?[uy](r (famil[yi]|m[ou]m|mother))?( and )?)++ (die|burn)s?
-(die|burn)s? irl
 (kill|hang|neck) ?(yo?)?[uyi]r? ?(self|famil[yi]|m[ou]m|mother)
+cancer
 gas the
 g?kys
 get bombed
 k y s
 ky5
 (l|1|ı|\|)<ys
-nigg?er
+n[1i]gg?er
 rap(ed?|e?ing)
 subhuman
 """)

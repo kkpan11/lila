@@ -5,14 +5,14 @@
   <string name="challengeDeclined">Udfordring afvist</string>
   <string name="challengeAccepted">Udfordring accepteret!</string>
   <string name="challengeCanceled">Udfordring annulleret.</string>
-  <string name="registerToSendChallenges">Opret en konto for at sende udfordringer.</string>
+  <string name="registerToSendChallenges" comment="This used to say &quot;Please register to send challenges.&quot;&#10;We have since added &quot;[...] to this user.&quot; to the end of the string for absolute clarity, given the context this appears in. Please update translations as needed.">Opret en konto for at sende udfordringer.</string>
   <string name="youCannotChallengeX">Du kan ikke udfordre %s.</string>
   <string name="xDoesNotAcceptChallenges">%s accepterer ikke udfordringer.</string>
   <string name="yourXRatingIsTooFarFromY">Din %1$s rating er for langt fra %2$s.</string>
   <string name="cannotChallengeDueToProvisionalXRating">Kan ikke udfordre på grund af provisorisk %s rating.</string>
   <string name="xOnlyAcceptsChallengesFromFriends">%s accepterer kun udfordringer fra venner.</string>
   <string name="declineGeneric">Jeg accepterer ikke udfordringer i øjeblikket.</string>
-  <string name="declineLater">Det er ikke et godt tidspunkt for mig, spørg venligst igen senere.</string>
+  <string name="declineLater">Det er ikke et godt tidspunkt for mig, spørg gerne igen senere.</string>
   <string name="declineTooFast">Denne tidskontrol er for hurtig for mig. Udfordr mig gerne igen med et langsommere spil.</string>
   <string name="declineTooSlow">Denne tidskontrol er for langsom for mig. Udfordr mig gerne igen med et hurtigere spil.</string>
   <string name="declineTimeControl">Jeg accepterer ikke udfordringer med denne tidskontrol.</string>

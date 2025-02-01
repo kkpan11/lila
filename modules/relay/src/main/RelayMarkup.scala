@@ -1,6 +1,6 @@
 package lila.relay
 
-final class RelayMarkup:
+final class RelayMarkup(using Executor):
 
   private val renderer = lila.common.MarkdownRender(
     autoLink = true,
@@ -11,7 +11,7 @@ final class RelayMarkup:
   )
 
   private val cache = lila.memo.CacheApi.scaffeineNoScheduler
-    .expireAfterAccess(20 minutes)
+    .expireAfterAccess(20.minutes)
     .maximumSize(256)
     .build[Markdown, Html]()
 

@@ -1,14 +1,19 @@
 package lila.puzzle
 
-import lila.common.{ Iso, LilaOpeningFamily, SimpleOpening }
-import lila.i18n.I18nKey
 import chess.opening.{ Opening, OpeningDb, OpeningKey }
+
+import lila.common.{ Iso, LilaOpeningFamily, SimpleOpening }
+import lila.core.i18n.I18nKey
 
 sealed abstract class PuzzleAngle(val key: String):
   val name: I18nKey
   def description: I18nKey
   def asTheme: Option[PuzzleTheme.Key]
   def opening: Option[Opening]
+  def categ = this match
+    case PuzzleAngle.Theme(PuzzleTheme.mix) => "mix"
+    case PuzzleAngle.Theme(_)               => "theme"
+    case PuzzleAngle.Opening(_)             => "opening"
 
 object PuzzleAngle:
   case class Theme(theme: PuzzleTheme.Key) extends PuzzleAngle(theme.value):
@@ -26,7 +31,9 @@ object PuzzleAngle:
       .fold(
         _.into(OpeningKey).some,
         opKey => SimpleOpening(opKey).map(_.ref.key)
-      ) flatMap OpeningDb.shortestLines.get
+      )
+      .flatMap(OpeningDb.shortestLines.get)
+    def isAbstract  = opening.isEmpty
     val name        = I18nKey(openingName)
     def description = I18nKey(s"From games with the opening: $openingName")
     def asTheme     = none
@@ -49,8 +56,8 @@ object PuzzleAngle:
   def findOrMix(key: String): PuzzleAngle = find(key) | mix
 
   case class All(
-      themes: List[(lila.i18n.I18nKey, List[PuzzleTheme.WithCount])],
+      themes: List[(I18nKey, List[PuzzleTheme.WithCount])],
       openings: PuzzleOpeningCollection
   )
 
-  given Iso.StringIso[PuzzleAngle] = lila.common.Iso.string(findOrMix, _.key)
+  given Iso.StringIso[PuzzleAngle] = scalalib.Iso.string(findOrMix, _.key)

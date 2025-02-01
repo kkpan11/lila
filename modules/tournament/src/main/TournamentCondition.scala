@@ -1,12 +1,13 @@
 package lila.tournament
 
-import lila.gathering.{ Condition, ConditionList }
-import lila.gathering.Condition.*
-import lila.history.HistoryApi
-import lila.hub.LightTeam
-import lila.rating.{ Perf, PerfType }
 import alleycats.Zero
-import lila.user.{ User, Me }
+
+import lila.core.history.HistoryApi
+import lila.core.team.LightTeam
+import lila.core.user.UserApi
+import lila.gathering.Condition.*
+import lila.gathering.{ Condition, ConditionList }
+import lila.rating.PerfType
 
 object TournamentCondition:
 
@@ -16,41 +17,50 @@ object TournamentCondition:
       minRating: Option[MinRating],
       titled: Option[Titled.type],
       teamMember: Option[TeamMember],
+      accountAge: Option[AccountAge],
       allowList: Option[AllowList]
-  ) extends ConditionList(List(nbRatedGame, maxRating, minRating, titled, teamMember, allowList)):
+  ) extends ConditionList(List(nbRatedGame, maxRating, minRating, titled, teamMember, accountAge, allowList)):
 
     def withVerdicts(perfType: PerfType)(using
         Me,
         Perf,
         Executor,
         GetMaxRating,
-        GetMyTeamIds
+        GetMyTeamIds,
+        GetAge
     ): Fu[WithVerdicts] =
-      list.map {
-        case c: MaxRating  => c(perfType) map c.withVerdict
-        case c: FlatCond   => fuccess(c withVerdict c(perfType))
-        case c: TeamMember => c.apply map { c withVerdict _ }
-      }.parallel dmap WithVerdicts.apply
+      list
+        .parallel:
+          case c: MaxRating  => c(perfType).map(c.withVerdict)
+          case c: FlatCond   => fuccess(c.withVerdict(c(perfType)))
+          case c: TeamMember => c.apply.map { c.withVerdict(_) }
+          case c: AccountAge => c.apply.map { c.withVerdict(_) }
+        .dmap(WithVerdicts.apply)
 
     def withRejoinVerdicts(using
         me: Me,
         ex: Executor,
         getMyTeamIds: GetMyTeamIds
     ): Fu[WithVerdicts] =
-      list.map {
-        case c: TeamMember => c.apply map { c withVerdict _ }
-        case c             => fuccess(WithVerdict(c, Accepted))
-      }.parallel dmap WithVerdicts.apply
+      list
+        .parallel:
+          case c: TeamMember => c.apply.map { c.withVerdict(_) }
+          case c             => fuccess(WithVerdict(c, Accepted))
+        .dmap(WithVerdicts.apply)
 
     def similar(other: All) = sameRatings(other) && titled == other.titled && teamMember == other.teamMember
 
     // if the new allowList is empty, assume the tournament is open to all, kick nobody
     def removedFromAllowList(prev: All): Set[UserId] =
-      allowList.so(_.userIds).some.filter(_.nonEmpty) so: current =>
-        prev.allowList.so(_.userIds diff current)
+      allowList
+        .so(_.userIds)
+        .some
+        .filter(_.nonEmpty)
+        .so: current =>
+          prev.allowList.so(_.userIds.diff(current))
 
   object All:
-    val empty             = All(none, none, none, none, none, none)
+    val empty             = All(none, none, none, none, none, none, none)
     given zero: Zero[All] = Zero(empty)
 
   object form:
@@ -63,13 +73,15 @@ object TournamentCondition:
         "minRating"   -> minRating,
         "titled"      -> titled,
         "teamMember"  -> teamMember(leaderTeams),
+        "accountAge"  -> accountAge,
         "allowList"   -> allowList
       )(All.apply)(unapply).verifying("Invalid ratings", _.validRatings)
 
-  final class Verify(historyApi: HistoryApi)(using Executor):
+  final class Verify(historyApi: HistoryApi, userApi: UserApi)(using Executor):
 
     def apply(all: All, perfType: PerfType)(using me: Me)(using GetMyTeamIds, Perf): Fu[WithVerdicts] =
-      given GetMaxRating = historyApi.lastWeekTopRating(me.value, _)
+      given GetMaxRating = historyApi.lastWeekTopRating(me.userId, _)
+      given GetAge       = me => userApi.accountAge(me.userId)
       all.withVerdicts(perfType)
 
     def rejoin(all: All)(using Me)(using GetMyTeamIds): Fu[WithVerdicts] =

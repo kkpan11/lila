@@ -53,6 +53,8 @@
   <string name="allSyncMembersRemainOnTheSamePosition">Alle SYNC-medlemene ser den same stillingen</string>
   <string name="shareChanges">Lagre endringar på serveren og del dei med tilskodarar</string>
   <string name="playing">Spelar no</string>
+  <string name="showResults">Resultat</string>
+  <string name="showEvalBar">Evalueringssøyler</string>
   <string name="first">Første</string>
   <string name="previous">Attende</string>
   <string name="next">Neste</string>
@@ -63,7 +65,6 @@
   <string name="downloadAllGames">Last ned alle spel</string>
   <string name="chapterPgn">Kapittel-PGN</string>
   <string name="copyChapterPgn">Kopier PGN</string>
-  <string name="copyChapterPgnDescription">Kopier kapittel-PGN til utklippstavla.</string>
   <string name="downloadGame">Last ned spel</string>
   <string name="studyUrl">Studie-URL</string>
   <string name="currentChapterUrl">Kapittel-URL</string>
@@ -167,4 +168,5 @@
   <string name="playAgain">Spel på ny</string>
   <string name="whatWouldYouPlay">Kva vil du spela i denne stillinga?</string>
   <string name="youCompletedThisLesson">Gratulerar! Du har fullført denne leksjonen.</string>
+  <string name="perPage">%s per side</string>
 </resources>

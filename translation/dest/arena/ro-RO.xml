@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="arena">Arena</string>
   <string name="arenaTournaments">Turnee de tip arenă</string>
   <string name="isItRated">Este evaluat?</string>
   <string name="willBeNotified">Vei fi notificat când competiția începe, deci este în regulă să joci în altă filă în timp ce aștepți.</string>
@@ -63,4 +64,27 @@ Joacă rapid și întoarce-te la lobby pentru a juca mai multe partide și pentr
   <string name="averagePerformance">Performanță medie</string>
   <string name="averageScore">Scor mediu</string>
   <string name="myTournaments">Turneele mele</string>
+  <string name="editTournament">Editare turneu</string>
+  <string name="editTeamBattle">Editare bătălie echipă</string>
+  <string name="defender">Apărător</string>
+  <string name="pickYourTeam">Alege-ți echipa</string>
+  <string name="whichTeamWillYouRepresentInThisBattle">Ce echipă vei reprezenta în această bătălie?</string>
+  <string name="youMustJoinOneOfTheseTeamsToParticipate">Trebuie să te alături uneia dintre aceste echipe pentru a participa!</string>
+  <string name="created">Creat</string>
+  <string name="recentlyPlayed">Jucate recent</string>
+  <string name="bestResults">Cele mai bune rezultate</string>
+  <string name="tournamentStats">Statistici turneu</string>
+  <string name="rankAvgHelp">Media rangului este un procent din clasamentul tău. Mai mic e mai bine.
+
+De exemplu, fiind clasat locul 3 într-un turneu de 100 de jucători = 3%. Find clasat locul 10 într-un turneu de 1000 de jucători = 1%.</string>
+  <string name="medians">mediane</string>
+  <string name="allAveragesAreX">Toate mediile de pe această pagină sunt %s.</string>
+  <string name="total">Total</string>
+  <string name="pointsAvg">Medie puncte</string>
+  <string name="pointsSum">Sumă puncte</string>
+  <string name="rankAvg">Media rangului</string>
+  <string name="tournamentWinners">Câștigători de turnee</string>
+  <string name="tournamentShields">Scut turneu</string>
+  <string name="onlyTitled">Doar jucători titrați</string>
+  <string name="onlyTitledHelp">Solicitați un titlu oficial pentru a se alătura turneului</string>
 </resources>

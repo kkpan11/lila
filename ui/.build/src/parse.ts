@@ -1,110 +1,132 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import * as fg from 'fast-glob';
-import { LichessModule, env, colors as c } from './main';
+import fs from 'node:fs';
+import p from 'node:path';
+import fg from 'fast-glob';
+import { env } from './env.ts';
 
-export const parseModules = async (): Promise<[Map<string, LichessModule>, Map<string, string[]>]> => {
-  const modules = new Map<string, LichessModule>();
-  const moduleDeps = new Map<string, string[]>();
+export interface Package {
+  root: string; // absolute path to package.json parentdir
+  name: string; // dirname of package root
+  pkg: any; // package.json object
+  bundle: Bundle[]; // esbuild bundling
+  hash: Hash[]; // files to symlink hash
+  sync: Sync[]; // pre-bundle filesystem copies from package json
+}
 
-  for (const dir of (await globArray('[^@.]*/package.json')).map(pkg => path.dirname(pkg))) {
-    const mod = await parseModule(dir);
-    modules.set(mod.name, mod);
+interface Bundle {
+  module?: string; // file glob for esm modules (esbuild entry points)
+  inline?: string; // inject this script into response html
+}
+
+interface Hash {
+  glob: string; // glob for assets
+  update?: string; // file to update with hashed filenames
+}
+
+interface Sync {
+  src: string; // file glob expression, use <dir>/** to sync entire directories
+  dest: string; // directory to copy into
+}
+
+export async function parsePackages(): Promise<void> {
+  for (const dir of (await glob('ui/[^@.]*/package.json')).map(pkg => p.dirname(pkg))) {
+    const pkgInfo = await parsePackage(dir);
+    env.packages.set(pkgInfo.name, pkgInfo);
   }
 
-  for (const mod of modules.values()) {
+  for (const pkgInfo of env.packages.values()) {
     const deplist: string[] = [];
-    for (const dep in mod.pkg.dependencies) {
-      if (modules.has(dep)) deplist.push(dep);
+    for (const dep in pkgInfo.pkg.dependencies) {
+      if (env.packages.has(dep)) deplist.push(dep);
     }
-    moduleDeps.set(mod.name, deplist);
-    // for package.jsons with multiple esm bundles, subsequent bundles depend on the first
-    mod.bundles?.esm?.slice(1).forEach(r => moduleDeps.set(r.output, [mod.name, ...deplist]));
+    env.workspaceDeps.set(pkgInfo.name, deplist);
   }
-  return [modules, moduleDeps];
-};
-
-export async function globArray(
-  glob: string,
-  { cwd = env.uiDir, abs = true, dirs = false } = {},
-): Promise<string[]> {
-  const files: string[] = [];
-  for await (const f of fg.stream(glob, { cwd, absolute: abs, onlyFiles: !dirs }))
-    files.push(f.toString('utf8'));
-  return files;
 }
 
-async function parseModule(moduleDir: string): Promise<LichessModule> {
-  const pkg = JSON.parse(await fs.promises.readFile(path.join(moduleDir, 'package.json'), 'utf8'));
-  const mod: LichessModule = {
-    pkg: pkg,
-    name: path.basename(moduleDir),
-    root: moduleDir,
-    pre: [],
-    post: [],
-    hasTsconfig: fs.existsSync(path.join(moduleDir, 'tsconfig.json')),
+export async function glob(glob: string[] | string | undefined, opts: fg.Options = {}): Promise<string[]> {
+  if (!glob) return [];
+  const results = await Promise.all(
+    Array()
+      .concat(glob)
+      .map(async g => fg.glob(g, { cwd: env.rootDir, absolute: true, ...opts })),
+  );
+  return [...new Set(results.flat())];
+}
+
+export async function folderSize(folder: string): Promise<number> {
+  async function getSize(dir: string): Promise<number> {
+    const entries = await fs.promises.readdir(dir, { withFileTypes: true });
+
+    const sizes = await Promise.all(
+      entries.map(async entry => {
+        const fullPath = p.join(dir, entry.name);
+        if (entry.isDirectory()) return getSize(fullPath);
+        if (entry.isFile()) return (await fs.promises.stat(fullPath)).size;
+        return 0;
+      }),
+    );
+    return sizes.reduce((acc: number, size: number) => acc + size, 0);
+  }
+  return getSize(folder);
+}
+
+export async function readable(file: string): Promise<boolean> {
+  return fs.promises
+    .access(file, fs.constants.R_OK)
+    .then(() => true)
+    .catch(() => false);
+}
+
+export async function subfolders(folder: string, depth = 1): Promise<string[]> {
+  const folders: string[] = [];
+  if (depth > 0)
+    await Promise.all(
+      (await fs.promises.readdir(folder).catch(() => [])).map(f =>
+        fs.promises.stat(p.join(folder, f)).then(s => s.isDirectory() && folders.push(p.join(folder, f))),
+      ),
+    );
+  return folders;
+}
+
+export function isFolder(file: string): Promise<boolean> {
+  return fs.promises
+    .stat(file)
+    .then(s => s.isDirectory())
+    .catch(() => false);
+}
+
+export function isGlob(path: string): boolean {
+  return /[*?!{}[\]()]/.test(path);
+}
+
+async function parsePackage(root: string): Promise<Package> {
+  const pkgInfo: Package = {
+    pkg: JSON.parse(await fs.promises.readFile(p.join(root, 'package.json'), 'utf8')),
+    name: p.basename(root),
+    root,
+    bundle: [],
+    sync: [],
+    hash: [],
   };
-  parseScripts(mod, 'scripts' in pkg ? pkg.scripts : {});
+  if (!('build' in pkgInfo.pkg)) return pkgInfo;
+  const build = pkgInfo.pkg.build;
 
-  if ('lichess' in pkg && 'modules' in pkg.lichess) {
-    for (const moduleType in pkg.lichess.modules) {
-      if (moduleType !== 'esm' && moduleType !== 'iife') {
-        env.log(
-          c.warn('WARNING') +
-            ` - Unsupported module type '${c.cyan(moduleType)}' in '${c.cyan(mod.name + '/package.json')}'`,
-        );
-        continue;
-      }
-      mod.bundles ??= {};
-      mod.bundles[moduleType] = Object.entries(pkg.lichess.modules[moduleType]).map(x => ({
-        input: x[0],
-        output: x[1] as string,
-      }));
-    }
-  }
-  if ('lichess' in pkg && 'copy' in pkg.lichess) {
-    const copy: any[] = Array.isArray(pkg.lichess.copy) ? pkg.lichess.copy : [pkg.lichess.copy];
-    const flattener = new Map<string, Set<string>>();
-    for (const s of copy) {
-      if (!Array.isArray(s.src)) s.src = [s.src];
-      for (const src of s.src) {
-        const srcDest = flattener.get(src) ?? new Set<string>();
-        srcDest.add(s.dest);
-        flattener.set(src, srcDest);
-      }
-    }
-    mod.copy = [];
-    for (const [src, dests] of flattener.entries())
-      for (const dest of dests) mod.copy.push({ src, dest, mod });
-  }
-  return mod;
-}
+  // 'hash' and 'sync' paths beginning with '/' are repo relative, otherwise they are package relative
+  const normalize = (file: string) => (file[0] === '/' ? file.slice(1) : p.join('ui', pkgInfo.name, file));
+  const normalizeObject = <T extends Record<string, any>>(o: T) =>
+    Object.fromEntries(Object.entries(o).map(([k, v]) => [k, typeof v === 'string' ? normalize(v) : v]));
 
-function tokenizeArgs(argstr: string): string[] {
-  const args: string[] = [];
-  const reducer = (a: any[], ch: string) => {
-    if (ch !== ' ') return ch === "'" ? [a[0], !a[1]] : [a[0] + ch, a[1]];
-    if (a[1]) return [a[0] + ' ', true];
-    else if (a[0]) args.push(a[0]);
-    return ['', false];
-  };
-  const lastOne = [...argstr].reduce(reducer, ['', false])[0];
-  return lastOne ? [...args, lastOne] : args;
-}
+  if ('hash' in build)
+    pkgInfo.hash = []
+      .concat(build.hash)
+      .map(g => (typeof g === 'string' ? { glob: normalize(g) } : normalizeObject(g))) as Hash[];
 
-// go through package json scripts and get what we need from 'compile', 'dev', and 'deps'
-// if some other script is necessary, add it to buildScriptKeys
-function parseScripts(module: LichessModule, pkgScripts: any) {
-  const buildScriptKeys = ['deps', 'compile', 'dev', 'post'].concat(env.prod ? ['prod'] : []);
+  if ('sync' in build)
+    pkgInfo.sync = Object.entries<string>(build.sync).map(x => ({
+      src: normalize(x[0]),
+      dest: normalize(x[1]),
+    }));
 
-  for (const script in pkgScripts) {
-    if (!buildScriptKeys.includes(script)) continue;
-    pkgScripts[script].split(/&&/).forEach((cmd: string) => {
-      // no need to support || in a script property yet, we don't even short circuit && properly
-      const args = tokenizeArgs(cmd.trim());
-      if (!['$npm_execpath', 'tsc'].includes(args[0])) {
-        script == 'prod' || script == 'post' ? module.post.push(args) : module.pre.push(args);
-      }
-    });
-  }
+  if ('bundle' in build)
+    pkgInfo.bundle = [].concat(build.bundle).map(b => (typeof b === 'string' ? { module: b } : b));
+  return pkgInfo;
 }

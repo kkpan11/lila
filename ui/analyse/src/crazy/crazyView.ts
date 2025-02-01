@@ -1,8 +1,8 @@
 import { drag } from './crazyCtrl';
 import { h } from 'snabbdom';
-import { MouchEvent } from 'chessground/types';
+import type { MouchEvent } from 'chessground/types';
 import { onInsert } from 'common/snabbdom';
-import AnalyseCtrl from '../ctrl';
+import type AnalyseCtrl from '../ctrl';
 
 const eventNames = ['mousedown', 'touchstart'];
 const oKeys = ['pawn', 'knight', 'bishop', 'rook', 'queen'];
@@ -38,11 +38,7 @@ export default function (ctrl: AnalyseCtrl, color: Color, position: Position) {
         h(
           'div.pocket-c2',
           h('piece.' + role + '.' + color, {
-            attrs: {
-              'data-role': role,
-              'data-color': color,
-              'data-nb': nb,
-            },
+            attrs: { 'data-role': role, 'data-color': color, 'data-nb': nb },
           }),
         ),
       );

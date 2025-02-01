@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="communityBlogs">Blogs uit de gemeenschap</string>
+  <string name="friendBlogs">Blogs van vrienden</string>
+  <string name="likedBlogs">Blogberichten leuk gevonden</string>
+  <string name="blogTopics">Blog onderwerpen</string>
+  <plurals name="blogPosts">
+    <item quantity="one">%s Deze blogpost</item>
+    <item quantity="other">%s Deze blogposts</item>
+  </plurals>
+  <string name="lichessOfficialBlog">Officiële blog van Lichess</string>
+  <string name="continueReadingPost">Doorgaan met lezen van dit bericht</string>
+  <string name="lichessBlogPostsFromXYear">Lichess blog berichten uit %s</string>
+  <string name="previousBlogPosts">Eerdere blog berichten</string>
   <string name="xBlog">Blog van %s</string>
   <string name="newPost">Nieuwe blogpost</string>
   <string name="editYourBlogPost">Bewerk je blogpost</string>
@@ -13,6 +25,8 @@
   <string name="createBlogDiscussionHelp">Een forumbericht zal worden gemaakt waar mensen kunnen reageren op je bericht</string>
   <string name="publishOnYourBlog">Publiceren op blog</string>
   <string name="publishHelp">Indien aangevinkt, zal het bericht worden weergegeven op uw blog. Zo niet, zal deze privé tussen uw conceptberichten staan</string>
+  <string name="stickyPost" comment="Label for the toggle that can make this blog post sticky.">Vastgepind bericht</string>
+  <string name="stickyPostHelp">Indien aangevinkt, wordt dit bericht als eerste weergegeven bij de recente berichten op jouw profiel.</string>
   <plurals name="publishedNbBlogPosts">
     <item quantity="one">Publiceerde een blogpost</item>
     <item quantity="other">Publiceerde %s blogposts</item>
@@ -36,12 +50,12 @@
   <string name="imageAlt">Alternatieve tekst voor afbeelding</string>
   <string name="imageCredit">Foto</string>
   <string name="deleteBlog">Deze blogpost definitief verwijderen</string>
-  <string name="deleteImage">Afbeelding verwijderen</string>
   <string name="safeToUseImages">Het is veilig om afbeeldingen van de volgende websites te gebruiken: </string>
   <string name="selectPostTopics">Selecteer de onderwerpen waar je bericht over gaat</string>
   <string name="useImagesYouMadeYourself">Je kunt ook afbeeldingen gebruiken die je zelf hebt gemaakt, foto\'s die je hebt gemaakt, screenshots van Lichess... alles waar geen auteursrechten van iemand anders op berusten.</string>
   <string name="safeAndRespectfulContent">Plaats alleen veilige en respectvolle inhoud. Kopieer geen inhoud van iemand anders.</string>
   <string name="inappropriateContentAccountClosed">Alles wat ongepast is kan sluiting van je account tot gevolg hebben.</string>
   <string name="blogTips">Onze simpele tips om geweldige blogberichten te schrijven</string>
-  <string name="discussThisBlogPostInTheForum" comment="A button at the bottom of blog posts which will take you to the forum discussion for that post.">Bespreek dit blogbericht in het forum</string>
+  <string name="discussThisBlogPostInTheForum">Bespreek dit blogbericht in het forum</string>
+  <string name="youBlockedByBlogAuthor">U bent geblokkeerd door de auteur van de blog.</string>
 </resources>

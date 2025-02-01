@@ -2,7 +2,7 @@ package controllers
 
 import play.api.mvc.*
 
-import lila.app.{ given, * }
+import lila.app.{ *, given }
 import lila.common.HTTPRequest
 
 final class Storm(env: Env) extends LilaController(env):
@@ -12,7 +12,7 @@ final class Storm(env: Env) extends LilaController(env):
 
   private def serveHome(using ctx: Context) = NoBot:
     dataAndHighScore(ctx.pref.some).flatMap: (data, high) =>
-      Ok.page(views.html.storm.home(data, high)).map(_.noCache)
+      Ok.page(views.storm.home(data, high)).map(_.noCache)
 
   private def dataAndHighScore(pref: Option[lila.pref.Pref])(using me: Option[Me]) = for
     puzzles <- env.storm.selector.apply
@@ -26,12 +26,12 @@ final class Storm(env: Env) extends LilaController(env):
 
   def record = OpenOrScopedBody(parse.anyContent)(_.Puzzle.Write, _.Web.Mobile): ctx ?=>
     NoBot:
-      env.storm.forms.run
-        .bindFromRequest()
-        .fold(
-          _ => fuccess(none),
-          data => env.storm.dayApi.addRun(data, ctx.me, mobile = HTTPRequest.isLichessMobile(req))
-        ) map env.storm.json.newHigh map JsonOk
+      bindForm(env.storm.forms.run)(
+        _ => fuccess(none),
+        data => env.storm.dayApi.addRun(data, ctx.me, mobile = HTTPRequest.isLichessMobile(req))
+      )
+        .map(env.storm.json.newHigh)
+        .map(JsonOk)
 
   def dashboard(page: Int) = Auth { ctx ?=> me ?=>
     renderDashboardOf(me, page)
@@ -44,14 +44,13 @@ final class Storm(env: Env) extends LilaController(env):
   private def renderDashboardOf(user: lila.user.User, page: Int)(using Context): Fu[Result] = for
     history <- env.storm.dayApi.history(user.id, page)
     high    <- env.storm.highApi.get(user.id)
-    page    <- renderPage(views.html.storm.dashboard(user, history, high))
+    page    <- renderPage(views.storm.dashboard(user, history, high))
   yield Ok(page)
 
   def apiDashboardOf(username: UserStr, days: Int) = Open:
-    lila.user.User.validateId(username).so { userId =>
+    username.validateId.so: userId =>
       if days < 0 || days > 365 then notFoundJson("Invalid days parameter")
       else
-        ((days > 0) so env.storm.dayApi.apiHistory(userId, days)) zip env.storm.highApi.get(userId) map {
+        ((days > 0).so(env.storm.dayApi.apiHistory(userId, days))).zip(env.storm.highApi.get(userId)).map {
           case (history, high) => Ok(env.storm.json.apiDashboard(high, history))
         }
-    }

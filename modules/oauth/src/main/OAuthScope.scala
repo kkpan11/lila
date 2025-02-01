@@ -1,9 +1,6 @@
 package lila.oauth
-
-import cats.derived.*
-import lila.i18n.I18nKey
-import lila.i18n.I18nKeys.{ oauthScope as trans }
-import lila.user.User
+import lila.core.i18n.I18nKey
+import lila.core.i18n.I18nKey.oauthScope as trans
 
 sealed abstract class OAuthScope(val key: String, val name: I18nKey):
   override def toString = s"Scope($key)"
@@ -13,7 +10,7 @@ object OAuthScopes extends TotalWrapper[OAuthScopes, List[OAuthScope]]:
   extension (e: OAuthScopes)
     def has(s: OAuthScope): Boolean             = e contains s
     def has(s: OAuthScope.Selector): Boolean    = has(s(OAuthScope))
-    def keyList: String                         = e.map(_.key) mkString ","
+    def keyList: String                         = e.map(_.key).mkString(",")
     def intersects(other: OAuthScopes): Boolean = e.exists(other.has)
     def isEmpty                                 = e.isEmpty
 
@@ -34,7 +31,7 @@ object OAuthScope:
   given Eq[OAuthScope] = Eq.fromUniversalEquals
 
   object Preference:
-    case object Read  extends OAuthScope("preference:read", lila.i18n.I18nKeys.oauthScope.preferenceRead)
+    case object Read  extends OAuthScope("preference:read", lila.core.i18n.I18nKey.oauthScope.preferenceRead)
     case object Write extends OAuthScope("preference:write", trans.preferenceWrite)
 
   object Email:
@@ -86,7 +83,7 @@ object OAuthScope:
     case object Mobile extends OAuthScope("web:mobile", I18nKey("Official Lichess mobile app"))
     case object Mod    extends OAuthScope("web:mod", trans.webMod)
 
-  case class Scoped(me: lila.user.Me, scopes: TokenScopes):
+  case class Scoped(me: Me, scopes: TokenScopes):
     def user: User = me.value
 
   case class Access(scoped: Scoped, tokenId: AccessToken.Id):
@@ -155,9 +152,14 @@ object OAuthScope:
     OAuthScopes(selectors.map(_(OAuthScope)).toList)
   def select(selectors: Selector*): OAuthScopes = select(selectors)
 
+  def canUseWebMod(using Option[Me]) =
+    import lila.core.perm.*
+    List[Permission.Selector](_.Shusher, _.BoostHunter, _.CheatHunter, _.StudyAdmin, _.ApiChallengeAdmin)
+      .exists(Granter.opt)
+
   import reactivemongo.api.bson.*
   import lila.db.dsl.*
   private[oauth] given BSONHandler[OAuthScope] = tryHandler[OAuthScope](
-    { case b: BSONString => OAuthScope.byKey.get(b.value) toTry s"No such scope: ${b.value}" },
+    { case b: BSONString => OAuthScope.byKey.get(b.value).toTry(s"No such scope: ${b.value}") },
     s => BSONString(s.key)
   )

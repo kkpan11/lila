@@ -1,40 +1,22 @@
-import { h, VNode } from 'snabbdom';
-import { Api as CgApi } from 'chessground/api';
-import { Config as CgConfig } from 'chessground/config';
-import * as cg from 'chessground/types';
-import { DrawShape } from 'chessground/draw';
+import { h, type VNode } from 'snabbdom';
+import type { Elements } from 'chessground/types';
 import resizeHandle from 'common/resize';
-import AnalyseCtrl from './ctrl';
+import { storage } from 'common/storage';
+import type AnalyseCtrl from './ctrl';
 import * as Prefs from 'common/prefs';
+import { Chessground as makeChessground } from 'chessground';
 
 export const render = (ctrl: AnalyseCtrl): VNode =>
   h('div.cg-wrap.cgv' + ctrl.cgVersion.js, {
     hook: {
-      insert: vnode => {
-        ctrl.chessground = lichess.makeChessground(vnode.elm as HTMLElement, makeConfig(ctrl));
-        ctrl.setAutoShapes();
-        if (ctrl.node.shapes) ctrl.chessground.setShapes(ctrl.node.shapes as DrawShape[]);
-        ctrl.cgVersion.dom = ctrl.cgVersion.js;
-      },
-      destroy: _ => ctrl.chessground.destroy(),
+      insert: vnode => ctrl.setChessground(makeChessground(vnode.elm as HTMLElement, makeConfig(ctrl))),
     },
   });
 
-export function promote(ground: CgApi, key: Key, role: cg.Role) {
+export function promote(ground: CgApi, key: Key, role: Role) {
   const piece = ground.state.pieces.get(key);
-  if (piece && piece.role == 'pawn') {
-    ground.setPieces(
-      new Map([
-        [
-          key,
-          {
-            color: piece.color,
-            role,
-            promoted: true,
-          },
-        ],
-      ]),
-    );
+  if (piece && piece.role === 'pawn') {
+    ground.setPieces(new Map([[key, { color: piece.color, role, promoted: true }]]));
   }
 }
 
@@ -49,6 +31,7 @@ export function makeConfig(ctrl: AnalyseCtrl): CgConfig {
     lastMove: opts.lastMove,
     orientation: ctrl.bottomColor(),
     coordinates: pref.coords !== Prefs.Coords.Hidden,
+    coordinatesOnSquares: pref.coords === Prefs.Coords.All,
     addPieceZIndex: pref.is3d,
     addDimensionsCssVarsTo: document.body,
     viewOnly: false,
@@ -62,7 +45,7 @@ export function makeConfig(ctrl: AnalyseCtrl): CgConfig {
     events: {
       move: ctrl.userMove,
       dropNewPiece: ctrl.userNewPiece,
-      insert(elements: cg.Elements) {
+      insert(elements: Elements) {
         resizeHandle(elements, Prefs.ShowResizeHandle.Always, ctrl.node.ply);
       },
     },
@@ -83,7 +66,7 @@ export function makeConfig(ctrl: AnalyseCtrl): CgConfig {
     drawable: {
       enabled: true,
       eraseOnClick: !ctrl.opts.study || !!ctrl.opts.practice,
-      defaultSnapToValidMove: lichess.storage.boolean('arrow.snap').getOrDefault(true),
+      defaultSnapToValidMove: storage.boolean('arrow.snap').getOrDefault(true),
     },
     highlight: {
       lastMove: pref.highlight,

@@ -10,21 +10,22 @@ final class ChallengeKeepAliveStream(api: ChallengeApi)(using
     scheduler: Scheduler
 ):
   def apply(challenge: Challenge, initialJson: JsObject): Source[JsValue, ?] =
-    Source(List(initialJson)) concat
+    Source(List(initialJson)).concat(
       Source
         .queue[JsObject](1, akka.stream.OverflowStrategy.dropHead)
         .mapMaterializedValue: queue =>
-          val keepAliveInterval = scheduler.scheduleWithFixedDelay(15 seconds, 15 seconds): () =>
+          val keepAliveInterval = scheduler.scheduleWithFixedDelay(15.seconds, 15.seconds): () =>
             api.ping(challenge.id)
           def completeWith(msg: String) =
-            queue.offer(Json.obj("done" -> msg)) andDo queue.complete()
+            for _ <- queue.offer(Json.obj("done" -> msg)) yield queue.complete()
           val sub = Bus.subscribeFun("challenge"):
-            case Event.Accept(c, _) if c.id == challenge.id => completeWith("accepted")
-            case Event.Cancel(c) if c.id == challenge.id    => completeWith("canceled")
-            case Event.Decline(c) if c.id == challenge.id   => completeWith("declined")
+            case lila.core.challenge.Event.Accept(c, _) if c.id == challenge.id => completeWith("accepted")
+            case Event.Cancel(c) if c.id == challenge.id                        => completeWith("canceled")
+            case Event.Decline(c) if c.id == challenge.id                       => completeWith("declined")
 
           queue
             .watchCompletion()
             .addEffectAnyway:
               keepAliveInterval.cancel()
               Bus.unsubscribe(sub, "challenge")
+    )

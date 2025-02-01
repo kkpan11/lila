@@ -82,4 +82,7 @@ Ancak Destekçilerimiz, müthiş profil simgeleriyle sonuna kadar övünme hakk�
   <string name="nowOneMonth">Bir aylığına Lichess Destekçisi oldunuz!</string>
   <string name="downgradeNextMonth">Bir ay içinde sizden tekrar ücret talep edilmeyecek ve Lichess hesabınız ücretsiz hâline dönecek.</string>
   <string name="changeCurrency">Para birimini değiştir</string>
+  <string name="paymentDetails">Ödeme detayları</string>
+  <string name="updatePaymentMethod">Ödeme yöntemini değiştir</string>
+  <string name="stripeManageSub">Aboneliğinizi yönetin ve faturalarınızı ve makbuzlarınızı indirin</string>
 </resources>

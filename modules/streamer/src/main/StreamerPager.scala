@@ -1,17 +1,15 @@
 package lila.streamer
 
 import reactivemongo.api.*
+import scalalib.paginator.{ AdapterLike, Paginator }
 
-import lila.common.paginator.{ AdapterLike, Paginator }
 import lila.db.dsl.{ *, given }
-import lila.user.{ Me, User, UserRepo, UserPerfsRepo }
 
 final class StreamerPager(
     coll: Coll,
-    userRepo: UserRepo,
-    perfsRepo: UserPerfsRepo,
-    maxPerPage: lila.common.config.MaxPerPage,
-    subsRepo: lila.relation.SubscriptionRepo
+    userRepo: lila.core.user.UserRepo,
+    maxPerPage: MaxPerPage,
+    subsRepo: lila.core.relation.SubscriptionRepo
 )(using Executor):
 
   import BsonHandlers.given
@@ -20,7 +18,7 @@ final class StreamerPager(
       page: Int,
       live: LiveStreams,
       requests: Boolean
-  )(using Option[Me.Id]): Fu[Paginator[Streamer.WithContext]] = Paginator(
+  )(using Option[MyId]): Fu[Paginator[Streamer.WithContext]] = Paginator(
     currentPage = page,
     maxPerPage = maxPerPage,
     adapter = if requests then approval else notLive(live)
@@ -28,11 +26,11 @@ final class StreamerPager(
 
   def nextRequestId: Fu[Option[Streamer.Id]] = coll.primitiveOne[Streamer.Id](
     $doc("approval.requested" -> true, "approval.ignored" -> false),
-    $sort asc "updatedAt",
+    $sort.asc("updatedAt"),
     "_id"
   )
 
-  private def notLive(live: LiveStreams)(using me: Option[Me.Id]): AdapterLike[Streamer.WithContext] = new:
+  private def notLive(live: LiveStreams)(using me: Option[MyId]): AdapterLike[Streamer.WithContext] = new:
 
     def nbResults: Fu[Int] = fuccess(1000)
 
@@ -44,7 +42,7 @@ final class StreamerPager(
             $doc(
               "approval.granted" -> true,
               "listed"           -> Streamer.Listed(true),
-              "_id" $nin live.streams.map(_.streamer.id)
+              "_id".$nin(live.streams.map(_.streamer.id))
             )
           ) -> List(
             Sort(Descending("liveAt")),
@@ -54,6 +52,7 @@ final class StreamerPager(
             UnwindField("user")
           )
         .map: docs =>
+          import userRepo.userHandler
           for
             doc      <- docs
             streamer <- doc.asOpt[Streamer]
@@ -61,7 +60,7 @@ final class StreamerPager(
           yield Streamer.WithUser(streamer, user, false)
         .flatMap: streamers =>
           me.fold(fuccess(streamers)): me =>
-            subsRepo.filterSubscribed(me, streamers.map(_.user.id)) map { subs =>
+            subsRepo.filterSubscribed(me, streamers.map(_.user.id)).map { subs =>
               streamers.map(s => s.copy(subscribed = subs(s.user.id)))
             }
 
@@ -83,6 +82,7 @@ final class StreamerPager(
             UnwindField("user")
           )
         .map: docs =>
+          import userRepo.userHandler
           for
             doc      <- docs
             streamer <- doc.asOpt[Streamer]

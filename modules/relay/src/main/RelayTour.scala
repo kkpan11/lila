@@ -1,67 +1,146 @@
 package lila.relay
 
-import ornicar.scalalib.ThreadLocalRandom
+import reactivemongo.api.bson.Macros.Annotations.Key
+import io.mola.galimatias.URL
+import java.time.ZoneId
 
-import lila.user.User
+import lila.core.i18n.Language
+import lila.core.id.ImageId
+import lila.core.misc.PicfitUrl
+import lila.core.fide.FideTC
+import lila.core.study.Visibility
+import chess.TournamentClock
+import chess.format.pgn.Tag
 
 case class RelayTour(
-    _id: RelayTour.Id,
-    name: String,
-    description: String,
+    @Key("_id") id: RelayTourId,
+    name: RelayTour.Name,
+    info: RelayTour.Info,
     markup: Option[Markdown] = None,
-    ownerId: UserId,
+    ownerIds: NonEmptyList[UserId],
     createdAt: Instant,
     tier: Option[RelayTour.Tier], // if present, it's an official broadcast
     active: Boolean,              // a round is scheduled or ongoing
+    live: Option[Boolean],        // a round is live, i.e. started and not finished
     syncedAt: Option[Instant],    // last time a round was synced
-    autoLeaderboard: Boolean = true,
-    players: Option[RelayPlayers] = None
+    spotlight: Option[RelayTour.Spotlight] = None,
+    showScores: Boolean = true,
+    showRatingDiffs: Boolean = true,
+    teamTable: Boolean = false,
+    players: Option[RelayPlayersTextarea] = None,
+    teams: Option[RelayTeamsTextarea] = None,
+    image: Option[ImageId] = None,
+    dates: Option[RelayTour.Dates] = None, // denormalized from round dates
+    pinnedStream: Option[RelayPinnedStream] = None,
+    note: Option[String] = None
 ):
-  inline def id = _id
-
   lazy val slug =
-    val s = lila.common.String slugify name
+    val s = scalalib.StringOps.slug(name.value)
     if s.isEmpty then "-" else s
 
   def withRounds(rounds: List[RelayRound]) = RelayTour.WithRounds(this, rounds)
 
   def official = tier.isDefined
 
-  def reAssignIfOfficial = if official then copy(ownerId = User.broadcasterId) else this
+  def isOwnedBy[U: UserIdOf](u: U): Boolean = ownerIds.toList.contains(u.id)
 
-  def path: String = s"/broadcast/$slug/$id"
+  def giveOfficialToBroadcasterIf(cond: Boolean) =
+    if !cond || official == isOwnedBy(UserId.broadcaster) then this
+    else
+      copy(
+        ownerIds =
+          if official then ownerIds.append(UserId.broadcaster)
+          else ownerIds.filterNot(_ == UserId.broadcaster).toNel | ownerIds
+      )
+
+  def path = routes.RelayTour.show(slug, id).url
+
+  def tierIs(selector: RelayTour.Tier.Selector) = tier.has(selector(RelayTour.Tier))
+
+  def studyVisibility: Visibility =
+    if tier.has(RelayTour.Tier.`private`)
+    then Visibility.`private`
+    else Visibility.public
 
 object RelayTour:
 
-  val maxRelays = 64
+  val maxRelays = Max(64)
 
-  opaque type Id = String
-  object Id extends OpaqueString[Id]
+  opaque type Name = String
+  object Name extends OpaqueString[Name]
 
-  type Tier = Int
+  enum Tier(val v: Int):
+    case `private` extends Tier(-1)
+    case normal    extends Tier(3)
+    case high      extends Tier(4)
+    case best      extends Tier(5)
+    def key = toString
+
   object Tier:
-    val NORMAL = 3
-    val HIGH   = 4
-    val BEST   = 5
+    type Selector = RelayTour.Tier.type => RelayTour.Tier
 
+    given cats.Order[Tier] = cats.Order.by(_.v)
+
+    def apply(s: Selector) = s(Tier)
+
+    val byV = values.mapBy(_.v)
     val options = List(
-      ""              -> "Non official",
-      NORMAL.toString -> "Official: normal tier",
-      HIGH.toString   -> "Official: high tier",
-      BEST.toString   -> "Official: best tier"
+      ""                   -> "Non official",
+      normal.v.toString    -> "Official: normal tier",
+      high.v.toString      -> "Official: high tier",
+      best.v.toString      -> "Official: best tier",
+      `private`.v.toString -> "Private"
     )
-    def name(tier: Tier) = options.collectFirst {
-      case (t, n) if t == tier.toString => n
-    } | "???"
+
+  case class Info(
+      format: Option[String],
+      tc: Option[String],
+      fideTc: Option[FideTC],
+      location: Option[String],
+      timeZone: Option[ZoneId],
+      players: Option[String],
+      website: Option[URL],
+      standings: Option[URL]
+  ):
+    def nonEmpty          = List(format, tc, fideTc, location, players, website, standings).flatten.nonEmpty
+    override def toString = List(format, tc, fideTc, location, players).flatten.mkString(" | ")
+    lazy val fideTcOrGuess: FideTC     = fideTc | FideTC.standard
+    def timeZoneOrDefault: ZoneId      = timeZone | ZoneId.systemDefault
+    def clock: Option[TournamentClock] = tc.flatMap(TournamentClock.parse.apply)
+
+  case class Dates(start: Instant, end: Option[Instant])
+
+  case class Spotlight(enabled: Boolean, language: Language, title: Option[String]):
+    def isEmpty                           = !enabled && specialLanguage.isEmpty && title.isEmpty
+    def specialLanguage: Option[Language] = (language != lila.core.i18n.defaultLanguage).option(language)
 
   case class WithRounds(tour: RelayTour, rounds: List[RelayRound])
 
-  case class ActiveWithSomeRounds(tour: RelayTour, display: RelayRound, link: RelayRound)
-      extends RelayRound.AndTour:
-    export display.{ hasStarted as ongoing }
-
-  case class WithLastRound(tour: RelayTour, round: RelayRound) extends RelayRound.AndTour:
+  case class WithLastRound(tour: RelayTour, round: RelayRound, group: Option[RelayGroup.Name])
+      extends RelayRound.AndTourAndGroup:
     def link    = round
     def display = round
 
-  def makeId = Id(ThreadLocalRandom nextString 8)
+  case class WithFirstRound(tour: RelayTour, round: RelayRound, group: Option[RelayGroup.Name])
+      extends RelayRound.AndTourAndGroup:
+    def link    = round
+    def display = round
+
+  case class IdName(@Key("_id") id: RelayTourId, name: Name)
+
+  case class WithGroup(tour: RelayTour, group: Option[RelayGroup])
+  case class WithGroupTours(tour: RelayTour, group: Option[RelayGroup.WithTours])
+
+  object thumbnail:
+    enum Size(val width: Int, aspectRatio: Float = 2.0f):
+      def height: Int = (width / aspectRatio).toInt
+      case Large     extends Size(800)
+      case Small     extends Size(400)
+      case Small16x9 extends Size(400, 16.0f / 9)
+    type SizeSelector = thumbnail.type => Size
+
+    def apply(picfitUrl: PicfitUrl, image: ImageId, size: SizeSelector) =
+      picfitUrl.thumbnail(image, size(thumbnail).width, size(thumbnail).height)
+
+  import scalalib.ThreadLocalRandom
+  def makeId = RelayTourId(ThreadLocalRandom.nextString(8))

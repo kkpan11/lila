@@ -2,69 +2,78 @@
 <resources>
   <string name="playWithAFriend">మిత్రులతో ఆడండి</string>
   <string name="playWithTheMachine">కంప్యూటర్ తో ఆడండి</string>
-  <string name="toInviteSomeoneToPlayGiveThisUrl">ఆటకు ఆహ్వానించడానికి ఈ లింక్ ఇవ్వండి</string>
-  <string name="gameOver">ఆట ముగిసిపోయింది</string>
+  <string name="toInviteSomeoneToPlayGiveThisUrl">ఆటకు పిలవడానికి ఈ లంకె పంపండి</string>
+  <string name="gameOver">ఆట ముగిసింది</string>
   <string name="waitingForOpponent">ప్రత్యర్థి కోసం ఎదురుచూస్తున్నాం</string>
-  <string name="waiting">ఎదురుచాస్తున్నాం</string>
+  <string name="orLetYourOpponentScanQrCode">లేదా మీ ప్రత్యర్థికి ఈ QR కోడును చూపండి</string>
+  <string name="waiting">ప్రత్యర్థి ఒప్పుకోవడానికై ఎదురుచూస్తున్నాము</string>
   <string name="yourTurn">మీ వంతు</string>
   <string name="aiNameLevelAiLevel">%1$s స్థాయి %2$s</string>
   <string name="level">స్థాయి</string>
   <string name="strength">బలము</string>
-  <string name="toggleTheChat">బాతాఖానీ చెయ్యండి లేదా ఆపండి</string>
+  <string name="toggleTheChat">ముచ్చట్లు చూడండి/ముయ్యండి</string>
   <string name="chat">మాట్లాడండి</string>
-  <string name="resign">రాజీనామా</string>
+  <string name="resign">ఓటమిని ఒప్పుకొను</string>
   <string name="checkmate">ఆటకట్టు</string>
   <string name="stalemate">దిగ్బంధం (ఎటు పోవడానికి దారి లేదు)</string>
-  <string name="white">తెలుపు రంగు</string>
-  <string name="black">నలుపు రంగు</string>
+  <string name="white">తెలుపు</string>
+  <string name="black">నలుపు</string>
   <string name="asWhite">తెల్లగా</string>
   <string name="asBlack">నల్లగా</string>
-  <string name="randomColor">ఏ రంగైనా సరే</string>
-  <string name="createAGame">ఒక ఆట మొదలుపెడదాం</string>
-  <string name="whiteIsVictorious">తెలుపు పక్షం గెలిచింది</string>
-  <string name="blackIsVictorious">నలుపు పక్షం గెలిచింది</string>
-  <string name="youPlayTheWhitePieces">మీరు తెలుపు రంగు లాగా ఆడాలి</string>
-  <string name="youPlayTheBlackPieces">మీరు నలుపు రంగు లాగా ఆడాలి</string>
+  <string name="randomColor">ఏదో ఒక రంగు</string>
+  <string name="createAGame">ఆట మొదలుబెట్టండి</string>
+  <string name="whiteIsVictorious">తెలుపుది గెలుపు</string>
+  <string name="blackIsVictorious">నలుపుది గెలుపు</string>
+  <string name="youPlayTheWhitePieces">మీరు తెల్లకాయలతో ఆడాలి</string>
+  <string name="youPlayTheBlackPieces">మీరు నల్లకాయలతో ఆడాలి</string>
   <string name="itsYourTurn">ఇప్పుడు మీ వంతు!</string>
   <string name="cheatDetected">మోసం కనుగొనబడింది</string>
   <string name="kingInTheCenter">రాజు రంగమధ్యం చేరారు</string>
-  <string name="threeChecks">మూడు చెక్కులు</string>
+  <string name="threeChecks">మూడువైపులనుండి ఆటకట్టు</string>
   <string name="raceFinished">పరుగు ముగిసింది</string>
   <string name="variantEnding">మరొక ముగింపు</string>
   <string name="newOpponent">కొత్త ప్రత్యర్థి</string>
   <string name="yourOpponentWantsToPlayANewGameWithYou">మీ ప్రత్యర్థి మరొక ఆట ఆడాలనుకుంటున్నారు</string>
   <string name="joinTheGame">ఆటలో పాల్గొనండి</string>
   <string name="whitePlays">ఇప్పుడు తెల్లసైన్యం వంతు</string>
-  <string name="blackPlays">ఇప్పుడు నలుపుసైన్యం వంతు</string>
-  <string name="opponentLeftChoices">మీ ప్రత్యర్థి బహుశా ఆట విడిచి వెళ్లిపోయారేమో. మీరు కాసేపు ఆగి చూడవచ్చు, లేదా గెలుపోటములు సమానంగా పంచుకోవచ్చు, లేదా విజయం ప్రకటించుకోవచ్చు.</string>
-  <string name="forceResignation">గెలుపు పొందడం</string>
+  <string name="blackPlays">ఇప్పుడు నల్లసైన్యం వంతు</string>
+  <plurals name="opponentLeftCounter">
+    <item quantity="one">మీ ప్రత్యర్థి ఆట విడిచిపెట్టారు.
+మీరు %s సెకనులో గెలవచ్చు.</item>
+    <item quantity="other">మీ ప్రత్యర్థి ఆట విడిచిపెట్టారు.
+మీరు %s సెకన్లులో గెలవచ్చు.</item>
+  </plurals>
+  <string name="opponentLeftChoices">మీ ప్రత్యర్థి ఆట విడిచిపెట్టారు. మీరు గెలుపును చాటవచ్చు, సంధితో ముగించవచ్చు, లేదా ఎదురుచూడవచ్చు.</string>
+  <string name="forceResignation">గెలుపు కోరండి</string>
   <string name="forceDraw">సంధి కోరండి</string>
-  <string name="talkInChat">దయచేసి బాతాఖానీ లో మర్యాదగా మసలుకోండి!</string>
-  <string name="theFirstPersonToComeOnThisUrlWillPlayWithYou">ఈ లింకుకు మొదట వచ్చిన వారు మీతో ఆడతారు.</string>
-  <string name="whiteResigned">తెలుపు రాజు రాజీనామా చేసేశారు</string>
-  <string name="blackResigned">నలుపు రాజు రాజీనామా చేసేశారు</string>
-  <string name="whiteLeftTheGame">తెలుపు రాజు ఆట వదిలి వెళ్లిపోయారు</string>
-  <string name="blackLeftTheGame">నలుపు రాజు ఆట వదిలి వెళ్లిపోయారు</string>
-  <string name="whiteDidntMove">వైట్ ప్లేయర్ కదలలేదు</string>
-  <string name="blackDidntMove">బ్లాక్ ప్లేయర్ కదలలేదు</string>
-  <string name="requestAComputerAnalysis">కంప్యూటర్ విశ్లేషణను అభ్యర్థించండి</string>
+  <string name="talkInChat">దయచేసి మర్యాదగా ముచ్చటించండి!</string>
+  <string name="theFirstPersonToComeOnThisUrlWillPlayWithYou">ఈ లంకెకు మొదట వచ్చిన వారు మీతో ఆడతారు.</string>
+  <string name="whiteResigned">తెలుపు పక్షం ఓటమినొప్పుకుంది</string>
+  <string name="blackResigned">నలుపు పక్షం ఓటమినొప్పుకుంది</string>
+  <string name="whiteLeftTheGame">తెలుపువారు ఆట విడిచిపెట్టారు</string>
+  <string name="blackLeftTheGame">నలుపువారు ఆట విడిచిపెట్టారు</string>
+  <string name="whiteDidntMove">తెలుపు కాయ జరుపలేదు</string>
+  <string name="blackDidntMove">నలుపు కాయ జరుపలేదు</string>
+  <string name="requestAComputerAnalysis">కంప్యూటర్ విశ్లేషణకై అభ్యర్థించండి</string>
   <string name="computerAnalysis">కంప్యూటర్ విశ్లేషణ</string>
-  <string name="computerAnalysisAvailable">కంప్యూటర్ విశ్లేషణ ఉంది</string>
+  <string name="computerAnalysisAvailable">కంప్యూటర్ విశ్లేషణ దొరుకును</string>
   <string name="computerAnalysisDisabled">కంప్యూటర్ విశ్లేషణ నిలిపివేయబడింది</string>
   <string name="analysis">విశ్లేషణా పటము</string>
   <string name="depthX">లోతు %s</string>
   <string name="usingServerAnalysis">సర్వర్ విశ్లేషణ వాడుతున్నాం</string>
   <string name="loadingEngine">చదరంగయంత్రం సిద్ధమవుతోంది...</string>
-  <string name="calculatingMoves">Telagu</string>
-  <string name="engineFailed">Yantramu panicheyutalo aatankam</string>
-  <string name="cloudAnalysis">విశ్లషణ జరుగుతుంది</string>
+  <string name="calculatingMoves">యెత్తులు లెక్కించబడుతున్నాయి...</string>
+  <string name="engineFailed">చదరంగయంత్రం సిద్ధమగుటలో ఇబ్బందులెదురయ్యాయి</string>
+  <string name="cloudAnalysis">విశ్లేషణ జరుగుతోంది</string>
   <string name="goDeeper">ఇంకా లోతుగా వెళ్ళండి</string>
-  <string name="showThreat">పొంచి ఉన్న ప్రమాదం చూపించండి</string>
+  <string name="showThreat">పొంచి ఉన్న ప్రమాదాన్ని చూడండి</string>
   <string name="inLocalBrowser">స్థానిక బ్రౌజర్లో</string>
-  <string name="toggleLocalEvaluation">స్థానిక అంచనాపధ్ధతికి మార్చండి</string>
-  <string name="promoteVariation">మీ శాఖను ప్రచారం చెయ్యండి</string>
+  <string name="toggleLocalEvaluation">స్థానిక అంచనాపధ్ధతికి/నుండి మార్చండి</string>
+  <string name="promoteVariation">ఈ శాఖను ప్రచారించండి</string>
   <string name="makeMainLine">దీనినే ప్రధాన శాఖగా మార్చండి</string>
   <string name="deleteFromHere">ఇక్కడినుంచి తీసివెయ్యండి</string>
+  <string name="collapseVariations">వేరియేషన్స్నీ కలప్స్ చేయ్ </string>
+  <string name="expandVariations">వేరియేషన్స్నీ ఎక్సపండ్ చేయ్  </string>
   <string name="forceVariation">మీ శాఖను ప్రచారం చెయ్యండి</string>
   <string name="copyVariationPgn">PGNని కాపీ చేయండి</string>
   <string name="move">జరుపు లేదా ఎత్తు వెయ్యండి</string>
@@ -109,7 +118,6 @@
   <string name="replayMode">మళ్ళీ ఆడదాం</string>
   <string name="realtimeReplay">ఏకకాలంలో</string>
   <string name="byCPL">భటులనష్టం ప్రకారం</string>
-  <string name="openStudy">అధ్యయనం లోకి వెళదాం</string>
   <string name="enable">కావాలి</string>
   <string name="bestMoveArrow">మంచి ఎత్తుగడకు దారి</string>
   <string name="showVariationArrows">వైవిధ్య బాణాలను చూపు</string>
@@ -119,7 +127,6 @@
   <string name="memory">జ్ఞాపకనిధి</string>
   <string name="infiniteAnalysis">అనంతమైన విశ్లేషణ</string>
   <string name="removesTheDepthLimit">లోతు నియతిని తీసివేసి, కంప్యూటర్ ను వెచ్చగా ఉంచుతుంది</string>
-  <string name="engineManager">ఇంజిన్ మేనేజర్</string>
   <string name="blunder">మహా తప్పు</string>
   <string name="mistake">తప్పు</string>
   <string name="inaccuracy">సరికాదు</string>
@@ -127,11 +134,23 @@
     <item quantity="one">%s పెద్ద తప్పు</item>
     <item quantity="other">%s పెద్ద తప్పులు</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="one">%s పెద్ద తప్పు</item>
+    <item quantity="other">%s పెద్ద తప్పులు</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="one">%s తప్పు</item>
     <item quantity="other">%s తప్పులు</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="one">%s తప్పు</item>
+    <item quantity="other">%s తప్పులు</item>
+  </plurals>
   <plurals name="nbInaccuracies">
+    <item quantity="one">%s సరికాదు</item>
+    <item quantity="other">%s సరికావు</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
     <item quantity="one">%s సరికాదు</item>
     <item quantity="other">%s సరికావు</item>
   </plurals>
@@ -148,6 +167,18 @@
   <string name="drawByMutualAgreement">పరస్పర ఒప్పందం ద్వారా సమాన స్థానం</string>
   <string name="fiftyMovesWithoutProgress">పురోగతి లేకుండా యాభై కదలికలు</string>
   <string name="currentGames">ఇప్పటి ఆటలు</string>
+  <plurals name="nbGames">
+    <item quantity="one">%s ఆట </item>
+    <item quantity="other">%s ఆటలు</item>
+  </plurals>
+  <plurals name="ratingXOverYGames">
+    <item quantity="one">%1$s గేమ్ కంటే %2$s రేటింగ్ </item>
+    <item quantity="other">%1$s గేమ్‌ల కంటే %2$s రేటింగ్</item>
+  </plurals>
+  <plurals name="nbBookmarks">
+    <item quantity="one">%s పుస్తకగుర్తు </item>
+    <item quantity="other">%s పుస్తకగుర్తులు</item>
+  </plurals>
   <string name="viewInFullSize">పూర్తి పరిమాణంలో చూడండి</string>
   <string name="logOut">నిష్క్రమించండి</string>
   <string name="signIn">ప్రవేశించండి</string>
@@ -161,6 +192,7 @@
   <string name="latestForumPosts">తాజా సమావేశ ప్రదేశ అంశాలు</string>
   <string name="players">ఆటగాళ్లు</string>
   <string name="friends">స్నేహితులు</string>
+  <string name="otherPlayers">వేరే ఆటగాళ్లు </string>
   <string name="discussions">సంభాషణలు</string>
   <string name="today">ఈరోజు</string>
   <string name="yesterday">నిన్న</string>
@@ -180,6 +212,10 @@
     <item quantity="one">%s hour</item>
     <item quantity="other">%s hours</item>
   </plurals>
+  <plurals name="nbMinutes">
+    <item quantity="one">%s నిమిషం </item>
+    <item quantity="other">%s నిమిషాలు </item>
+  </plurals>
   <string name="time">సమయం</string>
   <string name="rating">నైపుణ్యం</string>
   <string name="ratingStats">నైపుణ్య గణాంకాలు</string>
@@ -188,12 +224,40 @@
   <string name="changeUsername">ఆటగాడి పేరు మార్చు</string>
   <string name="changeUsernameNotSame">అక్షరాల పరిమాణం మాత్రమే మారొచ్చు. ఉదాహరణకి \"johndoe\" నుంచి \"JohnDoe\".</string>
   <string name="changeUsernameDescription">ఆటగాడి పేరు మార్చండి. దీనిని ఒకేసారి చెయ్యగలరు తర్వాత అక్షరాల పరిమాణం మాత్రమే మారొచ్చు.</string>
+  <string name="signupUsernameHint">కుటుంబ స్నేహపూర్వక వినియోగదారు పేరును ఎంచుకోండి. మీరు దీన్ని తర్వాత మార్చలేరు మరియు అనుచితమైన వినియోగదారు పేర్లతో ఉన్న ఖాతాలు మూసివేయబడతాయి!</string>
+  <string name="signupEmailHint">మేము దానిని పాస్‌వర్డ్ రీసెట్ కోసం మాత్రమే ఉపయోగిస్తాము.</string>
   <string name="password">పాస్వర్డ్</string>
   <string name="changePassword">పాస్వర్డ్ మార్చండి</string>
   <string name="changeEmail">ఇమెయిల్మా ర్చండి</string>
   <string name="email">ఇమెయిల్</string>
   <string name="passwordReset">కొత్త పాస్వర్డ్ కోసం</string>
   <string name="forgotPassword">పాస్వర్డ్ మర్చిపోయారా?</string>
+  <string name="error.weakPassword">ఈ పాస్‌వర్డ్ చాలా సాధారణమైనది మరియు ఊహించడం చాలా సులభం.</string>
+  <string name="error.namePassword">మీ  యూజర్నేం పాస్వర్డ్ గా పెట్టకు.</string>
+  <string name="blankedPassword">ఇదే పాస్వర్డ్ ఇంకొక సైట్లో వాడేశావు, కానీ ఆ సైట్ కాంప్రమైజ్ అయ్యింది. మీ లీచెస్స్ అకౌంట్ సురక్షితం కోసం, ఇంకొక కొత్త పాస్వర్డ్  పెట్టాలి. మీ అవగాహన వల్ల ధన్యవాదాలు.</string>
+  <string name="youAreLeavingLichess">మీరు లిచెస్‌ని విడిచిపెడుతున్నారు</string>
+  <string name="neverTypeYourPassword">మీ లీచెస్స్ పాస్వర్డ్ ఇంకొక సైట్లో ఎప్పడు పెట్టకూడదు!</string>
+  <string name="proceedToX">%sకి వెళ్లండి</string>
+  <string name="passwordSuggestion">వేరొకరు సూచించిన పాస్వర్డ్ సెట్ చెయ్యకూడదు. వారు మీ అక్కౌంట్ని దొంగిలించడానికి ఉపయోగిస్తారు.</string>
+  <string name="emailSuggestion">వేరొకరు సూచించిన ఈమెయిల్ అడ్రస్ సెట్ చెయ్యకూడదు. వారు మీ అక్కౌంట్ని దొంగిలించడానికి ఉపయోగిస్తారు.</string>
+  <string name="emailConfirmHelp">ఈమెయిల్ కన్ఫర్మేషన్ తో సహాయం</string>
+  <string name="emailConfirmNotReceived">సైన్ అప్ చేసిన తరువాత మీ ధృవీకరణ ఈమెయిల్ అందుకోలేదా?</string>
+  <string name="whatSignupUsername">సైన్ అప్ చెయ్యడానికి ఏం యూజర్నేం వాడారు?</string>
+  <string name="usernameNotFound">మేము ఈ యూజర్నేంతో ఎవ్వరు కనిపెట్టలేకపోయాము
+: %s</string>
+  <string name="usernameCanBeUsedForNewAccount">కొత్త అకౌంట్ని తయ్యరు చెయ్యడానికి ఈ యూజర్నేంనీ వాడచ్చు  </string>
+  <string name="emailSent">మేము %sకి ఒక ఈమెయిల్ పంపించాము.</string>
+  <string name="emailCanTakeSomeTime">రావడానికి కొంచం సమయం పడుతుంది.</string>
+  <string name="refreshInboxAfterFiveMinutes">ఐదు నిమిషాలు ఆగి మీ ఈమెయిల్ ఇంబాక్స్ని రిఫ్రెష్ చేయ్.</string>
+  <string name="checkSpamFolder">మరియు, మీ స్పామ్ ఫోల్డర్ చూసుకోవండి, అక్కడికి కూడా వెళ్ళచ్చు. అలాగ జరిగితే, అది \"నాట్ స్పామ్\" గా మార్క్ చెయ్యండి.</string>
+  <string name="emailForSignupHelp">మిగిలినవన్నీ ఫెయిల్ అయితే, ఈ ఈమెయిల్ మాకి పంపించన్డి:</string>
+  <string name="copyTextToEmail">పైన టెక్స్ట్ని కాపీ పేస్టు చేసి %s కి పంపించండి </string>
+  <string name="waitForSignupHelp">మీ సైన్ అప్ పూర్తి చేయడంలో మీకు సహాయం చేయడానికి మేము త్వరలో మీ వద్దకు వస్తాము.</string>
+  <string name="accountConfirmed">యూసర్ %s కన్ఫర్మ్ అయిపోయారు.</string>
+  <string name="accountCanLogin">మీరు ఇప్పుడు %s గా లాగిన్ చేయచ్చు.</string>
+  <string name="accountConfirmationEmailNotNeeded">మీకు ధృవీకరణ ఈమెయిల్ అవసరం లేదు.</string>
+  <string name="accountClosed">%s అకౌంట్ క్లోజ్ అయ్యింది.</string>
+  <string name="accountRegisteredWithoutEmail">%s అకౌంట్ ఈమెయిల్ లేకుండా రిజిస్టర్ అయ్యింది.</string>
   <string name="rank">స్థానం</string>
   <string name="rankX">స్థానం: %s</string>
   <plurals name="rankIsUpdatedEveryNbMinutes">
@@ -209,8 +273,9 @@
     <item quantity="one">నీతో ఆడిన %sవ ఆట</item>
     <item quantity="other">నీతో ఆడిన మొత్తం %s ఆటలు</item>
   </plurals>
+  <string name="ok">సరే </string>
   <string name="cancel">రద్దు చేయండి</string>
-  <string name="whiteTimeOut">thella samayam aipoyindi</string>
+  <string name="whiteTimeOut">తెల్ల రంగు ఆడుతున్నవాడికి టైం లేదు.</string>
   <string name="blackTimeOut">నలుపు సమయం సమాప్తి</string>
   <string name="drawOfferSent">సంధి ప్రతిపాదన పంపబడింది</string>
   <string name="drawOfferAccepted">సంధి ప్రతిపాదన ఆమోదించబడింది</string>
@@ -225,10 +290,10 @@
   <string name="playingRightNow">ఆట ఆడుతున్నారు</string>
   <string name="eventInProgress">ఆట ఆడుతున్నారు</string>
   <string name="finished">పూర్తయింది</string>
-  <string name="finishesX">మిగిలిన సమయం %s</string>
   <string name="abortGame">ఆట ఆగిపోయింది</string>
   <string name="gameAborted">గేమ్ ఆగిపోయినది</string>
   <string name="standard">ప్రామాణికం</string>
+  <string name="customPosition">స్థానం నుంచి</string>
   <string name="unlimited">అపరిమితం</string>
   <string name="mode">రీతి</string>
   <string name="casual">సాధారణం</string>
@@ -302,8 +367,13 @@
     <item quantity="one">%s అధ్యయనం</item>
     <item quantity="other">%s అధ్యయనాలు</item>
   </plurals>
+  <plurals name="nbSimuls">
+    <item quantity="one">%s ఏకకాల ప్రదర్శన</item>
+    <item quantity="other">%s ఏకకాల ప్రదర్శనలు</item>
+  </plurals>
   <string name="viewTournament">టోర్నమెంట్ చూడండి</string>
   <string name="backToTournament">తిరిగి టోర్నమెంట్‌కు</string>
+  <string name="noDrawBeforeSwissLimit">స్విస్ టోర్నమెంట్‌లో 30 మూవ్స్ ఆడటానికి ముందు మీరు డ్రా చేయలేరు.</string>
   <string name="thematic">నేపథ్య</string>
   <plurals name="moreThanNbRatedGames">
     <item quantity="one">≥ %s రేట్ చేసిన గేమ్</item>
@@ -327,11 +397,13 @@
   <string name="yourPerfRatingIsTooLow">మీ %1$s రేటింగ్ (%2$s) చాలా తక్కువ</string>
   <string name="ratedMoreThanInPerf">%2$s లో ≥ %1$s గా రేట్ చేయబడింది</string>
   <string name="ratedLessThanInPerf">గత వారంలో %2$sలో ≤ %1$s రేట్ చేయబడింది</string>
+  <string name="mustBeInTeam">%s టీమ్ లో ఉండాలి</string>
   <string name="youAreNotInTeam">మీరు ఈ బృందంలో లేరు, %s</string>
   <string name="backToGame">తిరిగి ఆటకి</string>
   <string name="siteDescription">ఉచిత ఆన్‌లైన్ చెస్ సర్వర్. శుభ్రమైన ఇంటర్‌ఫేస్‌లో చదరంగం ఆడండి. నమోదు లేదు, ప్రకటనలు లేవు, ప్లగ్ఇన్ అవసరం లేదు. కంప్యూటర్, స్నేహితులు లేదా యాదృచ్ఛిక ప్రత్యర్థులతో చెస్ ఆడండి.</string>
   <string name="xJoinedTeamY">%1$s జట్టులో చేరారు %2$s</string>
   <string name="xCreatedTeamY">%1$s బృందాన్ని సృష్టించారు %2$s</string>
+  <string name="startedStreaming">స్ట్రీమింగ్ మొదలయ్యింది</string>
   <string name="xStartedStreaming">%s ప్రసారం చేయడం ప్రారంభించింది</string>
   <string name="averageElo">సగటు రేటింగ్</string>
   <string name="location">స్థానం</string>
@@ -340,6 +412,8 @@
   <string name="apply">సమర్పించండి</string>
   <string name="save">సేవ్</string>
   <string name="leaderboard">లీడర్‌బోర్డు</string>
+  <string name="screenshotCurrentPosition">ప్రస్తుత పొజిషన్ నీ స్క్రీన్షాట్ చేయ్ </string>
+  <string name="gameAsGIF">గేమ్ జీ.ఐ.యఫ్ గా </string>
   <string name="pasteTheFenStringHere">FEN వచనాన్ని ఇక్కడ అతికించండి</string>
   <string name="pasteThePgnStringHere">PGN వచనాన్ని ఇక్కడ అతికించండి</string>
   <string name="orUploadPgnFile">లేదా పిజిఎన్ ఫైలును అప్ లోడ్ చేయండి</string>
@@ -349,6 +423,12 @@
   <string name="importGame">దిగుమతి ఆట</string>
   <string name="importGameExplanation">బ్రౌజ్ చేయగల రీప్లేని పొందడానికి గేమ్ PGNని అతికించండి,
 కంప్యూటర్ విశ్లేషణ, గేమ్ చాట్ మరియు భాగస్వామ్యం చేయదగిన URL.</string>
+  <string name="importGameCaveat">వేరియేషన్స్ పోతాయి. ఉంచడానికి, పీ.జీ.యన్ స్టడీ ద్వారా ఇంపోర్ట్ చెయ్.</string>
+  <string name="importGameDataPrivacyWarning">ఈ పీ. జీ. యన్ ను ప్రజలు యాక్సెస్ చేసుకోవచ్చు. ఒక గేమ్ ప్రైవేట్ గా దిగుమతి చేయడానికి, ఒక స్టడీ ఉపయోగించండి.</string>
+  <plurals name="nbImportedGames">
+    <item quantity="one">%s గేమ్‌ దిగుమతి చేయబడ్డాయి</item>
+    <item quantity="other">%s గేమ్‌లు దిగుమతి చేయబడ్డాయి</item>
+  </plurals>
   <string name="thisIsAChessCaptcha">ఇది చెస్ క్యాప్చా.</string>
   <string name="clickOnTheBoardToMakeYourMove">మీ కదలికను చేయడానికి మరియు మీరు మానవుడని నిరూపించుకోవడానికి బోర్డుపై క్లిక్ చేయండి.</string>
   <string name="captcha.fail">దయచేసి చెస్ క్యాప్చాను పరిష్కరించండి.</string>
@@ -357,6 +437,11 @@
   <string name="blackCheckmatesInOneMove">ఒక కదలికలో చెక్‌మేట్‌కి నలుపు</string>
   <string name="retry">మళ్లీ ప్రయత్నించండి</string>
   <string name="reconnecting">మళ్లీ కనెక్ట్ అవుతోంది</string>
+  <string name="noNetwork">ఆఫ్లైన్</string>
+  <plurals name="nbFriendsOnline">
+    <item quantity="one">%s స్నేహితుడు ఆన్లైన్ </item>
+    <item quantity="other">%s స్నేహితులు ఆన్లైన్</item>
+  </plurals>
   <string name="favoriteOpponents">ఇష్టమైన ప్రత్యర్థులు</string>
   <string name="follow">అనుసరించండి</string>
   <string name="following">అనుసరిస్తోంది</string>
@@ -366,8 +451,15 @@
   <string name="block">నిరోధించు</string>
   <string name="blocked">నిరోధించబడింది</string>
   <string name="unblock">నిరోనిరోధించబడిందిబడింది</string>
-  <string name="followsYou">మిమ్మల్ని అనుసరిస్తుంది</string>
   <string name="xStartedFollowingY">%1$s %2$sని అనుసరించడం ప్రారంభించారు</string>
+  <plurals name="nbFollowers">
+    <item quantity="one">%s అనుచరుడు </item>
+    <item quantity="other">%s అనుచరులు</item>
+  </plurals>
+  <plurals name="nbFollowing">
+    <item quantity="one">%s అనుసరిస్తున్నాడు</item>
+    <item quantity="other">%s అనుసరిస్తున్నారు</item>
+  </plurals>
   <string name="more">మరింత</string>
   <string name="memberSince">అప్పటి నుండి సభ్యుడు</string>
   <string name="lastSeenActive">సక్రియం %s</string>
@@ -390,9 +482,6 @@
   <string name="safeTournamentName">టోర్నమెంట్ కోసం చాలా సురక్షితమైన పేరును ఎంచుకోండి.</string>
   <string name="inappropriateNameWarning">కొంచెం అనుచితమైన ఏదైనా మీ ఖాతా మూసివేయబడుతుంది.</string>
   <string name="emptyTournamentName">చెస్ ఆటగాడి పేరు మీద టోర్నమెంట్ పేరు పెట్టడానికి ఖాళీగా ఉండండి.</string>
-  <string name="recommendNotTouching">వీటిని తాకవద్దని మేము సిఫార్సు చేస్తున్నాము.</string>
-  <string name="fewerPlayers">మీరు ప్రవేశ అవసరాలను సెట్ చేస్తే, మీ టోర్నమెంట్‌లో తక్కువ మంది ఆటగాళ్ళు ఉంటారు.</string>
-  <string name="showAdvancedSettings">అధునాతన సెట్టింగ్‌లను చూపించు</string>
   <string name="makePrivateTournament">టోర్నమెంట్‌ను ప్రైవేట్‌గా చేయండి మరియు పాస్‌వర్డ్‌తో ప్రాప్యతను పరిమితం చేయండి</string>
   <string name="join">చేరండి</string>
   <string name="withdraw">ఉపసంహరించుకోండి</string>
@@ -403,6 +492,8 @@
   <string name="tournamentIsStarting">టోర్నమెంట్ ప్రారంభమవుతుంది</string>
   <string name="tournamentPairingsAreNowClosed">టోర్నమెంట్ జతలు ఇప్పుడు మూసివేయబడ్డాయి.</string>
   <string name="standByX">%s తో నిలబడండి, ఆటగాళ్లను జత చేయండి, సిద్ధంగా ఉండండి!</string>
+  <string name="pause">విరామం</string>
+  <string name="resume">రెస్యూమ్</string>
   <string name="youArePlaying">మీరు ఆడుతున్నారు!</string>
   <string name="winRate">విన్ రేట్</string>
   <string name="berserkRate">బెర్సర్క్ రేటు</string>
@@ -411,6 +502,7 @@
   <string name="movesPlayed">కదలికలు ఆడారు</string>
   <string name="whiteWins">తెలుపు విజయాలు</string>
   <string name="blackWins">బ్లాక్ విజయాలు</string>
+  <string name="drawRate">డ్రా రేటు </string>
   <string name="draws">డ్రాలు</string>
   <string name="nextXTournament">తదుపరి %s టోర్నమెంట్:</string>
   <string name="averageOpponent">సగటు ప్రత్యర్థి</string>
@@ -429,8 +521,6 @@
   <string name="ifNoneLeaveEmpty">ఏదీ లేకుంటే, ఖాళీగా వదిలివేయండి</string>
   <string name="profile">ప్రొఫైల్</string>
   <string name="editProfile">ప్రొఫైల్ మార్చాలి</string>
-  <string name="firstName">ఇచ్చిన పేరు</string>
-  <string name="lastName">ఇంటిపేరు</string>
   <string name="biography">జీవిత చరిత్ర</string>
   <string name="thankYou">ధన్యవాదాలు!</string>
   <string name="socialMediaLinks">సోషల్ మీడియా లింక్‌లు</string>
@@ -448,7 +538,6 @@
   <string name="automaticallyProceedToNextGameAfterMoving">కదిలించిన తర్వాత దానంతట అదే తదుపరి గేమ్‌కు వెళ్లాలి</string>
   <string name="autoSwitch">ఆటో స్విచ్</string>
   <string name="puzzles">పజిల్స్</string>
-  <string name="tournamentWinners">టోర్నమెంట్ విజేతలు</string>
   <string name="name">పేరు</string>
   <string name="description">అతడు/ఆమె చేసిన తప్పేంటి</string>
   <string name="descPrivate">ప్రైవేట్ సమాచారం</string>
@@ -471,11 +560,8 @@
   <string name="reason">కారణం</string>
   <string name="whatIsIheMatter">మీరు ఎందుకు రిపోర్టు చేస్తున్నారు?</string>
   <string name="cheat">మోసం</string>
-  <string name="insult">అవమానం</string>
   <string name="troll">ఎగతాళి చేయండి</string>
-  <string name="ratingManipulation">రేటింగ్ మానిప్యులేషన్</string>
   <string name="other">ఇతర</string>
-  <string name="reportDescriptionHelp">గేమ్/గేమ్‌ల లింక్‌ను పంపండి మరియు ఈ వినియోగదారు ప్రవర్తనలో తప్పు ఏమిటో వివరించండి. \"వారు మోసం చేసారు\" అని చెప్పకండి, కానీ మీరు ఈ నిర్ణయానికి ఎలా వచ్చారో మాకు చెప్పండి. మీ నివేదికను ఆంగ్లంలో వ్రాస్తే వేగంగా ప్రాసెస్ చేయబడుతుంది.</string>
   <string name="error.provideOneCheatedGameLink">దయచేసి కనీసం మోసం చేసిన ఆట ఒక లింక్‌నైనౌ అందించండి.</string>
   <string name="by">%s చే</string>
   <string name="importedByX">%s ద్వారా దిగుమతి చేయబడింది</string>
@@ -505,6 +591,7 @@
   <string name="slow">నెమ్మదిగా</string>
   <string name="tools">పరికరాలు</string>
   <string name="error.required">ఈ సమాచారం అవసరం</string>
+  <string name="error.email_different">ఇది ఇప్పటికే మీ ఈమెయిల్ అడ్రస్</string>
   <string name="castling">కాస్లింగ్</string>
   <string name="whiteCastlingKingside">తెలుపు O-O</string>
   <string name="blackCastlingKingside">నలుపు O-O</string>

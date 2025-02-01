@@ -1,48 +1,43 @@
 package lila.study
 
-import scala.util.chaining.*
-
-import chess.format.{ Fen, UciPath }
 import chess.format.pgn.Parser
-import lila.game.{ Game, Namer }
-import lila.tree.{ Branch, Root, Node }
-import lila.tree.Node.Comment
+import chess.format.{ Fen, UciPath }
 
-final private class ExplorerGame(
-    importer: lila.explorer.ExplorerImporter,
-    lightUserApi: lila.user.LightUserApi,
-    net: lila.common.config.NetConfig
+import lila.tree.Node.Comment
+import lila.tree.{ Branch, Node, Root }
+
+final private class ExplorerGameApi(
+    explorer: lila.core.game.Explorer,
+    namer: lila.core.game.Namer,
+    lightUserApi: lila.core.user.LightUserApi,
+    net: lila.core.config.NetConfig
 )(using Executor):
 
   def quote(gameId: GameId): Fu[Option[Comment]] =
-    importer(gameId) mapz { game =>
-      gameComment(game).some
-    }
+    explorer(gameId).map2(gameComment)
 
   def insert(study: Study, position: Position, gameId: GameId): Fu[Option[(Chapter, UciPath)]] =
     if position.chapter.isOverweight then
       logger.info(s"Overweight chapter ${study.id}/${position.chapter.id}")
       fuccess(none)
     else
-      importer(gameId) mapz { game =>
-        position.node so { fromNode =>
-          GameToRoot(game, none, withClocks = false).pipe { root =>
-            root.setCommentAt(
-              comment = gameComment(game),
-              path = UciPath.fromIds(root.mainline.map(_.id))
-            )
-          } so { gameRoot =>
-            merge(fromNode, position.path, gameRoot) flatMap { case (newNode, path) =>
-              position.chapter.addNode(newNode, path) map (_ -> path)
-            }
-          }
-        }
-      }
+      explorer(gameId).mapz: game =>
+        position.node.so: fromNode =>
+          GameToRoot(game, none, withClocks = false)
+            .pipe: root =>
+              root.setCommentAt(
+                comment = gameComment(game),
+                path = UciPath.fromIds(root.mainline.map(_.id))
+              )
+            .so: gameRoot =>
+              merge(fromNode, position.path, gameRoot).flatMap { (newNode, path) =>
+                position.chapter.addNode(newNode, path).map(_ -> path)
+              }
 
-  private def compareFens(a: Fen.Epd, b: Fen.Epd) = a.simple == b.simple
+  private def compareFens(a: Fen.Full, b: Fen.Full) = a.simple == b.simple
 
   private def merge(fromNode: Node, fromPath: UciPath, game: Root): Option[(Branch, UciPath)] =
-    val gameNodes = game.mainline.dropWhile(n => !compareFens(n.fen, fromNode.fen)) drop 1
+    val gameNodes = game.mainline.dropWhile(n => !compareFens(n.fen, fromNode.fen)).drop(1)
     val (path, foundGameNode) = gameNodes.foldLeft((UciPath.root, none[Branch])) {
       case ((path, None), gameNode) =>
         val nextPath = path + gameNode.id
@@ -64,13 +59,13 @@ final private class ExplorerGame(
   private def gameTitle(g: Game): String =
     val pgn = g.pgnImport.flatMap(pgnImport => Parser.full(pgnImport.pgn).toOption)
     val white =
-      pgn.flatMap(_.tags(_.White)) | Namer.playerTextBlocking(g.whitePlayer)(using lightUserApi.sync)
+      pgn.flatMap(_.tags(_.White)) | namer.playerTextBlocking(g.whitePlayer)(using lightUserApi.sync)
     val black =
-      pgn.flatMap(_.tags(_.Black)) | Namer.playerTextBlocking(g.blackPlayer)(using lightUserApi.sync)
+      pgn.flatMap(_.tags(_.Black)) | namer.playerTextBlocking(g.blackPlayer)(using lightUserApi.sync)
     val result = chess.Outcome.showResult(chess.Outcome(g.winnerColor).some)
     val event: Option[String] =
       (pgn.flatMap(_.tags(_.Event)), pgn.flatMap(_.tags.year).map(_.toString)) match
         case (Some(event), Some(year)) if event.contains(year) => event.some
         case (Some(event), Some(year))                         => s"$event, $year".some
-        case (eventO, yearO)                                   => eventO orElse yearO
+        case (eventO, yearO)                                   => eventO.orElse(yearO)
     s"$white - $black, $result, ${event | "-"}"

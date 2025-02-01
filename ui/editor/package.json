@@ -3,29 +3,14 @@
   "version": "2.0.0",
   "private": true,
   "description": "lichess.org board editor",
-  "keywords": [
-    "chess",
-    "lichess.org",
-    "board",
-    "editor"
-  ],
   "author": "Thibault Duplessis",
   "license": "AGPL-3.0-or-later",
+  "types": "dist/editor.d.ts",
   "dependencies": {
-    "chessops": "^0.13.0",
     "common": "workspace:*",
-    "snabbdom": "^3.5.1"
+    "chess": "workspace:*"
   },
-  "scripts": {
-    "compile": "tsc",
-    "dev": "tsc",
-    "prod": "tsc"
-  },
-  "lichess": {
-    "modules": {
-      "esm": {
-        "src/main.ts": "editor"
-      }
-    }
+  "build": {
+    "bundle": "src/editor.ts"
   }
 }

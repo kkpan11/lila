@@ -4,49 +4,49 @@ import chess.Ply
 import chess.format.{ Fen, UciCharPair }
 import play.api.libs.json.*
 
-import lila.game.{ Game, GameRepo }
-import lila.i18n.defaultLang
 import lila.common.Json.given
-import lila.common.LightUser
+import lila.core.LightUser
 
 final private class GameJson(
-    gameRepo: GameRepo,
+    gameRepo: lila.core.game.GameRepo,
     cacheApi: lila.memo.CacheApi,
-    lightUserApi: lila.user.LightUserApi
-)(using Executor):
+    lightUserApi: lila.core.user.LightUserApi
+)(using Executor, lila.core.i18n.Translator):
+
+  given play.api.i18n.Lang = lila.core.i18n.defaultLang
 
   def apply(gameId: GameId, plies: Ply, bc: Boolean): Fu[JsObject] =
-    (if bc then bcCache else cache) get writeKey(gameId, plies)
+    (if bc then bcCache else cache).get(writeKey(gameId, plies))
 
   def noCache(game: Game, plies: Ply): Fu[JsObject] =
-    lightUserApi preloadMany game.userIds inject generate(game, plies)
+    lightUserApi.preloadMany(game.userIds).inject(generate(game, plies))
 
   def noCacheBc(game: Game, plies: Ply): Fu[JsObject] =
-    lightUserApi preloadMany game.userIds inject generateBc(game, plies)
+    lightUserApi.preloadMany(game.userIds).inject(generateBc(game, plies))
 
   private def readKey(k: String): (GameId, Ply) =
     k.drop(GameId.size).toIntOption match
-      case Some(ply) => (GameId take k, Ply(ply))
-      case _         => sys error s"puzzle.GameJson invalid key: $k"
+      case Some(ply) => (GameId.take(k), Ply(ply))
+      case _         => sys.error(s"puzzle.GameJson invalid key: $k")
   private def writeKey(id: GameId, ply: Ply) = s"$id$ply"
 
   private val cache = cacheApi[String, JsObject](4096, "puzzle.gameJson"):
-    _.expireAfterAccess(5 minutes)
+    _.expireAfterAccess(5.minutes)
       .maximumSize(4096)
       .buildAsyncFuture: key =>
         val (id, plies) = readKey(key)
         generate(id, plies, false)
 
   private val bcCache = cacheApi[String, JsObject](64, "puzzle.bc.gameJson"):
-    _.expireAfterAccess(5 minutes)
+    _.expireAfterAccess(5.minutes)
       .maximumSize(1024)
       .buildAsyncFuture: key =>
         val (id, plies) = readKey(key)
         generate(id, plies, true)
 
   private def generate(gameId: GameId, plies: Ply, bc: Boolean): Fu[JsObject] =
-    gameRepo gameFromSecondary gameId orFail s"Missing puzzle game $gameId!" flatMap { game =>
-      lightUserApi preloadMany game.userIds map { _ =>
+    gameRepo.gameFromSecondary(gameId).orFail(s"Missing puzzle game $gameId!").flatMap { game =>
+      lightUserApi.preloadMany(game.userIds).inject {
         if bc then generateBc(game, plies)
         else generate(game, plies)
       }
@@ -65,17 +65,16 @@ final private class GameJson(
 
   private def perfJson(game: Game) =
     Json.obj(
-      "key"  -> game.perfType.key,
-      "name" -> game.perfType.trans(using defaultLang)
+      "key"  -> game.perfKey,
+      "name" -> lila.rating.PerfType(game.perfKey).trans
     )
 
   private def playersJson(game: Game) = JsArray(game.players.mapList: p =>
     val user = p.userId.fold(LightUser.ghost)(lightUserApi.syncFallback)
-    LightUser.writeNoId(user) ++
+    Json.toJsObject(user) ++
       Json
         .obj("color" -> p.color.name)
-        .add("rating" -> p.rating)
-  )
+        .add("rating" -> p.rating))
 
   private def generateBc(game: Game, plies: Ply): JsObject =
     Json

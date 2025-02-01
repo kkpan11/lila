@@ -3,33 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "description": "lichess.org keyboard move",
-  "type": "module",
-  "module": "dist/main.js",
-  "types": "dist/main.d.ts",
-  "keywords": [
-    "chess",
-    "lichess",
-    "keyboard"
-  ],
   "author": "Thibault Duplessis",
   "license": "AGPL-3.0-or-later",
+  "types": "dist/exports.d.ts",
+  "exports": {
+    ".": "./src/exports.ts"
+  },
   "dependencies": {
-    "@jest/globals": "^29.3.1",
     "chess": "workspace:*",
     "common": "workspace:*",
-    "game": "workspace:*",
-    "snabbdom": "^3.5.1"
+    "game": "workspace:*"
   },
-  "scripts": {
-    "compile": "tsc",
-    "dev": "tsc",
-    "prod": "tsc"
-  },
-  "lichess": {
-    "modules": {
-      "esm": {
-        "src/plugins/keyboardMove.ts": "keyboardMove"
-      }
-    }
+  "build": {
+    "bundle": "src/keyboardMove.ts"
   }
 }

@@ -59,6 +59,8 @@
   <string name="allSyncMembersRemainOnTheSamePosition">Все синхронизированные участники остаются на той же позиции</string>
   <string name="shareChanges">Поделиться изменениями со зрителями и сохранить их на сервере</string>
   <string name="playing">Активные</string>
+  <string name="showResults">Результаты</string>
+  <string name="showEvalBar">Шкалы оценки</string>
   <string name="first">Первая</string>
   <string name="previous">Назад</string>
   <string name="next">Дальше</string>
@@ -69,7 +71,6 @@
   <string name="downloadAllGames">Скачать все партии</string>
   <string name="chapterPgn">PGN главы</string>
   <string name="copyChapterPgn">Копировать PGN</string>
-  <string name="copyChapterPgnDescription">Скопировать PGN главы в буфер обмена.</string>
   <string name="downloadGame">Скачать партию</string>
   <string name="studyUrl">Ссылка на студию</string>
   <string name="currentChapterUrl">Ссылка на эту главу</string>
@@ -175,4 +176,5 @@
   <string name="playAgain">Сыграть снова</string>
   <string name="whatWouldYouPlay">Как бы вы сыграли в этой позиции?</string>
   <string name="youCompletedThisLesson">Поздравляем! Вы прошли этот урок.</string>
+  <string name="perPage">%s на страницу</string>
 </resources>

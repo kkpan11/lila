@@ -8,7 +8,7 @@
 
     position: absolute;
     top: 100%;
-    z-index: z('complete');
+    z-index: $z-complete-113;
     width: 14em;
     min-height: 2em;
     background-color: $c-bg-box;
@@ -36,7 +36,7 @@
         color: $c-font-clearer !important;
       }
 
-      background: mix($c-link, $c-bg-box, 20%);
+      background: $m-primary_bg--mix-20;
     }
   }
 }

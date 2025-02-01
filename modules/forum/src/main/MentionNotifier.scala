@@ -1,27 +1,23 @@
 package lila.forum
 
-import lila.notify.MentionedInThread
+import lila.core.notify.*
 
-/** Notifier to inform users if they have been mentioned in a post
-  *
-  * @param notifyApi
-  *   Api for sending inbox messages
-  */
+/** Notifier to inform users if they have been mentioned in a post */
 final class MentionNotifier(
-    userRepo: lila.user.UserRepo,
-    notifyApi: lila.notify.NotifyApi,
-    relationApi: lila.relation.RelationApi,
-    prefApi: lila.pref.PrefApi
+    userApi: lila.core.user.UserApi,
+    notifyApi: NotifyApi,
+    relationApi: lila.core.relation.RelationApi,
+    prefApi: lila.core.pref.PrefApi
 )(using Executor):
 
   def notifyMentionedUsers(post: ForumPost, topic: ForumTopic): Funit =
-    post.userId.ifFalse(post.troll) so { author =>
-      filterValidUsers(extractMentionedUsers(post), author) flatMap { mentionedUsers =>
+    post.userId.ifFalse(post.troll).so { author =>
+      filterValidUsers(extractMentionedUsers(post), author).flatMap { mentionedUsers =>
         mentionedUsers
-          .map { user =>
+          .sequentiallyVoid { user =>
             notifyApi.notifyOne(
               user,
-              lila.notify.MentionedInThread(
+              NotificationContent.MentionedInThread(
                 mentionedBy = author,
                 topicName = topic.name,
                 topidId = topic.id,
@@ -30,8 +26,6 @@ final class MentionNotifier(
               )
             )
           }
-          .parallel
-          .void
       }
     }
 
@@ -40,13 +34,13 @@ final class MentionNotifier(
     */
   private def filterValidUsers(candidates: Set[UserId], mentionedBy: UserId): Fu[List[UserId]] =
     for
-      existingUsers    <- userRepo.filterExists(candidates take 10).map(_.take(5).toSet)
+      existingUsers    <- userApi.filterExists(candidates.take(10)).map(_.take(5).toSet)
       mentionableUsers <- prefApi.mentionableIds(existingUsers)
-      users            <- mentionableUsers.toList.filterA(!relationApi.fetchBlocks(_, mentionedBy))
+      users            <- mentionableUsers.toList.filterA(relationApi.fetchBlocks(_, mentionedBy).not)
     yield users
 
   private def extractMentionedUsers(post: ForumPost): Set[UserId] =
-    post.text.contains('@') so {
+    post.text.contains('@').so {
       val m = lila.common.String.atUsernameRegex.findAllMatchIn(post.text)
-      (post.userId foldLeft m.map(_ group 1).map(u => UserStr(u).id).toSet) { _ - _ }
+      (post.userId.foldLeft(m.map(_.group(1)).map(u => UserStr(u).id).toSet)) { _ - _ }
     }
