@@ -1,29 +1,26 @@
 package lila.study
 
-import chess.format.Fen
-import lila.game.Game
-import lila.round.JsonView.WithFlags
-import lila.tree.Root
-import lila.tree.Node.Comment
 import chess.Outcome
+import chess.format.Fen
 
-private object GameToRoot:
+import lila.tree.Node.Comment
+import lila.tree.{ ExportOptions, Root, TreeBuilder }
 
-  def apply(game: Game, initialFen: Option[Fen.Epd], withClocks: Boolean): Root =
-    val root = lila.round.TreeBuilder(
+object GameToRoot:
+
+  def apply(game: Game, initialFen: Option[Fen.Full], withClocks: Boolean): Root =
+    val root = TreeBuilder(
       game = game,
       analysis = none,
       initialFen = initialFen | game.variant.initialFen,
-      withFlags = WithFlags(clocks = withClocks)
+      withFlags = ExportOptions(clocks = withClocks),
+      logChessError = lila.log("study").warn
     )
-    endComment(game).fold(root) { comment =>
-      root updateMainlineLast { _.setComment(comment) }
-    }
+    endComment(game).fold(root)(comment => root.updateMainlineLast(_.setComment(comment)))
 
   private def endComment(game: Game) =
-    game.finished option {
+    game.finished.option:
       val result = Outcome.showResult(Outcome(game.winnerColor).some)
-      val status = lila.game.StatusText(game)
+      val status = lila.tree.StatusText(game.status, game.winnerColor, game.variant)
       val text   = s"$result $status"
       Comment(Comment.Id.make, Comment.Text(text), Comment.Author.Lichess)
-    }

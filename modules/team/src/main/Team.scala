@@ -1,13 +1,12 @@
 package lila.team
 
 import reactivemongo.api.bson.Macros.Annotations.Key
-import java.security.MessageDigest
-import java.nio.charset.StandardCharsets.UTF_8
-import scala.util.chaining.*
-import ornicar.scalalib.ThreadLocalRandom
+import scalalib.ThreadLocalRandom
 
-import lila.user.User
-import lila.hub.LightTeam
+import java.nio.charset.StandardCharsets.UTF_8
+import java.security.MessageDigest
+
+import lila.core.team.{ Access, LightTeam, TeamData }
 
 case class Team(
     @Key("_id") id: TeamId, // also the url slug
@@ -21,8 +20,8 @@ case class Team(
     open: Boolean,
     createdAt: Instant,
     createdBy: UserId,
-    chat: Team.Access,
-    forum: Team.Access,
+    chat: Access,
+    forum: Access,
     hideMembers: Option[Boolean],
     flair: Option[Flair]
 ):
@@ -30,11 +29,11 @@ case class Team(
   inline def slug     = id
   inline def disabled = !enabled
 
-  def isChatFor(f: Team.Access.type => Team.Access) =
-    chat == f(Team.Access)
+  def isChatFor(f: Access.type => Access) =
+    chat == f(Access)
 
-  def isForumFor(f: Team.Access.type => Team.Access) =
-    forum == f(Team.Access)
+  def isForumFor(f: Access.type => Access) =
+    forum == f(Access)
 
   def publicMembers: Boolean = !hideMembers.has(true)
 
@@ -42,6 +41,8 @@ case class Team(
     password.forall(teamPw => MessageDigest.isEqual(teamPw.getBytes(UTF_8), pw.getBytes(UTF_8)))
 
   def light = LightTeam(id, name, flair)
+
+  def data = TeamData(id, name, description, nbMembers, createdBy)
 
 object Team:
 
@@ -64,24 +65,15 @@ object Team:
       v.key -> LightTeam(nameToId(name), name, none)
   }.toMap
 
-  val maxLeaders     = 10
-  val maxJoinCeiling = 50
+  val maxLeaders      = Max(10)
+  val maxJoin         = Max(50)
+  val verifiedMaxJoin = Max(150)
 
-  def maxJoin(u: User) =
-    if u.isVerified then maxJoinCeiling * 2
+  def maxJoin(u: User): Max =
+    if u.isVerified then verifiedMaxJoin
     else
-      {
-        15 + daysBetween(u.createdAt, nowInstant) / 7
-      } atMost maxJoinCeiling
-
-  type Access = Int
-  object Access:
-    val NONE      = 0
-    val LEADERS   = 10
-    val MEMBERS   = 20
-    val EVERYONE  = 30
-    val allInTeam = List(NONE, LEADERS, MEMBERS)
-    val all       = EVERYONE :: allInTeam
+      maxJoin.map:
+        _.atMost(15 + daysBetween(u.createdAt, nowInstant) / 7)
 
   case class IdsStr(value: String) extends AnyVal:
 
@@ -93,9 +85,9 @@ object Team:
         value.endsWith(s"$separator$teamId") ||
         value.contains(s"$separator$teamId$separator")
 
-    def toArray: Array[TeamId] = TeamId.from(value split IdsStr.separator)
-    def toList                 = value.nonEmpty so toArray.toList
-    def toSet                  = value.nonEmpty so toArray.toSet
+    def toArray: Array[TeamId] = TeamId.from(value.split(IdsStr.separator))
+    def toList                 = value.nonEmpty.so(toArray.toList)
+    def toSet                  = value.nonEmpty.so(toArray.toSet)
     def size                   = value.count(_ == separator) + 1
     def nonEmpty               = value.nonEmpty
 
@@ -105,7 +97,7 @@ object Team:
 
     val empty = IdsStr("")
 
-    def apply(ids: Iterable[TeamId]): IdsStr = IdsStr(ids mkString separator.toString)
+    def apply(ids: Iterable[TeamId]): IdsStr = IdsStr(ids.mkString(separator.toString))
 
   def make(
       id: TeamId,
@@ -128,15 +120,15 @@ object Team:
     open = open,
     createdAt = nowInstant,
     createdBy = createdBy.id,
-    chat = Access.MEMBERS,
-    forum = Access.MEMBERS,
+    chat = Access.Members,
+    forum = Access.Members,
     hideMembers = none,
     flair = none
   )
 
   def nameToId(name: String) =
-    val slug = lila.common.String.slugify(name)
+    val slug = scalalib.StringOps.slug(name)
     // if most chars are not latin, go for random slug
     if slug.lengthIs > (name.length / 2) then TeamId(slug) else randomId()
 
-  private[team] def randomId() = TeamId(ThreadLocalRandom nextString 8)
+  private[team] def randomId() = TeamId(ThreadLocalRandom.nextString(8))

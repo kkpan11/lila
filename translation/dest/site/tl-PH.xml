@@ -5,6 +5,7 @@
   <string name="toInviteSomeoneToPlayGiveThisUrl">Para mag-anyaya ng iba, ibigay itong URL</string>
   <string name="gameOver">Tapos</string>
   <string name="waitingForOpponent">Hinihintay ang Kalaban</string>
+  <string name="orLetYourOpponentScanQrCode">O ipa-scan ang QR code na ito sa kalaban</string>
   <string name="waiting">Naghihintay</string>
   <string name="yourTurn">Tira mo</string>
   <string name="aiNameLevelAiLevel">%1$s antas %2$s</string>
@@ -59,6 +60,8 @@
   <string name="depthX">Lalim %s</string>
   <string name="usingServerAnalysis">Gamit ang pagsusuri ng server</string>
   <string name="loadingEngine">Nagloload pa ang makina...</string>
+  <string name="calculatingMoves">Nagkakalkula ng mga tira...</string>
+  <string name="engineFailed">Nag-error sa pag-load ng engine</string>
   <string name="cloudAnalysis">Pagsusuri ng Cloud</string>
   <string name="goDeeper">Pumuntas sa mas malalim</string>
   <string name="showThreat">Magpakita ng pagbabanta</string>
@@ -67,7 +70,10 @@
   <string name="promoteVariation">Itaguyod ang pagkakaiba</string>
   <string name="makeMainLine">Gawing pangunahing linya</string>
   <string name="deleteFromHere">Buharin mula dito</string>
+  <string name="collapseVariations">Itaga ang mga baryasyon</string>
+  <string name="expandVariations">Ipakita ang mga baryasyon</string>
   <string name="forceVariation">Itaguyod ang pagkakaiba</string>
+  <string name="copyVariationPgn">Kopyahin ang PGN ng baryasyon</string>
   <string name="move">Galaw</string>
   <string name="variantLoss">Pagkakaiba ng pagkatalo</string>
   <string name="variantWin">Kakaibang pagkapanalo</string>
@@ -91,10 +97,13 @@
   </plurals>
   <string name="dtzWithRounding">DTZ50 \"na may pag-ikot, batay sa bilang ng mga kalahating ilipat hanggang sa susunod na pagkuha o paglipat ng pawn</string>
   <string name="noGameFound">Walang nakitang laro</string>
+  <string name="maxDepthReached">Naabot na ang pinakamaatas na lalim!</string>
   <string name="maybeIncludeMoreGamesFromThePreferencesMenu">Maaring magsama ng maraming laro mula sa ginustong menu?</string>
+  <string name="openings">Mga Pagbubukas</string>
   <string name="openingExplorer">Pagbubukas ng tagalakbay</string>
   <string name="openingEndgameExplorer">Pagbubukas / endgame explorer</string>
   <string name="xOpeningExplorer">%s pagbubukas ng tagalakbay</string>
+  <string name="playFirstOpeningEndgameExplorerMove">I-play ang unang pagbubukas/tirang endgame-explorer</string>
   <string name="winPreventedBy50MoveRule">Nanalo na pinigilan ng 50-alituntunin ng galaw</string>
   <string name="lossSavedBy50MoveRule">Natalo naisave sa 50-alituntunin ng galaw</string>
   <string name="winOr50MovesByPriorMistake">Manalo o 50 gumagalaw sa pamamagitan ng dating pagkakamali</string>
@@ -107,9 +116,9 @@
   <string name="replayMode">Mode ng pagbalik-balik</string>
   <string name="realtimeReplay">Totoong oras</string>
   <string name="byCPL">Sa pamamagitan ng CPL</string>
-  <string name="openStudy">Bukas na pagsusuri</string>
   <string name="enable">Paganahin</string>
   <string name="bestMoveArrow">Pinakamahusay na galaw na arrow</string>
+  <string name="showVariationArrows">Tignan ang ibat ibang linya</string>
   <string name="evaluationGauge">Panukat ng pagsusuri</string>
   <string name="multipleLines">Maraming linya</string>
   <string name="cpus">CPUs</string>
@@ -183,12 +192,20 @@
   <string name="changeUsername">Palitan ang iyong pangalan</string>
   <string name="changeUsernameNotSame">Ang laki o liit lang ng mga letra ang pwedeng baguhin. Halimbawa, pwedeng gawing \"JohnDoe\" ang \"johndoe\".</string>
   <string name="changeUsernameDescription">Palitan ang iyong pangalan. Maaari mo lang itong gawin ng isang beses at maaari mo lang baguhin ang laki o liit ng mga letra sa pangalan mo.</string>
+  <string name="signupUsernameHint">Tiyaking pumili ng pampamilyang username. Hindi mo ito mababago sa ibang pagkakataon at ang anumang mga account na may hindi naaangkop na mga username ay isasara!</string>
+  <string name="signupEmailHint">Gagamitin lang namin ito para sa pag-reset ng password.</string>
   <string name="password">Password</string>
   <string name="changePassword">Palitan ang password</string>
   <string name="changeEmail">Palitan ang email</string>
   <string name="email">Email</string>
   <string name="passwordReset">Ibalik ang password</string>
   <string name="forgotPassword">Nakalimutan mo ba ang iyong password?</string>
+  <string name="error.namePassword">Mangyaring huwag gamitin ang iyong username bilang iyong password.</string>
+  <string name="youAreLeavingLichess">Aalis ka sa Laro</string>
+  <string name="neverTypeYourPassword">Wag mong ilagay ang iyong Password sa ibang website!</string>
+  <string name="passwordSuggestion">Wag mo gamitin ang password na galing sa iba. Dahil gagamitin nila ito sa pagnanakaw ng iyong account.</string>
+  <string name="emailSuggestion">Wag mo ilagay ang email na galing sa iba. Dahil gagamitin nila iyon para nakawin ang iyong account.</string>
+  <string name="emailForSignupHelp">If everything else fails, then send us this email:</string>
   <string name="rank">Ranggo</string>
   <string name="rankX">Ranggo: %s</string>
   <plurals name="rankIsUpdatedEveryNbMinutes">
@@ -220,7 +237,6 @@
   <string name="playingRightNow">Maglalaro ngayon</string>
   <string name="eventInProgress">Naglalaro ngayon</string>
   <string name="finished">Tapos na</string>
-  <string name="finishesX">matatapos ng %s</string>
   <string name="abortGame">Itigil ang laro</string>
   <string name="gameAborted">Ang laro ay natigil</string>
   <string name="standard">Pamantayan</string>
@@ -358,6 +374,7 @@
   <string name="blackCheckmatesInOneMove">Magmamate ang Itim sa isang tira</string>
   <string name="retry">Subukan muli</string>
   <string name="reconnecting">Muling Kumukonekta</string>
+  <string name="noNetwork">Offline</string>
   <plurals name="nbFriendsOnline">
     <item quantity="one">%s kaibigan sa online</item>
     <item quantity="other">%s mga kaibigan sa online</item>
@@ -371,7 +388,6 @@
   <string name="block">Harangan</string>
   <string name="blocked">Naharangan</string>
   <string name="unblock">Huwag harangan</string>
-  <string name="followsYou">Sumusunod sa iyo</string>
   <string name="xStartedFollowingY">%1$s sinumulang sumunod sa iyo %2$s</string>
   <plurals name="nbFollowers">
     <item quantity="one">%s tagasunod</item>
@@ -403,9 +419,6 @@
   <string name="safeTournamentName">Pumili ka ng angkop na pangalan ng paligsahan.</string>
   <string name="inappropriateNameWarning">Maaaring masara ang iyong account kapag naglagay ka ng kahit anong hindi naaangkop na bagay.</string>
   <string name="emptyTournamentName">Pabayaang walang laman upang pangalanan ang paligsahang ito sa isang Grandmaster.</string>
-  <string name="recommendNotTouching">Payo naming huwag pakialaman ang mga ito.</string>
-  <string name="fewerPlayers">Kung maglagay ka ng mga kondisyon upang makapasok, kakaunti ang mga maglalaro ng iyong paligsahan.</string>
-  <string name="showAdvancedSettings">Ipakita ang mga masulong na setting</string>
   <string name="makePrivateTournament">Gawing pribado ang paligsahan, at higpitan ang access sa pamamagitan ng isang password</string>
   <string name="join">Sumali</string>
   <string name="withdraw">Umalis</string>
@@ -426,6 +439,7 @@
   <string name="movesPlayed">Mga Galaw na nagawa</string>
   <string name="whiteWins">Nanalo ang puti</string>
   <string name="blackWins">Nanalo ang itim</string>
+  <string name="drawRate">Porsiyento ng tabla</string>
   <string name="draws">Mga tabla</string>
   <string name="nextXTournament">Sunod na %s paligsahan:</string>
   <string name="averageOpponent">Karaniwang kalaban</string>
@@ -444,9 +458,10 @@
   <string name="ifNoneLeaveEmpty">Kung wala, iwang walang laman</string>
   <string name="profile">Profile</string>
   <string name="editProfile">I-edit ang profile</string>
-  <string name="firstName">Pangalan</string>
-  <string name="lastName">Apelyido</string>
+  <string name="setFlair">Itakda ang iyong flair</string>
+  <string name="flair">Flair</string>
   <string name="biography">Talambuhay</string>
+  <string name="countryRegion" comment="flag&#10;Appears when you edit your profile. Lets a player add a country/flag (not all flags are for countries) to their profile">Bansa o rehiyon</string>
   <string name="thankYou">Salamat!</string>
   <string name="socialMediaLinks">Mga link ng social media</string>
   <string name="oneUrlPerLine">Isang URL kada linya.</string>
@@ -465,13 +480,14 @@
   <string name="automaticallyProceedToNextGameAfterMoving">Awtomatikong pumupunta sa sunod na laro pagkatapos ng paggalaw</string>
   <string name="autoSwitch">Awtomatikong paglipat</string>
   <string name="puzzles">Mga palaisipan</string>
-  <string name="tournamentWinners">Mga nanalo sa paligsahan</string>
   <string name="name">Pangalan</string>
   <string name="description">Paglalarawan</string>
   <string name="descPrivate">Pribadong deskripsyon</string>
   <string name="descPrivateHelp">Text na makikita lang ng mga team members mo. Pag na-set na, mapapalitan yung publikong deskripsyon para sa mga team members.</string>
   <string name="no">Hindi</string>
   <string name="yes">Oo</string>
+  <string name="website">Website</string>
+  <string name="mobile">Mobile</string>
   <string name="help">Tulong:</string>
   <string name="createANewTopic">Gumawa ng bagong paksa</string>
   <string name="topics">Mga paksa</string>
@@ -488,11 +504,8 @@
   <string name="reason">Dahilan</string>
   <string name="whatIsIheMatter">Ano ang problema?</string>
   <string name="cheat">Pandaraya</string>
-  <string name="insult">Insulto</string>
   <string name="troll">Awitin</string>
-  <string name="ratingManipulation">Pagmamanipula ng rating</string>
   <string name="other">Iba pa</string>
-  <string name="reportDescriptionHelp">I-paste ang link sa mga laro at ipaliwanag kung ano ang mali tungkol sa ugali ng gumagamit. Huwag mo lamang sabihin na \"sila\'y nandaya\", pero sabihin mo sa amin kung paano mo ito nasabi. Ang iyong report ay ipoproseso ng mas mabilis kapag nakasulat sa English.</string>
   <string name="error.provideOneCheatedGameLink">Magbigay ng kahit na isang link sa dinayang laro.</string>
   <string name="by">sa pamamagitan ng %s</string>
   <string name="importedByX">Inimport ni %s</string>
@@ -699,9 +712,6 @@
   <string name="dark">Madilim</string>
   <string name="transparent">Transparent</string>
   <string name="backgroundImageUrl">URL ng Likurang imahe:</string>
-  <string name="boardGeometry">Board ng geometry</string>
-  <string name="boardTheme">Tema ng Board</string>
-  <string name="boardSize">Sukat ng board</string>
   <string name="pieceSet">Itakda ang piraso</string>
   <string name="embedInYourWebsite">Idikit sa iyong website</string>
   <string name="usernameAlreadyUsed">Ang uername na ito ay nagamit na, pakisubukan ang iba.</string>
@@ -773,7 +783,6 @@
   </plurals>
   <string name="sorry">Pasensya na :(</string>
   <string name="weHadToTimeYouOutForAWhile">Kinailangan naming tapusin ang oras mo pansamantala.</string>
-  <string name="timeoutExpires">Ang pagtatapos ng oras ay magwawakas sa loob ng %s.</string>
   <string name="why">Bakit?</string>
   <string name="pleasantChessExperience">Nilalayon naming makapagbigay ng isang nakalulugod na karanasan sa ahedres para sa lahat.</string>
   <string name="goodPractice">Sa ganoong kahulugan, kailangan naming siguruhin na ang lahat ng mga manlalaro ay susunod sa mabuting gawi.</string>
@@ -842,8 +851,6 @@ at epekto sa mga rating ng mga manlalaro</string>
   <string name="minimumRatedGames">Minimum na na-rate na mga laro</string>
   <string name="minimumRating">Minimum na rating</string>
   <string name="maximumWeeklyRating">Maximum na lingguhang rating</string>
-  <string name="onlyTitled">Mga manlalaro lamang na may pamagat</string>
-  <string name="onlyTitledHelp">Humiling ng isang opisyal na pamagat upang sumali sa paligsahan</string>
   <string name="positionInputHelp">I-paste ang isang wastong FEN upang simulan ang bawat laro mula sa isang naibigay na posisyon.
 Gumagawa lamang ito para sa karaniwang mga laro, hindi sa mga iba-iba.
 Maaari mong gamitin ang %s upang makabuo ng isang posisyon ng FEN, pagkatapos ay i-paste ito dito.
@@ -871,9 +878,6 @@ Mag-iwan ng walang laman upang magsimula ng mga laro mula sa normal na paunang p
   <string name="focusChat">Pusa ng pokus</string>
   <string name="showHelpDialog">Ipakita ang dayalogo sa tulong na ito</string>
   <string name="reopenYourAccount">Muling buksan ang iyong account</string>
-  <string name="closedAccountChangedMind">Kung isinara mo ang iyong account, ngunit mula nang nagbago ang iyong isip, makakakuha ka ng isang pagkakataon na maibalik ang iyong account.</string>
-  <string name="onlyWorksOnce">Minsan lang ito gagana.</string>
-  <string name="cantDoThisTwice">Kung isara mo ang iyong account sa pangalawang pagkakataon, walang paraan upang mabawi ito.</string>
   <string name="emailAssociatedToaccount">Ang email address na nauugnay sa account</string>
   <string name="sentEmailWithLink">Nagpadala kami sa iyo ng isang email na may isang link.</string>
   <string name="tournamentEntryCode">Code ng Entry ng Tournament</string>

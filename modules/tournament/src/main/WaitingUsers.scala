@@ -1,16 +1,15 @@
 package lila.tournament
 
-import chess.Clock.{ Config as TournamentClock }
-
-import lila.memo.ExpireSetMemo
-import lila.user.User
+import chess.Clock.Config as TournamentClock
+import scalalib.cache.ExpireSetMemo
+import lila.tournament.WaitingUsers.WithNext
 
 private case class WaitingUsers(
     hash: Map[UserId, Instant],
     apiUsers: Option[ExpireSetMemo[UserId]],
     clock: TournamentClock,
     date: Instant
-):
+)(using Executor):
 
   // ultrabullet -> 8
   // hyperbullet -> 10
@@ -21,7 +20,7 @@ private case class WaitingUsers(
   private val waitSeconds: Int =
     if clock.estimateTotalSeconds < 30 then 8
     else if clock.estimateTotalSeconds < 60 then 10
-    else (clock.estimateTotalSeconds / 10 + 6) atMost 50 atLeast 15
+    else (clock.estimateTotalSeconds / 10 + 6).atMost(50).atLeast(15)
 
   lazy val all  = hash.keySet
   lazy val size = hash.size
@@ -35,7 +34,7 @@ private case class WaitingUsers(
 
   lazy val haveWaitedEnough: Boolean =
     size > 100 || {
-      val since                      = date minusSeconds waitSeconds
+      val since                      = date.minusSeconds(waitSeconds)
       val nbConnectedLongEnoughUsers = hash.count { case (_, d) => d.isBefore(since) }
       nbConnectedLongEnoughUsers > 1
     }
@@ -54,56 +53,44 @@ private case class WaitingUsers(
   def hasUser(userId: UserId) = hash contains userId
 
   def addApiUser(userId: UserId) =
-    val memo = apiUsers | new ExpireSetMemo[UserId](70 seconds)
-    memo put userId
+    val memo = apiUsers | new ExpireSetMemo[UserId](70.seconds)
+    memo.put(userId)
     if apiUsers.isEmpty then copy(apiUsers = memo.some) else this
 
   def removePairedUsers(us: Set[UserId]) =
-    apiUsers.foreach(_ removeAll us)
+    apiUsers.foreach(_.removeAll(us))
     copy(hash = hash -- us)
 
-final private class WaitingUsersApi:
+final private class WaitingUsersApi(using Executor):
 
-  private val store = new java.util.concurrent.ConcurrentHashMap[TourId, WaitingUsers.WithNext](64)
+  private val store = scalalib.ConcurrentMap[TourId, WaitingUsers.WithNext](64)
 
   def hasUser(tourId: TourId, userId: UserId): Boolean =
-    Option(store get tourId).exists(_.waiting hasUser userId)
+    store.get(tourId).exists(_.waiting.hasUser(userId))
 
   def registerNextPromise(tour: Tournament, promise: Promise[WaitingUsers]) =
     updateOrCreate(tour)(_.copy(next = promise.some))
 
   def registerWaitingUsers(tourId: TourId, users: Set[UserId]) =
-    store.computeIfPresent(
-      tourId,
-      (_: TourId, cur: WaitingUsers.WithNext) =>
-        val newWaiting = cur.waiting.update(users)
-        cur.next.foreach(_ success newWaiting)
-        WaitingUsers.WithNext(newWaiting, none)
-    )
+    store.computeIfPresent(tourId): cur =>
+      val newWaiting = cur.waiting.update(users)
+      cur.next.foreach(_.success(newWaiting))
+      WaitingUsers.WithNext(newWaiting, none).some
 
   def registerPairedUsers(tourId: TourId, users: Set[UserId]) =
-    store.computeIfPresent(
-      tourId,
-      (_: TourId, cur: WaitingUsers.WithNext) => cur.copy(waiting = cur.waiting removePairedUsers users)
-    )
+    store.computeIfPresent(tourId): cur =>
+      cur.copy(waiting = cur.waiting.removePairedUsers(users)).some
 
   def addApiUser(tour: Tournament, user: User) = updateOrCreate(tour) { w =>
-    w.copy(waiting = w.waiting addApiUser user.id)
+    w.copy(waiting = w.waiting.addApiUser(user.id))
   }
 
-  def remove(id: TourId) = store remove id
+  def remove(id: TourId) = store.remove(id)
 
   private def updateOrCreate(tour: Tournament)(f: WaitingUsers.WithNext => WaitingUsers.WithNext) =
-    store.compute(
-      tour.id,
-      (_: TourId, cur: WaitingUsers.WithNext) =>
-        f(
-          Option(cur) | WaitingUsers.WithNext(
-            WaitingUsers(Map.empty, None, tour.clock, nowInstant),
-            none
-          )
-        )
-    )
+    store.compute(tour.id): cur =>
+      val users = cur | WaitingUsers.WithNext(WaitingUsers(Map.empty, None, tour.clock, nowInstant), none)
+      f(users).some
 
 private object WaitingUsers:
   case class WithNext(waiting: WaitingUsers, next: Option[Promise[WaitingUsers]])

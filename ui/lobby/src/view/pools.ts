@@ -1,40 +1,47 @@
-import { h, Hooks } from 'snabbdom';
+import { h, type Hooks } from 'snabbdom';
 import { spinnerVdom as spinner } from 'common/spinner';
-import { bind } from 'common/snabbdom';
-import LobbyController from '../ctrl';
+import type LobbyController from '../ctrl';
+import { onInsert } from 'common/snabbdom';
 
-export function hooks(ctrl: LobbyController): Hooks {
-  return bind(
-    'click',
-    e => {
-      const id =
-        (e.target as HTMLElement).getAttribute('data-id') ||
-        ((e.target as HTMLElement).parentNode as HTMLElement).getAttribute('data-id');
-      if (id === 'custom') ctrl.setupCtrl.openModal('hook');
-      else if (id) ctrl.clickPool(id);
-    },
-    ctrl.redraw,
-  );
-}
+const createHandler = (ctrl: LobbyController) => (e: Event) => {
+  if (ctrl.redirecting) return;
+
+  if (e instanceof KeyboardEvent) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault(); // Prevent page scroll on space
+  }
+
+  const id =
+    (e.target as HTMLElement).dataset['id'] ||
+    ((e.target as HTMLElement).parentNode as HTMLElement).dataset['id'];
+  if (id === 'custom') ctrl.setupCtrl.openModal('hook');
+  else if (id) ctrl.clickPool(id);
+
+  ctrl.redraw();
+};
+
+export const hooks = (ctrl: LobbyController): Hooks =>
+  onInsert(el => {
+    const handler = createHandler(ctrl);
+    el.addEventListener('click', handler);
+    el.addEventListener('keydown', handler);
+  });
 
 export function render(ctrl: LobbyController) {
   const member = ctrl.poolMember;
   return ctrl.pools
     .map(pool => {
-      const active = !!member && member.id === pool.id,
+      const active = member?.id === pool.id,
         transp = !!member && !active;
       return h(
         'div',
         {
-          class: {
-            active,
-            transp: !active && transp,
-          },
-          attrs: { 'data-id': pool.id },
+          class: { active, transp },
+          attrs: { role: 'button', 'data-id': pool.id, tabindex: '0' },
         },
         [
           h('div.clock', `${pool.lim}+${pool.inc}`),
-          active && member!.range && !ctrl.opts.hideRatings
+          active && member.range && ctrl.opts.showRatings
             ? h('div.range', member.range.replace('-', '–'))
             : h('div.perf', pool.perf),
           active ? spinner() : null,
@@ -46,9 +53,9 @@ export function render(ctrl: LobbyController) {
         'div.custom',
         {
           class: { transp: !!member },
-          attrs: { 'data-id': 'custom' },
+          attrs: { role: 'button', 'data-id': 'custom', tabindex: '0' },
         },
-        ctrl.trans.noarg('custom'),
+        i18n.site.custom,
       ),
     );
 }

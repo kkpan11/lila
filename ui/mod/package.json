@@ -6,30 +6,16 @@
   "author": "Thibault Duplessis",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@types/debounce-promise": "^3.1.6",
-    "@types/yaireo__tagify": "^4.16.0",
-    "@yaireo/tagify": "^4.17.6",
-    "apexcharts": "^3.36.3",
+    "@types/debounce-promise": "^3.1.9",
+    "@types/yaireo__tagify": "4.27.0",
+    "@yaireo/tagify": "4.17.9",
+    "apexcharts": "^3.54.1",
     "common": "workspace:*",
     "debounce-promise": "^3.1.2",
     "prop-types": "^15.8.1",
     "tablesort": "^5.3.0"
   },
-  "scripts": {
-    "compile": "tsc",
-    "dev": "tsc",
-    "prod": "tsc"
-  },
-  "lichess": {
-    "modules": {
-      "esm": {
-        "src/activity.ts": "mod.activity",
-        "src/user.ts": "mod.user",
-        "src/inquiry.ts": "mod.inquiry",
-        "src/games.ts": "mod.games",
-        "src/search.ts": "mod.search",
-        "src/teamAdmin.ts": "team.admin"
-      }
-    }
+  "build": {
+    "bundle": "src/mod.*ts"
   }
 }

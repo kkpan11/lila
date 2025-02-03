@@ -1,17 +1,18 @@
 package lila.study
 
-import lila.common.paginator.Paginator
+import scalalib.paginator.Paginator
+
+import lila.core.i18n.I18nKey
+import lila.core.study.Order
 import lila.db.dsl.{ *, given }
 import lila.db.paginator.{ Adapter, CachedAdapter }
-import lila.i18n.{ I18nKey, I18nKeys as trans }
-import lila.user.{ Me, User }
 
 final class StudyPager(
     studyRepo: StudyRepo,
     chapterRepo: ChapterRepo
 )(using Executor):
 
-  val maxPerPage                = lila.common.config.MaxPerPage(16)
+  val maxPerPage                = MaxPerPage(16)
   val defaultNbChaptersPerStudy = 4
 
   import BSONHandlers.given
@@ -62,32 +63,32 @@ final class StudyPager(
 
   def mineMember(order: Order, page: Int)(using me: Me) =
     paginator(
-      selectMemberId(me) ++ $doc("ownerId" $ne me.userId),
+      selectMemberId(me) ++ $doc("ownerId".$ne(me.userId)),
       order,
       page
     )
 
   def mineLikes(order: Order, page: Int)(using me: Me) =
     paginator(
-      selectLiker(me) ++ accessSelect ++ $doc("ownerId" $ne me.userId),
+      selectLiker(me) ++ accessSelect ++ $doc("ownerId".$ne(me.userId)),
       order,
       page
     )
 
   def byTopic(topic: StudyTopic, order: Order, page: Int)(using me: Option[Me]) =
-    val onlyMine = me.ifTrue(order == Order.Mine)
+    val onlyMine = me.ifTrue(order == Order.mine)
     paginator(
       selectTopic(topic) ++ onlyMine.fold(accessSelect)(selectMemberId(_)),
       order,
       page,
-      hint = onlyMine.isDefined option $doc("uids" -> 1, "rank" -> -1)
+      hint = onlyMine.isDefined.option($doc("uids" -> 1, "rank" -> -1))
     )
 
   private def accessSelect(using me: Option[Me]) =
     me.fold(selectPublic): u =>
       $or(selectPublic, selectMemberId(u))
 
-  private val noRelaySelect = $doc("from" $ne "relay")
+  private val noRelaySelect = $doc("from".$ne("relay"))
 
   private def paginator(
       selector: Bdoc,
@@ -101,17 +102,17 @@ final class StudyPager(
       selector = selector,
       projection = studyRepo.projection.some,
       sort = order match
-        case Order.Hot          => $sort desc "rank"
-        case Order.Newest       => $sort desc "createdAt"
-        case Order.Oldest       => $sort asc "createdAt"
-        case Order.Updated      => $sort desc "updatedAt"
-        case Order.Popular      => $sort desc "likes"
-        case Order.Alphabetical => $sort asc "name"
+        case Order.hot          => $sort.desc("rank")
+        case Order.newest       => $sort.desc("createdAt")
+        case Order.oldest       => $sort.asc("createdAt")
+        case Order.updated      => $sort.desc("updatedAt")
+        case Order.popular      => $sort.desc("likes")
+        case Order.alphabetical => $sort.asc("name")
         // mine filter for topic view
-        case Order.Mine => $sort desc "rank"
+        case Order.mine => $sort.desc("rank")
       ,
       hint = hint
-    ) mapFutureList withChaptersAndLiking(me)
+    ).mapFutureList(withChaptersAndLiking(me))
     Paginator(
       adapter = nbResults.fold(adapter): nb =>
         CachedAdapter(adapter, nb),
@@ -123,15 +124,15 @@ final class StudyPager(
       me: Option[User],
       nbChaptersPerStudy: Int = defaultNbChaptersPerStudy
   )(studies: Seq[Study]): Fu[Seq[Study.WithChaptersAndLiked]] =
-    withChapters(studies, nbChaptersPerStudy) flatMap withLiking(me)
+    withChapters(studies, nbChaptersPerStudy).flatMap(withLiking(me))
 
   private def withChapters(
       studies: Seq[Study],
       nbChaptersPerStudy: Int
   ): Fu[Seq[Study.WithChapters]] =
-    chapterRepo.idNamesByStudyIds(studies.map(_.id), nbChaptersPerStudy) map { chapters =>
+    chapterRepo.idNamesByStudyIds(studies.map(_.id), nbChaptersPerStudy).map { chapters =>
       studies.map { study =>
-        Study.WithChapters(study, (chapters get study.id) so (_ map (_.name)))
+        Study.WithChapters(study, (chapters.get(study.id)).so(_.map(_.name)))
       }
     }
 
@@ -140,26 +141,25 @@ final class StudyPager(
   )(studies: Seq[Study.WithChapters]): Fu[Seq[Study.WithChaptersAndLiked]] =
     me.so { u =>
       studyRepo.filterLiked(u, studies.map(_.study.id))
-    } map { liked =>
+    }.map { liked =>
       studies.map { case Study.WithChapters(study, chapters) =>
         Study.WithChaptersAndLiked(study, chapters, liked(study.id))
       }
     }
 
-enum Order(val key: String, val name: I18nKey):
-
-  case Hot          extends Order("hot", trans.study.hot)
-  case Newest       extends Order("newest", trans.study.dateAddedNewest)
-  case Oldest       extends Order("oldest", trans.study.dateAddedOldest)
-  case Updated      extends Order("updated", trans.study.recentlyUpdated)
-  case Popular      extends Order("popular", trans.study.mostPopular)
-  case Alphabetical extends Order("alphabetical", trans.study.alphabetical)
-  case Mine         extends Order("mine", trans.study.myStudies)
-
-object Order:
-  val default                   = Hot
-  val list                      = values.toList
-  val withoutMine               = list.filterNot(_ == Mine)
-  val withoutSelector           = withoutMine.filter(o => o != Oldest && o != Alphabetical)
-  private val byKey             = list.mapBy(_.key)
+object Orders:
+  import lila.core.study.Order
+  val default                   = Order.hot
+  val list                      = Order.values.toList
+  val withoutMine               = list.filterNot(_ == Order.mine)
+  val withoutSelector           = withoutMine.filter(o => o != Order.oldest && o != Order.alphabetical)
+  private val byKey             = list.mapBy(_.toString)
   def apply(key: String): Order = byKey.getOrElse(key, default)
+  val name: Order => I18nKey =
+    case Order.hot          => I18nKey.study.hot
+    case Order.newest       => I18nKey.study.dateAddedNewest
+    case Order.oldest       => I18nKey.study.dateAddedOldest
+    case Order.updated      => I18nKey.study.recentlyUpdated
+    case Order.popular      => I18nKey.study.mostPopular
+    case Order.alphabetical => I18nKey.study.alphabetical
+    case Order.mine         => I18nKey.study.myStudies

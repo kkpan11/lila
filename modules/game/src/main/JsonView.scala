@@ -1,18 +1,18 @@
 package lila.game
 
+import chess.format.Fen
+import chess.{ Clock, Color }
 import play.api.libs.json.*
 
-import chess.format.Fen
-import chess.variant.Crazyhouse
-import chess.{ Clock, Color }
 import lila.common.Json.{ *, given }
-import lila.common.LightUser
+import lila.core.LightUser
+import lila.core.game.{ Blurs, Game, Player, Pov, Source }
 
 final class JsonView(rematches: Rematches):
 
   import JsonView.given
 
-  def base(game: Game, initialFen: Option[Fen.Epd]) =
+  def base(game: Game, initialFen: Option[Fen.Full]) =
     Json
       .obj(
         "id"        -> game.id,
@@ -37,8 +37,8 @@ final class JsonView(rematches: Rematches):
       .add("rules" -> game.metadata.nonEmptyRules)
       .add("drawOffers" -> (!game.drawOffers.isEmpty).option(game.drawOffers.normalizedPlies))
 
-    // adds fields that could be computed by the client instead
-  def baseWithChessDenorm(game: Game, initialFen: Option[Fen.Epd]) =
+  // adds fields that could be computed by the client instead
+  def baseWithChessDenorm(game: Game, initialFen: Option[Fen.Full]) =
     base(game, initialFen) ++ Json
       .obj(
         "player" -> game.turnColor,
@@ -47,12 +47,15 @@ final class JsonView(rematches: Rematches):
       .add("check" -> game.situation.checkSquare.map(_.key))
       .add("lastMove" -> game.lastMoveKeys)
 
+  def apiAiNewGame(pov: Pov, initialFen: Option[Fen.Full]): JsObject =
+    baseWithChessDenorm(pov.game, initialFen) ++ Json.obj("fullId" -> pov.fullId)
+
   def ownerPreview(pov: Pov)(using LightUser.GetterSync) =
     Json
       .obj(
         "fullId"   -> pov.fullId,
         "gameId"   -> pov.gameId,
-        "fen"      -> Fen.write(pov.game.chess),
+        "fen"      -> maybeFen(pov),
         "color"    -> pov.color,
         "lastMove" -> (pov.game.lastMoveKeys | ""),
         "source"   -> pov.game.source,
@@ -83,6 +86,9 @@ final class JsonView(rematches: Rematches):
       .add("winner" -> pov.game.winnerColor)
       .add("ratingDiff" -> pov.player.ratingDiff)
 
+  def maybeFen(pov: Pov): Fen.Full =
+    if pov.player.blindfold then Fen.Full("8/8/8/8/8/8/8/8") else Fen.write(pov.game.chess)
+
   def player(p: Player, user: Option[LightUser]) =
     Json
       .obj()
@@ -92,15 +98,15 @@ final class JsonView(rematches: Rematches):
       .add("name", p.name)
       .add("provisional" -> p.provisional)
       .add("aiLevel" -> p.aiLevel)
+      .add("blindfold" -> p.blindfold)
 
 object JsonView:
 
-  given OWrites[chess.Status] = OWrites { s =>
+  given OWrites[chess.Status] = OWrites: s =>
     Json.obj(
       "id"   -> s.id,
       "name" -> s.name
     )
-  }
 
   given OWrites[Crosstable.Result] = Json.writes
 
@@ -125,6 +131,7 @@ object JsonView:
     Json.toJsObject(ct).add("matchup" -> matchup)
 
   given OWrites[Blurs] = OWrites: blurs =>
+    import lila.game.Blurs.binaryString
     Json.obj(
       "nb"   -> blurs.nb,
       "bits" -> blurs.binaryString
@@ -147,26 +154,5 @@ object JsonView:
       "emerg"     -> c.config.emergSeconds
     )
 
-  given OWrites[CorrespondenceClock] = OWrites: c =>
-    Json.obj(
-      "daysPerTurn" -> c.daysPerTurn,
-      "increment"   -> c.increment,
-      "white"       -> c.whiteTime,
-      "black"       -> c.blackTime
-    )
-
-  given OWrites[chess.opening.Opening.AtPly] = OWrites: o =>
-    Json.obj(
-      "eco"  -> o.opening.eco,
-      "name" -> o.opening.name,
-      "ply"  -> o.ply
-    )
-
-  given OWrites[chess.Division] = OWrites: o =>
-    Json.obj(
-      "middle" -> o.middle,
-      "end"    -> o.end
-    )
-
-  given Writes[Source]   = writeAs(_.name)
-  given Writes[GameRule] = writeAs(_.key)
+  given Writes[Source]                  = writeAs(_.name)
+  given Writes[lila.core.game.GameRule] = writeAs(_.toString)

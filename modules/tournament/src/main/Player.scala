@@ -1,12 +1,13 @@
 package lila.tournament
 
-import ornicar.scalalib.ThreadLocalRandom
+import scalalib.ThreadLocalRandom
+import chess.IntRating
+import chess.rating.RatingProvisional
 
-import lila.common.LightUser
-import lila.rating.PerfType
-import lila.user.User
+import lila.core.LightUser
+import lila.core.user.WithPerf
 
-private[tournament] case class Player(
+case class Player(
     _id: TourPlayerId, // random
     tourId: TourId,
     userId: UserId,
@@ -15,7 +16,7 @@ private[tournament] case class Player(
     withdraw: Boolean = false,
     score: Int = 0,
     fire: Boolean = false,
-    performance: Int = 0,
+    performance: Option[IntRating] = None,
     team: Option[TeamId] = None
 ):
 
@@ -30,11 +31,11 @@ private[tournament] case class Player(
   def doWithdraw = copy(withdraw = true)
   def unWithdraw = copy(withdraw = false)
 
-  def magicScore = score * 10000 + (performanceOption | rating.value)
+  def magicScore = score * 10000 + (performance | rating).value
 
-  def performanceOption = performance > 0 option performance
+  def showRating = s"$rating${provisional.yes.so("?")}"
 
-private[tournament] object Player:
+object Player:
 
   case class WithUser(player: Player, user: User)
 
@@ -42,7 +43,7 @@ private[tournament] object Player:
 
   private[tournament] def make(
       tourId: TourId,
-      user: User.WithPerf,
+      user: WithPerf,
       team: Option[TeamId]
   ): Player = Player(
     _id = TourPlayerId(ThreadLocalRandom.nextString(8)),

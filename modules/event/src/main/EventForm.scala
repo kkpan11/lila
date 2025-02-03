@@ -2,11 +2,43 @@ package lila.event
 
 import play.api.data.*
 import play.api.data.Forms.*
-import play.api.i18n.Lang
 
-import lila.common.Form.{ stringIn, into, PrettyDateTime }
-import lila.i18n.LangList
-import lila.user.Me
+import lila.common.Form.{ PrettyDateTime, into, stringIn }
+import lila.core.i18n.{ LangList, Language }
+
+final class EventForm(langList: LangList):
+
+  import EventForm.*
+
+  val form = Form(
+    mapping(
+      "title"         -> text(minLength = 3, maxLength = 40),
+      "headline"      -> text(minLength = 5, maxLength = 30),
+      "description"   -> optional(text(minLength = 5, maxLength = 4000).into[Markdown]),
+      "homepageHours" -> bigDecimal(10, 2).verifying(d => d >= 0 && d <= 24),
+      "url"           -> nonEmptyText,
+      "lang"          -> langList.popularLanguagesForm.mapping,
+      "enabled"       -> boolean,
+      "startsAt"      -> PrettyDateTime.mapping,
+      "finishesAt"    -> PrettyDateTime.mapping,
+      "hostedBy"      -> optional(lila.common.Form.username.historicalField),
+      "icon"          -> stringIn(icon.choices),
+      "countdown"     -> boolean
+    )(Data.apply)(unapply)
+  ).fill(
+    Data(
+      title = "",
+      headline = "",
+      description = none,
+      homepageHours = 0,
+      url = "",
+      lang = lila.core.i18n.defaultLanguage,
+      enabled = true,
+      startsAt = nowDateTime,
+      finishesAt = nowDateTime,
+      countdown = true
+    )
+  )
 
 object EventForm:
 
@@ -21,41 +53,13 @@ object EventForm:
       "offerspill.logo.png" -> "Offerspill"
     )
 
-  val form = Form(
-    mapping(
-      "title"         -> text(minLength = 3, maxLength = 40),
-      "headline"      -> text(minLength = 5, maxLength = 30),
-      "description"   -> optional(text(minLength = 5, maxLength = 4000).into[Markdown]),
-      "homepageHours" -> bigDecimal(10, 2).verifying(d => d >= 0 && d <= 24),
-      "url"           -> nonEmptyText,
-      "lang"          -> text.verifying(l => LangList.allChoices.exists(_._1 == l)),
-      "enabled"       -> boolean,
-      "startsAt"      -> PrettyDateTime.mapping,
-      "finishesAt"    -> PrettyDateTime.mapping,
-      "hostedBy"      -> optional(lila.user.UserForm.historicalUsernameField),
-      "icon"          -> stringIn(icon.choices),
-      "countdown"     -> boolean
-    )(Data.apply)(unapply)
-  ) fill Data(
-    title = "",
-    headline = "",
-    description = none,
-    homepageHours = 0,
-    url = "",
-    lang = lila.i18n.enLang.code,
-    enabled = true,
-    startsAt = nowDateTime,
-    finishesAt = nowDateTime,
-    countdown = true
-  )
-
   case class Data(
       title: String,
       headline: String,
       description: Option[Markdown],
       homepageHours: BigDecimal,
       url: String,
-      lang: String,
+      lang: Language,
       enabled: Boolean,
       startsAt: LocalDateTime,
       finishesAt: LocalDateTime,
@@ -64,14 +68,14 @@ object EventForm:
       countdown: Boolean
   ):
 
-    def update(event: Event)(using me: Me.Id) =
+    def update(event: Event)(using me: MyId) =
       event.copy(
         title = title,
         headline = headline,
         description = description,
         homepageHours = homepageHours.toDouble,
         url = url,
-        lang = Lang(lang),
+        lang = lang,
         enabled = enabled,
         startsAt = startsAt.instant,
         finishesAt = finishesAt.instant,
@@ -82,7 +86,7 @@ object EventForm:
         updatedBy = me.some
       )
 
-    def make(using me: Me.Id) =
+    def make(using me: MyId) =
       Event(
         _id = Event.makeId,
         title = title,
@@ -90,7 +94,7 @@ object EventForm:
         description = description,
         homepageHours = homepageHours.toDouble,
         url = url,
-        lang = Lang(lang),
+        lang = lang,
         enabled = enabled,
         startsAt = startsAt.instant,
         finishesAt = finishesAt.instant,
@@ -112,11 +116,11 @@ object EventForm:
         description = event.description,
         homepageHours = event.homepageHours,
         url = event.url,
-        lang = event.lang.code,
+        lang = event.lang,
         enabled = event.enabled,
         startsAt = event.startsAt.dateTime,
         finishesAt = event.finishesAt.dateTime,
-        hostedBy = event.hostedBy.map(_ into UserStr),
+        hostedBy = event.hostedBy.map(_.into(UserStr)),
         icon = ~event.icon,
         countdown = event.countdown
       )

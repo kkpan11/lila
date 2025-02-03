@@ -1,9 +1,9 @@
 package lila.puzzle
 
-import lila.common.config.MaxPerPage
-import lila.common.paginator.{ AdapterLike, Paginator }
+import scalalib.paginator.{ AdapterLike, Paginator }
+
+import lila.core.user.WithPerf
 import lila.db.dsl.{ *, given }
-import lila.user.User
 
 object PuzzleHistory:
 
@@ -14,15 +14,9 @@ object PuzzleHistory:
   case class PuzzleSession(
       theme: PuzzleTheme.Key,
       puzzles: NonEmptyList[SessionRound] // chronological order, oldest first
-  ) {
-    // val nb              = puzzles.size
-    // val firstWins       = puzzles.toList.count(_.round.firstWin)
-    // val fails           = nb - firstWins
-    // def puzzleRatingAvg = puzzles.toList.foldLeft(0)(_ + _.puzzle.glicko.intRating)
-    // def performance     = puzzleRatingAvg - 500 + math.round(1000 * (firstWins.toFloat / nb))
-  }
+  )
 
-  final class HistoryAdapter(user: User.WithPerf, colls: PuzzleColls)(using Executor)
+  final class HistoryAdapter(user: WithPerf, colls: PuzzleColls)(using Executor)
       extends AdapterLike[PuzzleSession]:
 
     import BsonHandlers.given
@@ -38,7 +32,7 @@ object PuzzleHistory:
               Sort(Descending("d")),
               Skip(offset),
               Limit(length),
-              PipelineOperator(PuzzleRound puzzleLookup colls),
+              PipelineOperator(PuzzleRound.puzzleLookup(colls)),
               Unwind("puzzle")
             )
 
@@ -58,7 +52,7 @@ object PuzzleHistory:
         case (Nil, round) => List(PuzzleSession(round.theme, NonEmptyList(round, Nil)))
         case (last :: sessions, r) =>
           if last.puzzles.head.theme == r.theme &&
-            r.round.date.isAfter(last.puzzles.head.round.date minusHours 1)
+            r.round.date.isAfter(last.puzzles.head.round.date.minusHours(1))
           then last.copy(puzzles = r :: last.puzzles) :: sessions
           else PuzzleSession(r.theme, NonEmptyList(r, Nil)) :: last :: sessions
       .reverse
@@ -67,7 +61,7 @@ final class PuzzleHistoryApi(colls: PuzzleColls)(using Executor):
 
   import PuzzleHistory.*
 
-  def apply(user: User.WithPerf, page: Int): Fu[Paginator[PuzzleSession]] =
+  def apply(user: WithPerf, page: Int): Fu[Paginator[PuzzleSession]] =
     Paginator[PuzzleSession](
       HistoryAdapter(user, colls),
       currentPage = page,

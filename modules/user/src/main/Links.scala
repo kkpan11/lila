@@ -1,8 +1,5 @@
 package lila.user
 
-import io.mola.galimatias.URL
-import scala.util.Try
-
 object Links:
 
   import Link.*
@@ -18,10 +15,10 @@ object Links:
 
   private def toLink(line: String): Option[Link] =
     for
-      url <- Try(URL.parse(line)).toOption
+      url <- lila.common.url.parse(line).toOption
       if url.scheme == "http" || url.scheme == "https"
       host <- Option(url.host).map(_.toHostString)
-    yield Site.allKnown.find(_ matches host).map(site => Link(site, url.toString)) | Link(
+    yield Site.allKnown.find(_.matches(host)).map(site => Link(site, url.toString)) | Link(
       Site.Other(host),
       url.toString
     )
@@ -39,11 +36,12 @@ object Link:
     case Mastodon
         extends Site(
           "Mastodon",
-          "mstdn.social fosstodon.org gensokyo.social ravenation.club mastodon.art mastodon.lol mastodon.green mas.to mindly.social mastodon.world masthead.social techhub.social"
+          "mastodon.social mastodon.online mstdn.social masto.ai fosstodon.org gensokyo.social ravenation.club mastodon.art mastodon.green mas.to mindly.social mastodon.world techhub.social im-in.space mastodon.cloud"
             .split(' ')
             .toList
         )
-    case Twitter               extends Site("Twitter", List("twitter.com"))
+    case Bluesky               extends Site("Bluesky", List("bsky.app"))
+    case Twitter               extends Site("x", List("twitter.com", "x.com"))
     case Facebook              extends Site("Facebook", List("facebook.com"))
     case Instagram             extends Site("Instagram", List("instagram.com"))
     case YouTube               extends Site("YouTube", List("youtube.com"))
@@ -51,7 +49,6 @@ object Link:
     case GitHub                extends Site("GitHub", List("github.com"))
     case VKontakte             extends Site("VKontakte", List("vk.com"))
     case ChessCom              extends Site("Chess.com", List("chess.com"))
-    case Chess24               extends Site("Chess24", List("chess24.com"))
     case ChessMonitor          extends Site("ChessMonitor", List("chessmonitor.com"))
     case ChessTempo            extends Site("ChessTempo", List("chesstempo.com"))
     case Other(domain: String) extends Site(domain, List(domain))
@@ -59,6 +56,7 @@ object Link:
   object Site:
     val allKnown: List[Site] = List(
       Mastodon,
+      Bluesky,
       Twitter,
       Facebook,
       Instagram,
@@ -67,7 +65,6 @@ object Link:
       GitHub,
       VKontakte,
       ChessCom,
-      Chess24,
       ChessMonitor,
       ChessTempo
     )

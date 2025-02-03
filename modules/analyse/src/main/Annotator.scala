@@ -1,15 +1,13 @@
 package lila.analyse
 
-import monocle.syntax.all.*
-
-import chess.format.pgn.{ Glyphs, Move, Pgn, Tag, PgnStr, Comment }
+import chess.format.pgn.{ Comment, Glyphs, Move, Pgn, PgnStr, SanStr, Tag }
 import chess.opening.*
-import chess.{ Color, Tree, Variation, Status, Ply }
+import chess.{ Color, Ply, Status, Tree, Variation }
 
-import lila.game.GameDrawOffers
-import lila.game.Game
+import lila.core.game.{ Game, GameDrawOffers }
+import lila.tree.{ Advice, Analysis, StatusText }
 
-final class Annotator(netDomain: lila.common.config.NetDomain):
+final class Annotator(netDomain: lila.core.config.NetDomain) extends lila.tree.Annotator:
 
   def apply(p: Pgn, game: Game, analysis: Option[Analysis]): Pgn =
     annotateStatus(game.winnerColor, game.status) {
@@ -40,19 +38,18 @@ final class Annotator(netDomain: lila.common.config.NetDomain):
     s"${pgn.render}\n\n\n".replaceIf("] } { [", "] [")
 
   private def annotateStatus(winner: Option[Color], status: Status)(p: Pgn) =
-    lila.game.StatusText(status, winner, chess.variant.Standard) match
+    StatusText(status, winner, chess.variant.Standard) match
       case ""   => p
       case text => p.updateLastPly(_.copy(result = text.some))
 
   private def annotateOpening(opening: Option[Opening.AtPly])(p: Pgn) =
-    opening.fold(p) { o =>
+    opening.fold(p): o =>
       p.updatePly(o.ply, _.copy(opening = s"${o.opening.eco} ${o.opening.name}".some)).getOrElse(p)
-    }
 
   // add advices into mainline
   private def annotateTurns(p: Pgn, advices: List[Advice]): Pgn =
     advices
-      .foldLeft(p) { (pgn, advice) =>
+      .foldLeft(p): (pgn, advice) =>
         pgn
           .modifyInMainline(
             advice.ply,
@@ -66,7 +63,6 @@ final class Annotator(netDomain: lila.common.config.NetDomain):
               )
           )
           .getOrElse(pgn)
-      }
 
   private def annotateDrawOffers(pgn: Pgn, drawOffers: GameDrawOffers): Pgn =
     if drawOffers.isEmpty then pgn
@@ -80,7 +76,6 @@ final class Annotator(netDomain: lila.common.config.NetDomain):
           .getOrElse(pgn)
 
   private def makeVariation(advice: Advice): Option[Variation[Move]] =
-    val sans = advice.info.variation take 20
     Tree
-      .buildWithIndex(sans, (san, index) => Move(Ply(advice.ply.value + index), san))
+      .build[SanStr, Move](advice.info.variation.take(20), Move(_))
       .map(_.toVariation)

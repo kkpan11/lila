@@ -1,7 +1,7 @@
 .puzzle-of-player {
   &__form {
     input {
-      margin-#{$end-direction}: 1em;
+      margin-inline-end: 1em;
       width: 30ch;
       display: inline-block;
     }
@@ -27,9 +27,6 @@
       @extend %flex-between;
       font-size: 0.9em;
       padding: 0 0.3em;
-    }
-
-    &__rating {
     }
 
     &__id {

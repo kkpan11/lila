@@ -5,6 +5,10 @@
 #dasher_app {
   @extend %box-radius-left;
 
+  #top.scrolled & {
+    border-radius: 0 0 0 $box-radius-size;
+  }
+
   width: 225px;
 
   .spinner {
@@ -19,7 +23,7 @@
 
     signal {
       position: absolute;
-      #{$end-direction}: 1rem;
+      @include inline-end(1rem);
       top: 1rem;
       font-size: 1.7rem;
     }
@@ -59,29 +63,29 @@
     form {
       max-height: 400px;
       overflow: auto;
-    }
 
-    button {
-      display: block;
-      padding: 0.7rem 0.7rem 0.7rem 1rem;
-      border: none;
-      background: none;
-      width: 100%;
-      text-align: left;
+      button {
+        display: block;
+        padding: 0.7rem 0.7rem 0.7rem 1rem;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
 
-      &:hover {
-        background: $c-dasher-light;
+        &:hover {
+          background: $c-dasher-light;
+        }
       }
     }
 
     .accepted {
-      border-#{$start-direction}: 4px solid $c-dasher;
+      border-inline-start: 4px solid $c-dasher;
     }
 
     .current {
       background: $c-dasher !important;
-      color: $c-dasher-over !important;
-      border-#{$start-direction}: none;
+      color: $c-over !important;
+      border-inline-start: none;
     }
 
     .help {
@@ -91,7 +95,7 @@
 
       &:hover {
         background: $c-link;
-        color: $c-link-over;
+        color: $c-over;
       }
     }
   }
@@ -116,7 +120,7 @@
 
       &.active {
         background: $c-dasher !important;
-        color: $c-dasher-over !important;
+        color: $c-over !important;
       }
 
       &::before {
@@ -133,7 +137,7 @@
 
       &.active::before {
         opacity: 1;
-        color: $c-dasher-over !important;
+        color: $c-over !important;
       }
     }
 
@@ -168,8 +172,8 @@
       margin: 1rem;
       padding-top: 0;
       padding-bottom: 0;
-      writing-mode: bt-lr;
-      -webkit-appearance: slider-vertical;
+      writing-mode: vertical-lr;
+      direction: rtl;
     }
 
     &.silent input[type='range'] {
@@ -192,22 +196,8 @@
     }
   }
 
-  .board .zoom {
-    display: none;
-
-    @include breakpoint($mq-board-resizable) {
-      display: block;
-    }
-
-    border-top: $border;
-    padding: 1.5rem;
-  }
-
-  .board .range {
-    font-size: 1.5em;
-    margin: 0;
-    padding: 0;
-    width: 100%;
+  .piece .list {
+    overflow: auto;
   }
 
   .background #gallery {
@@ -216,18 +206,18 @@
 
     position: absolute;
     top: 100%;
-    right: 0;
+    @include inline-end(0);
     background-color: #000000bb;
 
     #images-viewport {
-      max-height: ($thumb-h + 2px) * 4;
+      max-height: 30vh;
       overflow: hidden auto;
     }
 
     #images-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      @include breakpoint($mq-x-small) {
+      @media (min-width: at-least($x-small)) {
         grid-template-columns: repeat(4, 1fr);
       }
       background-attachment: scroll;

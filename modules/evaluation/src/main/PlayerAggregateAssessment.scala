@@ -1,11 +1,13 @@
 package lila.evaluation
 
 import scala.math.sqrt
+import chess.IntRating
 
-import lila.user.User
+import lila.core.perf.UserWithPerfs
+import lila.rating.UserPerfsExt.bestRating
 
 case class PlayerAggregateAssessment(
-    user: User.WithPerfs,
+    user: UserWithPerfs,
     playerAssessments: List[PlayerAssessment]
 ):
   import Statistics.*
@@ -32,7 +34,7 @@ case class PlayerAggregateAssessment(
     val bannable: Boolean = false
 
     def sigDif(dif: Int)(a: Option[(Int, Int, Int)], b: Option[(Int, Int, Int)]): Option[Boolean] =
-      (a, b) mapN { (a, b) => b._1 - a._1 > dif }
+      (a, b).mapN { (a, b) => b._1 - a._1 > dif }
 
     val difs = List(
       (sfAvgBlurs, sfAvgNoBlurs),
@@ -41,7 +43,7 @@ case class PlayerAggregateAssessment(
     )
 
     val actionable: Boolean =
-      val difFlags = difs map (sigDif(10)).tupled
+      val difFlags = difs.map((sigDif(10)).tupled)
       difFlags.forall(_.isEmpty) || difFlags.exists(~_) || assessmentsCount < 50
 
     if actionable then
@@ -54,7 +56,7 @@ case class PlayerAggregateAssessment(
     else Nothing
 
   def countAssessmentValue(assessment: GameAssessment) =
-    playerAssessments count {
+    playerAssessments.count {
       _.assessment == assessment
     }
 
@@ -65,10 +67,10 @@ case class PlayerAggregateAssessment(
   val likelyCheatingSum = countAssessmentValue(LikelyCheating)
 
   def weightedAssessmentValue(assessment: GameAssessment): Double =
-    playerAssessments map { pa =>
+    playerAssessments.map { pa =>
       if pa.assessment != assessment then 0.0
       else pa.tcFactor.getOrElse(1.0) * (if pa.flags.highlyConsistentMoveTimes then 1.6 else 1.0)
-    } sum
+    }.sum
 
   val weightedCheatingSum       = weightedAssessmentValue(Cheating)
   val weightedLikelyCheatingSum = weightedAssessmentValue(LikelyCheating)
@@ -97,7 +99,7 @@ case class PlayerAggregateAssessment(
   val sfAvgHold   = sfAvgGiven(_.basics.hold)
   val sfAvgNoHold = sfAvgGiven(!_.basics.hold)
 
-  def isGreatUser = user.perfs.bestRating > 2500 && user.count.rated >= 100
+  def isGreatUser = user.perfs.bestRating > IntRating(2500) && user.count.rated >= 100
 
   def isNewRatedUser = user.count.rated < 10
 
@@ -118,5 +120,6 @@ $gameLinks"""
 
 object PlayerAggregateAssessment:
 
-  case class WithGames(pag: PlayerAggregateAssessment, games: List[lila.game.Game]):
-    def pov(pa: PlayerAssessment) = games find (_.id == pa.gameId) map { lila.game.Pov(_, pa.color) }
+  import lila.core.game.{ Game, Pov }
+  case class WithGames(pag: PlayerAggregateAssessment, games: List[Game]):
+    def pov(pa: PlayerAssessment) = games.find(_.id == pa.gameId).map { Pov(_, pa.color) }

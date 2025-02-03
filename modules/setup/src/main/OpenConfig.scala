@@ -2,11 +2,10 @@ package lila.setup
 
 import chess.Clock
 import chess.format.Fen
-import chess.variant.{ Variant, FromPosition }
+import chess.variant.{ FromPosition, Variant }
+import scalalib.model.Days
 
-import lila.common.Days
-import lila.game.GameRule
-import lila.rating.PerfType
+import lila.core.game.GameRule
 
 final case class OpenConfig(
     name: Option[String],
@@ -14,15 +13,15 @@ final case class OpenConfig(
     clock: Option[Clock.Config],
     days: Option[Days],
     rated: Boolean,
-    position: Option[Fen.Epd],
+    position: Option[Fen.Full],
     userIds: Option[(UserId, UserId)],
     rules: Set[GameRule] = Set.empty,
     expiresAt: Option[Instant]
-):
+) extends lila.core.setup.OpenConfig:
 
-  def perfType = PerfType(variant, chess.Speed(clock))
+  def perfType = lila.rating.PerfType(variant, chess.Speed(clock))
 
-  def validFen = ApiConfig.validFen(variant, position)
+  def validFen = Variant.isValidInitialFen(variant, position)
 
   def autoVariant =
     if variant.standard && position.exists(!_.isInitial)
@@ -37,7 +36,7 @@ object OpenConfig:
       cl: Option[Clock.Config],
       days: Option[Days],
       rated: Boolean,
-      pos: Option[Fen.Epd],
+      pos: Option[Fen.Full],
       usernames: Option[List[UserStr]],
       rules: Option[Set[GameRule]],
       expiresAt: Option[Instant]
@@ -49,7 +48,7 @@ object OpenConfig:
       days = days,
       rated = rated,
       position = pos,
-      userIds = usernames.map(_.map(_.id)) collect { case List(w, b) =>
+      userIds = usernames.map(_.map(_.id)).collect { case List(w, b) =>
         (w, b)
       },
       rules = ~rules,

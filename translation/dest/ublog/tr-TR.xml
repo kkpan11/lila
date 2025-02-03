@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="communityBlogs">Topluluk blogları</string>
+  <string name="friendBlogs">Arkadaş blogları</string>
+  <string name="likedBlogs">Beğenilen blog gönderileri</string>
+  <string name="blogTopics">Blog konuları</string>
+  <string name="lichessOfficialBlog">Lichess Resmi Blog</string>
+  <string name="continueReadingPost">Bu gönderiyi okumaya devam et</string>
+  <string name="lichessBlogPostsFromXYear">%s yılından Lichess blog gönderileri</string>
+  <string name="previousBlogPosts">Önceki blog gönderileri</string>
   <string name="xBlog">%s Bloğu</string>
   <string name="newPost">Yeni gönderi</string>
   <string name="editYourBlogPost">Blog gönderinizi düzenleyin</string>
@@ -36,7 +44,6 @@
   <string name="imageAlt">Alternatif resim metni</string>
   <string name="imageCredit">Resim kaynağı</string>
   <string name="deleteBlog">Bu blog gönderisini kalıcı olarak sil</string>
-  <string name="deleteImage">Resmi sil</string>
   <string name="safeToUseImages">Aşağıda verilen sitelerde bulunan resimleri dilediğiniz gibi kullanabilirsiniz: </string>
   <string name="selectPostTopics">Gönderinizin ilgili olduğu konuları seçin</string>
   <string name="useImagesYouMadeYourself">Kendi oluşturduğunuz görseller, çektiğiniz fotoğraflar veya Lichess ekran görüntüleri gibi telif hakkı başkasına ait olmayan herhangi bir resmi de kullanabilirsiniz.</string>
@@ -44,4 +51,5 @@
   <string name="inappropriateContentAccountClosed">Uygunsuz herhangi bir içerik paylaşmak hesabınızın kapatılmasına yol açacaktır.</string>
   <string name="blogTips">Harika blog gönderileri yazmanın püf noktaları</string>
   <string name="discussThisBlogPostInTheForum">Bu blog gönderisini forumda tartış</string>
+  <string name="youBlockedByBlogAuthor">Blog yazarı tarafından engellendiniz.</string>
 </resources>

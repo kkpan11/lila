@@ -1,14 +1,15 @@
 package lila.forum
 
-import ornicar.scalalib.ThreadLocalRandom
+import reactivemongo.api.bson.Macros.Annotations.Key
+import scalalib.ThreadLocalRandom
 
-import lila.user.{ Me, User }
-import lila.security.Granter
+import lila.core.forum.ForumPostMini
+import lila.core.perm.Granter
 
 case class OldVersion(text: String, createdAt: Instant)
 
 case class ForumPost(
-    _id: ForumPostId,
+    @Key("_id") id: ForumPostId,
     topicId: ForumTopicId,
     categId: ForumCategId,
     author: Option[String],
@@ -23,12 +24,10 @@ case class ForumPost(
     erasedAt: Option[Instant] = None,
     modIcon: Option[Boolean],
     reactions: Option[ForumPost.Reactions] = None
-):
-
-  inline def id = _id
+) extends lila.core.forum.ForumPost:
 
   private def showAuthor: String =
-    author.map(_.trim).filter("" !=) | (if ~modIcon then User.anonymous.value else User.anonMod)
+    author.map(_.trim).filter("" !=) | (if ~modIcon then UserName.anonymous.value else UserName.anonMod)
 
   def showUserIdOrAuthor: String = if erased then "<erased>" else userId.fold(showAuthor)(_.value)
 
@@ -43,7 +42,7 @@ case class ForumPost(
 
   def canBeEditedByMe(using me: Me): Boolean =
     userId match
-      case Some(userId) if me is userId => true
+      case Some(userId) if me.is(userId) => true
       case None if (Granter(_.PublicMod) || Granter(_.SeeReport)) && isAnonModPost =>
         true
       case _ => false
@@ -77,6 +76,15 @@ case class ForumPost(
 
   def isBy(u: User) = userId.exists(_ == u.id)
 
+  def mini = ForumPostMini(
+    id = id,
+    topicId = topicId,
+    userId = userId,
+    text = text,
+    troll = troll,
+    createdAt = createdAt
+  )
+
   override def toString = s"Post($categId/$topicId/$id)"
 
 object ForumPost:
@@ -87,8 +95,8 @@ object ForumPost:
   type Reactions = Map[Reaction, Set[UserId]]
 
   val idSize                  = 8
-  private val permitEditsFor  = 4 hours
-  private val showEditFormFor = 3 hours
+  private val permitEditsFor  = 4.hours
+  private val showEditFormFor = 3.hours
 
   enum Reaction(val key: String):
     case PlusOne  extends Reaction("+1")
@@ -116,13 +124,13 @@ object ForumPost:
       categId: ForumCategId,
       userId: Option[UserId], // anon mod posts
       text: String,
-      number: Int,
-      lang: Option[String],
-      troll: Boolean,
-      modIcon: Option[Boolean] = None
+      number: Int = 1,
+      lang: Option[String] = none,
+      troll: Boolean = false,
+      modIcon: Option[Boolean] = none
   ): ForumPost =
     ForumPost(
-      _id = ForumPostId(ThreadLocalRandom nextString idSize),
+      id = ForumPostId(ThreadLocalRandom.nextString(idSize)),
       topicId = topicId,
       author = none,
       userId = userId,

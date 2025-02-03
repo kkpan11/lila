@@ -10,7 +10,7 @@
   <string name="newTeam">ทีมใหม่</string>
   <string name="myTeams">ทีมของฉัน</string>
   <string name="noTeamFound">ไม่พบทีมใด</string>
-  <string name="joinTeam">เข้าร่วมทีม</string>
+  <string name="joinTeam" comment="Appears as a button on team pages, and on pages of tournaments that require you to be a member of that team (e.g. Swiss tournaments).&#10;&#10;Please keep as short as possible.">เข้าร่วมทีม</string>
   <string name="onlyLeaderLeavesTeam">โปรดเพิ่มผู้นำทีมใหม่ก่อนออกไปหรือยุบทีม</string>
   <string name="quitTeam">ออกจากทีม</string>
   <string name="manuallyReviewAdmissionRequests">ตรวจสอบคำขอรับเข้าด้วยตนเอง</string>
@@ -44,9 +44,13 @@
   <string name="entryCodeDescriptionForLeader">(เป็นตัวเลือก) เป็นรหัสที่ผู้เล่นใหม่ต้องรู้เพื่อเข้าร่วมทีม</string>
   <string name="incorrectEntryCode">รหัสเข้าร่วมไม่ถูกต้อง</string>
   <string name="teamAlreadyExists">ทีมนี้มีอยู่แล้ว</string>
-  <string name="upcomingTourns">ทัวร์นาเมนต์ที่กำลังจะมา</string>
+  <string name="upcomingTournaments">ทัวร์นาเมนต์ที่กำลังจะมา</string>
   <string name="completedTourns">ทัวร์นาเมนต์ที่เสร็จสมบูรณ์</string>
   <string name="declinedRequests">ปฏิเสธคำขอ</string>
   <string name="joinLichessVariantTeam">เข้าร่วมทีม %s เพื่อดูข่าวและเหตุการณ์สำคัญ</string>
   <string name="teamPage">หน้าหลักของทีม</string>
+  <string name="thisTeamBattleIsOver">ทัวร์นาเมนต์นี้สิ้นสุดแล้ว และไม่สามารถอัปเดตทีมได้อีกต่อไป</string>
+  <plurals name="nbLeadersPerTeam">
+    <item quantity="other">%s ผู้นำต่อทีม</item>
+  </plurals>
 </resources>

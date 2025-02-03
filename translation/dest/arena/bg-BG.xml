@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="arena">Арена</string>
   <string name="arenaTournaments">Арена турнири</string>
   <string name="isItRated">С рейтинг ли е?</string>
   <string name="willBeNotified">Ще бъдете уведомени когато турнирът започне, така че е безопасно да се играе в друг раздел докато чакате.</string>
@@ -57,6 +58,21 @@
   <string name="noBerserkAllowed">No Berserk allowed</string>
   <string name="noArenaStreaks">No Arena streaks</string>
   <string name="averagePerformance">Средна производителност</string>
-  <string name="averageScore">Average score</string>
+  <string name="averageScore">Среден резултат</string>
   <string name="myTournaments">Моите турнири</string>
+  <string name="editTournament">Редактиране на турнира</string>
+  <string name="defender">Защитаващ</string>
+  <string name="pickYourTeam">Изберете отбора си</string>
+  <string name="created">Създадено</string>
+  <string name="recentlyPlayed">Изиграни наскоро</string>
+  <string name="bestResults">Най-добри резултати</string>
+  <string name="tournamentStats">Статистика от турнира</string>
+  <string name="medians">медиани</string>
+  <string name="total">Общо</string>
+  <string name="pointsAvg">Среднени точки</string>
+  <string name="pointsSum">Сума на точките</string>
+  <string name="rankAvg">Среднен рейтинг</string>
+  <string name="tournamentWinners">Победители в турнира</string>
+  <string name="onlyTitled">Само титулувани играчи</string>
+  <string name="onlyTitledHelp">Изискване на официална титла за участие в турнира</string>
 </resources>

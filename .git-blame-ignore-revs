@@ -42,3 +42,36 @@ eea12a89f8550d74518f19ec9cda404e3f73b3d0
 
 # prettier 3.0.1 update from 2.x
 72d993c45d9b9d17395e0f0a2726af325ef0621c
+
+# scalafmt AvoidInfix rewrite // https://github.com/lichess-org/lila/pull/14777
+7b84562ada7f2985bdc8bff6c190b503ffda8524
+
+# Scala 3.4.0 migration
+f5e7d4a6633b060f0ad6ee2cdd5e4161f16b30a2
+1ef606c9ecd40f896851f082ba7f14e042bcaef3
+c8059e97d696d0bc3056f42d3001ab240a408cba
+
+# Add scalafix
+ce7eb94ec40148503673a8991ad5ee1c63617897
+cd9708a0d772fe445635ae05306f1cb9365902de
+
+# Scala Steward: Reformat with scalafmt 3.8.1
+1aae0c7b022f9e505e1ca7fec3b32efeef9f9981
+
+# Scala Steward: Reformat with scalafmt 3.8.2
+2b774ffaf8926dc9986954f3c427cbe479e05f6a
+
+# Scala Steward: Reformat with scalafmt 3.8.3
+f058dab0bfdfcf3f40d510526607e3e359354e54
+
+# prettier upgrade from 3.0.x to 3.3.x
+f617815e0a3a2d96de9aca3a04d589c78cbd14e8
+
+# eslint --fix
+35c26fbd9bc0895d0119e4e313003c220417d4bc
+
+# back to prettier
+02354d6ac319462e58f1016499912d342efb97d1
+
+# Reformat with scalafmt 3.8.4
+4c06b75e1315f0cfcb3ebeb56a6d4c9cdcd6d062

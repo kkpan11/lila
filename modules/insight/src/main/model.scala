@@ -1,9 +1,11 @@
 package lila.insight
 
-import chess.{ Centis, Ply, Clock, Role }
+import scalalib.model.Percent
 import chess.format.pgn.SanStr
+import chess.{ Centis, Clock, Ply, Role }
+import chess.eval.WinPercent
 
-import lila.analyse.{ AccuracyPercent, WinPercent }
+import lila.analyse.AccuracyPercent
 import lila.common.{ LilaOpeningFamily, SimpleOpening }
 
 case class InsightUser(
@@ -42,7 +44,7 @@ object ClockPercent extends OpaqueDouble[ClockPercent]:
   extension (a: ClockPercent) def toInt = Percent.toInt(a)
 
   def apply(clock: Clock.Config, timeLeft: Centis): ClockPercent = ClockPercent(
-    (100 * timeLeft.centis.toDouble / clock.estimateTotalTime.centis) atLeast 0 atMost 100
+    (100 * timeLeft.centis.toDouble / clock.estimateTotalTime.centis).atLeast(0).atMost(100)
   )
   inline def fromPercent(p: Double) = ClockPercent(p)
   inline def fromPercent(p: Int)    = ClockPercent(p.toDouble)
@@ -60,7 +62,7 @@ object Termination:
 
   val byId = values.mapBy(_.id)
 
-  import chess.{ Status as S }
+  import chess.Status as S
 
   def fromStatus(s: chess.Status) =
     s match
@@ -108,7 +110,7 @@ enum Castling(val id: Int, val name: String):
 object Castling:
   val byId = values.mapBy(_.id)
   def fromMoves(moves: Iterable[SanStr]) =
-    SanStr.raw(moves).find(_ startsWith "O") match
+    SanStr.raw(moves).find(_.startsWith("O")) match
       case Some("O-O")   => Kingside
       case Some("O-O-O") => Queenside
       case _             => None

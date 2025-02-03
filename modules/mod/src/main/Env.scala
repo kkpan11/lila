@@ -1,39 +1,41 @@
 package lila.mod
 
 import akka.actor.*
+import chess.ByColor
 import com.softwaremill.macwire.*
 
-import lila.common.config.*
-import lila.user.{ User, Me }
-import lila.report.{ ModId, SuspectId }
+import lila.common.Bus
+import lila.core.config.*
+import lila.core.forum.BusForum
+import lila.core.report.SuspectId
+import lila.rating.UserWithPerfs.only
 
 @Module
 final class Env(
     db: lila.db.Db,
-    reporter: lila.hub.actors.Report,
-    fishnet: lila.hub.actors.Fishnet,
-    perfStat: lila.perfStat.PerfStatApi,
+    perfStat: lila.core.perf.PerfStatApi,
     settingStore: lila.memo.SettingStore.Builder,
     reportApi: lila.report.ReportApi,
     lightUserApi: lila.user.LightUserApi,
-    securityApi: lila.security.SecurityApi,
-    tournamentApi: lila.tournament.TournamentApi,
-    swissFeature: lila.swiss.SwissFeature,
+    tournamentApi: lila.core.tournament.TournamentApi,
+    swissFeature: lila.core.swiss.SwissFeatureApi,
     gameRepo: lila.game.GameRepo,
+    gameApi: lila.core.game.GameApi,
     analysisRepo: lila.analyse.AnalysisRepo,
     userRepo: lila.user.UserRepo,
-    perfsRepo: lila.user.UserPerfsRepo,
     userApi: lila.user.UserApi,
+    perfsRepo: lila.user.UserPerfsRepo,
     chatApi: lila.chat.ChatApi,
-    notifyApi: lila.notify.NotifyApi,
-    historyApi: lila.history.HistoryApi,
+    notifyApi: lila.core.notify.NotifyApi,
+    historyApi: lila.core.history.HistoryApi,
+    prefApi: lila.core.pref.PrefApi,
     rankingApi: lila.user.RankingApi,
     noteApi: lila.user.NoteApi,
     cacheApi: lila.memo.CacheApi,
-    ircApi: lila.irc.IrcApi,
-    msgApi: lila.msg.MsgApi,
-    ip2proxy: lila.security.Ip2Proxy
-)(using Executor, Scheduler):
+    ircApi: lila.core.irc.IrcApi,
+    msgApi: lila.core.msg.MsgApi
+)(using Executor, Scheduler, lila.core.i18n.Translator, akka.stream.Materializer):
+
   private lazy val logRepo        = ModlogRepo(db(CollName("modlog")))
   private lazy val assessmentRepo = AssessmentRepo(db(CollName("player_assessment")))
   private lazy val historyRepo    = HistoryRepo(db(CollName("mod_gaming_history")))
@@ -71,23 +73,23 @@ final class Env(
 
   private lazy val sandbagWatch = wire[SandbagWatch]
 
-  lila.common.Bus.subscribeFuns(
+  Bus.subscribeFuns(
     "finishGame" -> {
-      case lila.game.actorApi.FinishGame(game, users) if !game.aborted =>
+      case lila.core.game.FinishGame(game, users) if !game.aborted =>
         users
-          .map(_.filter(_.enabled.yes).map(_.only(game.perfType)))
+          .map(_.filter(_.enabled.yes).map(_.only(game.perfKey)))
           .mapN: (whiteUser, blackUser) =>
             sandbagWatch(game)
-            assessApi.onGameReady(game, whiteUser, blackUser)
+            assessApi.onGameReady(game, ByColor(whiteUser, blackUser))
         if game.status == chess.Status.Cheat then
           game.loserUserId.foreach: userId =>
-            logApi.cheatDetectedAndCount(userId, game.id) flatMap { count =>
-              (count >= 3) so {
+            logApi.cheatDetectedAndCount(userId, game.id).flatMap { count =>
+              (count >= 3).so {
                 if game.hasClock then
                   api.autoMark(
                     SuspectId(userId),
                     s"Cheat detected during game, ${count} times"
-                  )(using User.lichessIdAsMe)
+                  )(using UserId.lichessAsMe)
                 else reportApi.autoCheatDetectedReport(userId, count)
               }
             }
@@ -95,18 +97,32 @@ final class Env(
     "analysisReady" -> { case lila.analyse.actorApi.AnalysisReady(game, analysis) =>
       assessApi.onAnalysisReady(game, analysis)
     },
-    "deletePublicChats" -> { case lila.hub.actorApi.security.DeletePublicChats(userId) =>
+    "deletePublicChats" -> { case lila.core.security.DeletePublicChats(userId) =>
       publicChat.deleteAll(userId)
     },
-    "autoWarning" -> { case lila.hub.actorApi.mod.AutoWarning(userId, subject) =>
-      logApi.modMessage(userId, subject)(using User.lichessIdAsMe)
+    "autoWarning" -> { case lila.core.mod.AutoWarning(userId, subject) =>
+      logApi.modMessage(userId, subject)(using UserId.lichessAsMe)
     },
-    "selfReportMark" -> { case lila.hub.actorApi.mod.SelfReportMark(suspectId, name) =>
-      api.autoMark(SuspectId(suspectId), s"Self report: ${name}")(using User.lichessIdAsMe)
+    "selfReportMark" -> { case lila.core.mod.SelfReportMark(suspectId, name) =>
+      api.autoMark(SuspectId(suspectId), s"Self report: ${name}")(using UserId.lichessAsMe)
     },
-    "chatTimeout" -> { case lila.hub.actorApi.mod.ChatTimeout(mod, user, reason, text) =>
-      logApi.chatTimeout(user, reason, text)(using mod.into(Me.Id))
+    "chatTimeout" -> { case lila.core.mod.ChatTimeout(mod, user, reason, text) =>
+      logApi.chatTimeout(user, reason, text)(using mod.into(MyId))
     },
     "loginWithWeakPassword"    -> { case u: User => logApi.loginWithWeakPassword(u.id) },
-    "loginWithBlankedPassword" -> { case u: User => logApi.loginWithBlankedPassword(u.id) }
+    "loginWithBlankedPassword" -> { case u: User => logApi.loginWithBlankedPassword(u.id) },
+    "team" -> {
+      case t: lila.core.team.TeamUpdate if t.byMod =>
+        logApi.teamEdit(t.team.userId, t.team.name)(using t.me)
+      case t: lila.core.team.KickFromTeam =>
+        logApi.teamKick(t.userId, t.teamName)(using t.me)
+    }
   )
+
+  Bus.sub[BusForum]:
+    case p: BusForum.RemovePost =>
+      if p.asAdmin
+      then logApi.deletePost(p.by, text = p.text.take(200))(using p.me)
+      else
+        logger.info:
+          s"${p.me} deletes post ${p.id} by ${p.by.so(_.value)} \"${p.text.take(200)}\""

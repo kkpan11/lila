@@ -12,11 +12,11 @@ object TimeMode:
   val ids  = values.map(_.id)
   val byId = values.mapBy(_.id)
 
-  def apply(id: Int): Option[TimeMode] = byId get id
+  def apply(id: Int): Option[TimeMode] = byId.get(id)
 
   def orDefault(id: Int) = apply(id) | default
 
-  def ofGame(game: lila.game.Game) =
+  def ofGame(game: Game) =
     if game.hasClock then RealTime
     else if game.hasCorrespondenceClock then Correspondence
     else Unlimited

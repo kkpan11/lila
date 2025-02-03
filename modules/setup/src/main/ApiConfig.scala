@@ -1,12 +1,13 @@
 package lila.setup
 
 import chess.format.Fen
-import chess.variant.{ Chess960, Variant, FromPosition }
+import chess.variant.{ FromPosition, Variant }
 import chess.{ Clock, Speed }
+import scalalib.model.Days
 
-import lila.common.{ Days, Template }
-import lila.game.GameRule
-import lila.lobby.Color
+import lila.core.data.Template
+import lila.core.game.GameRule
+import lila.lobby.TriColor
 import lila.rating.PerfType
 
 final case class ApiConfig(
@@ -14,16 +15,17 @@ final case class ApiConfig(
     clock: Option[Clock.Config],
     days: Option[Days],
     rated: Boolean,
-    color: Color,
-    position: Option[Fen.Epd] = None,
+    color: TriColor,
+    position: Option[Fen.Full] = None,
     message: Option[Template],
     keepAliveStream: Boolean,
     rules: Set[GameRule] = Set.empty
 ):
 
-  def perfType: PerfType = PerfType(variant, chess.Speed(days.isEmpty so clock))
+  def perfType: PerfType = lila.rating.PerfType(variant, chess.Speed(days.isEmpty.so(clock)))
+  def perfKey            = perfType.key
 
-  def validFen = ApiConfig.validFen(variant, position)
+  def validFen = Variant.isValidInitialFen(variant, position)
 
   def validSpeed(isBot: Boolean) =
     !isBot || clock.forall: c =>
@@ -49,7 +51,7 @@ object ApiConfig extends BaseHumanConfig:
       d: Option[Days],
       r: Boolean,
       c: Option[String],
-      pos: Option[Fen.Epd],
+      pos: Option[Fen.Full],
       msg: Option[String],
       keepAliveStream: Option[Boolean],
       rules: Option[Set[GameRule]]
@@ -59,17 +61,9 @@ object ApiConfig extends BaseHumanConfig:
       clock = cl,
       days = d,
       rated = r,
-      color = Color.orDefault(~c),
+      color = TriColor.orDefault(~c),
       position = pos,
-      message = msg map Template.apply,
+      message = msg.map(Template.apply),
       keepAliveStream = ~keepAliveStream,
       rules = ~rules
     ).autoVariant
-
-  def validFen(variant: Variant, fen: Option[Fen.Epd]) =
-    if variant.chess960
-    then fen.forall(f => Chess960.positionNumber(f).isDefined)
-    else if variant.fromPosition then
-      fen.exists: f =>
-        Fen.read(f).exists(_ playable false)
-    else true

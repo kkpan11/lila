@@ -3,15 +3,17 @@ package lila.pref
 import reactivemongo.api.bson.*
 
 import lila.db.BSON
-import lila.db.dsl.{ given, * }
+import lila.db.dsl.{ *, given }
 
 private object PrefHandlers:
+
+  given BSONDocumentHandler[Pref.BoardPref] = Macros.handler
 
   given BSONDocumentHandler[Pref] = new BSON[Pref]:
 
     def reads(r: BSON.Reader): Pref =
       Pref(
-        _id = r.get[UserId]("_id"),
+        id = r.get[UserId]("_id"),
         bg = r.getD("bg", Pref.default.bg),
         bgImg = r.strO("bgImg"),
         is3d = r.getD("is3d", Pref.default.is3d),
@@ -20,7 +22,6 @@ private object PrefHandlers:
         theme3d = r.getD("theme3d", Pref.default.theme3d),
         pieceSet3d = r.getD("pieceSet3d", Pref.default.pieceSet3d),
         soundSet = r.getD("soundSet", Pref.default.soundSet),
-        blindfold = r.getD("blindfold", Pref.default.blindfold),
         autoQueen = r.getD("autoQueen", Pref.default.autoQueen),
         autoThreefold = r.getD("autoThreefold", Pref.default.autoThreefold),
         takeback = r.getD("takeback", Pref.default.takeback),
@@ -52,51 +53,54 @@ private object PrefHandlers:
         resizeHandle = r.getD("resizeHandle", Pref.default.resizeHandle),
         moveEvent = r.getD("moveEvent", Pref.default.moveEvent),
         agreement = r.getD("agreement", 0),
+        board = r.getD("board", Pref.default.board),
+        usingAltSocket = r.getO("usingAltSocket"),
         tags = r.getD("tags", Pref.default.tags)
       )
 
     def writes(w: BSON.Writer, o: Pref) =
       $doc(
-        "_id"           -> o._id,
-        "bg"            -> o.bg,
-        "bgImg"         -> o.bgImg,
-        "is3d"          -> o.is3d,
-        "theme"         -> o.theme,
-        "pieceSet"      -> o.pieceSet,
-        "theme3d"       -> o.theme3d,
-        "pieceSet3d"    -> o.pieceSet3d,
-        "soundSet"      -> SoundSet.name2key(o.soundSet),
-        "blindfold"     -> o.blindfold,
-        "autoQueen"     -> o.autoQueen,
-        "autoThreefold" -> o.autoThreefold,
-        "takeback"      -> o.takeback,
-        "moretime"      -> o.moretime,
-        "clockTenths"   -> o.clockTenths,
-        "clockBar"      -> o.clockBar,
-        "clockSound"    -> o.clockSound,
-        "premove"       -> o.premove,
-        "animation"     -> o.animation,
-        "captured"      -> o.captured,
-        "follow"        -> o.follow,
-        "highlight"     -> o.highlight,
-        "destination"   -> o.destination,
-        "coords"        -> o.coords,
-        "replay"        -> o.replay,
-        "challenge"     -> o.challenge,
-        "message"       -> o.message,
-        "studyInvite"   -> o.studyInvite,
-        "submitMove"    -> o.submitMove,
-        "confirmResign" -> o.confirmResign,
-        "insightShare"  -> o.insightShare,
-        "keyboardMove"  -> o.keyboardMove,
-        "voice"         -> o.voice,
-        "zen"           -> o.zen,
-        "ratings"       -> o.ratings,
-        "flairs"        -> o.flairs,
-        "rookCastle"    -> o.rookCastle,
-        "moveEvent"     -> o.moveEvent,
-        "pieceNotation" -> o.pieceNotation,
-        "resizeHandle"  -> o.resizeHandle,
-        "agreement"     -> o.agreement,
-        "tags"          -> o.tags
+        "_id"            -> o.id,
+        "bg"             -> o.bg,
+        "bgImg"          -> o.bgImg,
+        "is3d"           -> o.is3d,
+        "theme"          -> o.theme,
+        "pieceSet"       -> o.pieceSet,
+        "theme3d"        -> o.theme3d,
+        "pieceSet3d"     -> o.pieceSet3d,
+        "soundSet"       -> SoundSet.name2key(o.soundSet),
+        "autoQueen"      -> o.autoQueen,
+        "autoThreefold"  -> o.autoThreefold,
+        "takeback"       -> o.takeback,
+        "moretime"       -> o.moretime,
+        "clockTenths"    -> o.clockTenths,
+        "clockBar"       -> o.clockBar,
+        "clockSound"     -> o.clockSound,
+        "premove"        -> o.premove,
+        "animation"      -> o.animation,
+        "captured"       -> o.captured,
+        "follow"         -> o.follow,
+        "highlight"      -> o.highlight,
+        "destination"    -> o.destination,
+        "coords"         -> o.coords,
+        "replay"         -> o.replay,
+        "challenge"      -> o.challenge,
+        "message"        -> o.message,
+        "studyInvite"    -> o.studyInvite,
+        "submitMove"     -> o.submitMove,
+        "confirmResign"  -> o.confirmResign,
+        "insightShare"   -> o.insightShare,
+        "keyboardMove"   -> o.keyboardMove,
+        "voice"          -> o.voice,
+        "zen"            -> o.zen,
+        "ratings"        -> o.ratings,
+        "flairs"         -> o.flairs,
+        "rookCastle"     -> o.rookCastle,
+        "moveEvent"      -> o.moveEvent,
+        "pieceNotation"  -> o.pieceNotation,
+        "resizeHandle"   -> o.resizeHandle,
+        "agreement"      -> o.agreement,
+        "usingAltSocket" -> o.usingAltSocket,
+        "board"          -> o.board,
+        "tags"           -> o.tags
       )

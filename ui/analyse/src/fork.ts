@@ -1,8 +1,8 @@
 import { defined } from 'common';
 import { onInsert } from 'common/snabbdom';
 import { h } from 'snabbdom';
-import AnalyseCtrl from './ctrl';
-import { ConcealOf } from './interfaces';
+import type AnalyseCtrl from './ctrl';
+import type { ConcealOf } from './interfaces';
 import { renderIndexAndMove } from './view/moveView';
 
 export interface ForkCtrl {
@@ -31,15 +31,11 @@ export function make(ctrl: AnalyseCtrl): ForkCtrl {
   return {
     state() {
       const node = ctrl.node;
-      if (!prev || prev!.id !== node.id) {
+      if (!prev || prev.id !== node.id) {
         prev = node;
         selected = 0;
       }
-      return {
-        node,
-        selected,
-        displayed: displayed(),
-      };
+      return { node, selected, displayed: displayed() };
     },
     next() {
       if (!displayed()) return false;
@@ -116,22 +112,15 @@ export function view(ctrl: AnalyseCtrl, concealOf?: ConcealOf) {
         correct: ctrl.isGamebook() && it === 0,
         wrong: ctrl.isGamebook() && it > 0,
       };
-      const conceal = isMainline && concealOf!(true)(ctrl.path + node.id, node);
+      const conceal = isMainline && concealOf(true)(ctrl.path + node.id, node);
       if (!conceal)
         return h(
           'move',
-          {
-            class: classes,
-            attrs: { 'data-it': it },
-          },
+          { class: classes, attrs: { 'data-it': it } },
           renderIndexAndMove(
-            {
-              withDots: true,
-              showEval: ctrl.showComputer(),
-              showGlyphs: ctrl.showComputer(),
-            },
+            { withDots: true, showEval: ctrl.showComputer(), showGlyphs: ctrl.showComputer() },
             node,
-          )!,
+          ),
         );
       return undefined;
     }),

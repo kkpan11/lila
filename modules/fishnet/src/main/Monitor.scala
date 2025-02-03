@@ -1,18 +1,17 @@
 package lila.fishnet
 
-import ornicar.scalalib.ThreadLocalRandom
+import scalalib.ThreadLocalRandom
+
+import lila.core.chess.Depth
 
 final private class Monitor(
     repo: FishnetRepo,
     cacheApi: lila.memo.CacheApi
 )(using ec: Executor, scheduler: Scheduler):
 
-  val statusCache = cacheApi.unit[Monitor.Status] {
-    _.refreshAfterWrite(1 minute)
-      .buildAsyncFuture { _ =>
-        repo.status.compute
-      }
-  }
+  val statusCache = cacheApi.unit[Monitor.Status]:
+    _.refreshAfterWrite(1.minute).buildAsyncFuture: _ =>
+      repo.status.compute
 
   private val monBy = lila.mon.fishnet.analysis.by
 
@@ -36,7 +35,7 @@ final private class Monitor(
       monBy
         .totalMeganode(userId)
         .increment(sumOf(result.evaluations) { eval =>
-          eval.nodes ifFalse eval.mateFound
+          eval.nodes.ifFalse(eval.mateFound)
         } / 1000000)
 
     val metaMovesSample = sample(result.evaluations.drop(6).filterNot(_.mateFound), 100)
@@ -46,13 +45,13 @@ final private class Monitor(
           (sum + v, nb + 1)
         }
       }
-      (nb > 0) option (sum / nb)
-    avgOf(_.time) foreach { monBy.movetime(userId).record(_) }
+      (nb > 0).option(sum / nb)
+    avgOf(_.time).foreach { monBy.movetime(userId).record(_) }
     if result.stockfish.isNnue then
-      avgOf(_.nodes) foreach { monBy.node(userId).record(_) }
-      avgOf(_.cappedNps) foreach { monBy.nps(userId).record(_) }
-    avgOf(e => Depth raw e.depth) foreach { monBy.depth(userId).record(_) }
-    avgOf(_.pv.size.some) foreach { monBy.pvSize(userId).record(_) }
+      avgOf(_.nodes).foreach { monBy.node(userId).record(_) }
+      avgOf(_.cappedNps).foreach { monBy.nps(userId).record(_) }
+    avgOf(e => Depth.raw(e.depth)).foreach { monBy.depth(userId).record(_) }
+    avgOf(_.pv.size.some).foreach { monBy.pvSize(userId).record(_) }
 
     val significantPvSizes =
       result.evaluations.withFilter(e => !(e.mateFound || e.deadDraw)).map(_.pv.size)
@@ -61,10 +60,10 @@ final private class Monitor(
     monBy.pv(userId, isLong = true).increment(significantPvSizes.count(_ >= 6))
 
   private def sample[A](elems: List[A], n: Int) =
-    if elems.sizeIs <= n then elems else ThreadLocalRandom shuffle elems take n
+    if elems.sizeIs <= n then elems else ThreadLocalRandom.shuffle(elems).take(n)
 
   private def monitorClients(): Funit =
-    repo.allRecentClients map { clients =>
+    repo.allRecentClients.map { clients =>
       import lila.mon.fishnet.client.*
 
       status(true).update(clients.count(_.enabled))
@@ -72,13 +71,13 @@ final private class Monitor(
 
       val instances = clients.flatMap(_.instance)
 
-      instances.groupMapReduce(_.version.value)(_ => 1)(_ + _) foreach { case (v, nb) =>
+      instances.groupMapReduce(_.version.value)(_ => 1)(_ + _).foreach { case (v, nb) =>
         version(v).update(nb)
       }
     }
 
   private def monitorStatus(): Funit =
-    statusCache.get {} map { c =>
+    statusCache.get {}.map { c =>
       lila.mon.fishnet.work("queued", "system").update(c.system.queued)
       lila.mon.fishnet.work("queued", "user").update(c.user.queued)
       lila.mon.fishnet.work("acquired", "system").update(c.system.acquired)
@@ -88,7 +87,7 @@ final private class Monitor(
       ()
     }
 
-  scheduler.scheduleWithFixedDelay(1 minute, 1 minute) { () =>
+  scheduler.scheduleWithFixedDelay(1.minute, 1.minute) { () =>
     monitorClients() >> monitorStatus()
     ()
   }
@@ -122,7 +121,7 @@ object Monitor:
 
     monResult.success(client.userId.value).increment()
 
-    work.acquiredAt foreach { acquiredAt =>
+    work.acquiredAt.foreach { acquiredAt =>
       lila.mon.fishnet.queueTime(if work.sender.system then "system" else "user").record {
         acquiredAt.toMillis - work.createdAt.toMillis
       }

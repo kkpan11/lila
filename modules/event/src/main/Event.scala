@@ -1,7 +1,5 @@
 package lila.event
-
-import play.api.i18n.Lang
-import ornicar.scalalib.ThreadLocalRandom
+import lila.core.i18n.Language
 
 case class Event(
     _id: String,
@@ -10,7 +8,7 @@ case class Event(
     description: Option[Markdown],
     homepageHours: Double,
     url: String,
-    lang: Lang,
+    lang: Language,
     enabled: Boolean,
     createdBy: UserId,
     createdAt: Instant,
@@ -25,25 +23,24 @@ case class Event(
 
   def willStartLater = startsAt.isAfterNow
 
-  def secondsToStart =
-    willStartLater option {
-      (startsAt.toSeconds - nowSeconds).toInt
-    }
+  def secondsToStart = willStartLater.option:
+    (startsAt.toSeconds - nowSeconds).toInt
 
-  def featureSince = startsAt minusMinutes (homepageHours * 60).toInt
+  def featureSince = startsAt.minusMinutes((homepageHours * 60).toInt)
 
   def featureNow = featureSince.isBeforeNow && !isFinishedSoon
 
-  def isFinishedSoon = finishesAt.isBefore(nowInstant plusMinutes 5)
+  def isFinishedSoon = finishesAt.isBefore(nowInstant.plusMinutes(5))
 
   def isFinished = finishesAt.isBeforeNow
 
   def isNow = startsAt.isBeforeNow && !isFinished
 
-  def isNowOrSoon = startsAt.isBefore(nowInstant plusMinutes 10) && !isFinished
+  def isNowOrSoon = startsAt.isBefore(nowInstant.plusMinutes(10)) && !isFinished
 
   inline def id = _id
 
 object Event:
 
-  def makeId = ThreadLocalRandom nextString 8
+  import scalalib.ThreadLocalRandom
+  def makeId = ThreadLocalRandom.nextString(8)

@@ -42,6 +42,11 @@
     <item quantity="few">Završio/la %s partije dopisnog šaha</item>
     <item quantity="other">Završio/la %s partija dopisnog šaha</item>
   </plurals>
+  <plurals name="completedNbVariantGames">
+    <item quantity="one">Završena %1$s partija %2$s dopisnog šaha</item>
+    <item quantity="few">Završene %1$s partije %2$s dopisnog šaha</item>
+    <item quantity="other">Završeno %1$s partija %2$s dopisnog šaha</item>
+  </plurals>
   <plurals name="followedNbPlayers">
     <item quantity="one">Počeo/la pratiti %s igrača</item>
     <item quantity="few">Počeo/la pratiti %s igrača</item>
@@ -67,7 +72,7 @@
     <item quantity="few">Kreirao/la %s nove studije</item>
     <item quantity="other">Kreirao/la %s novih studija</item>
   </plurals>
-  <plurals name="competedInNbTournaments">
+  <plurals name="competedInNbTournaments" comment="Indicates that the user has competed in %s number of tournaments.&#10;&#10;Please note this string used to say &quot;tournaments&quot; without qualifying them as &quot;Arena tournaments&quot;, which used to be the only format available on Lichess. Please update as required.">
     <item quantity="one">Natjecao/la se u %s turniru</item>
     <item quantity="few">Natjecao/la se u %s turnira</item>
     <item quantity="other">Natjecao/la se u %s turnira</item>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="search">Tìm kiếm</string>
+  <string name="search" comment="May appear either as a button or as grey hint text inside a search box, to indicate what it is for. Please see screenshots for an example.">Tìm kiếm</string>
   <string name="advancedSearch">Tìm kiếm nâng cao</string>
   <plurals name="searchInXGames">
     <item quantity="other">Tìm kiếm trong %s ván cờ</item>
@@ -32,5 +32,5 @@
   <plurals name="gamesFound">
     <item quantity="other">Đã tìm được %s ván cờ</item>
   </plurals>
-  <string name="ratingExplanation">Hệ số trung bình của cả hai người chơi</string>
+  <string name="ratingExplanation">Hệ số trung bình của cả hai kỳ thủ</string>
 </resources>

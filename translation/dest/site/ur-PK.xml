@@ -99,7 +99,6 @@
   <string name="replayMode">دوبارہ چلائیں</string>
   <string name="realtimeReplay">اصل وقت پرچلائیں</string>
   <string name="byCPL">بذریعہ CPL</string>
-  <string name="openStudy">سٹڈی کو کھولیں</string>
   <string name="enable">آن کریں</string>
   <string name="bestMoveArrow">بہترین چال دکھانے والا تیر</string>
   <string name="evaluationGauge">تشخیص بار</string>
@@ -108,7 +107,6 @@
   <string name="memory">یاداشت</string>
   <string name="infiniteAnalysis">لامحدود تجزیہ</string>
   <string name="removesTheDepthLimit">گہرائی کی حد ختم کریں، یہ آپ کے کمپیوٹر کو گرم رکھے گا</string>
-  <string name="engineManager">انجن منتظم</string>
   <string name="blunder">احمقانہ غلطی</string>
   <string name="mistake">غلطی</string>
   <string name="inaccuracy">کمزور چال</string>
@@ -116,11 +114,23 @@
     <item quantity="one">%s غلطی</item>
     <item quantity="other">%s غلطیاں</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="one">%s غلطی</item>
+    <item quantity="other">%s غلطیاں</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="one">%s غلطی</item>
     <item quantity="other">%s غلطیاں</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="one">%s غلطی</item>
+    <item quantity="other">%s غلطیاں</item>
+  </plurals>
   <plurals name="nbInaccuracies">
+    <item quantity="one">%s غلطی</item>
+    <item quantity="other">%s غلطیاں</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
     <item quantity="one">%s غلطی</item>
     <item quantity="other">%s غلطیاں</item>
   </plurals>
@@ -221,7 +231,6 @@
   <string name="playingRightNow">فی الحال کھیل میں مصروف ہے</string>
   <string name="eventInProgress">فی الحال کھیل میں مصروف ہے</string>
   <string name="finished">ختم شد</string>
-  <string name="finishesX">ختم ہو گا %s</string>
   <string name="abortGame">کھیل منسوخ کريں</string>
   <string name="gameAborted">منسوخ شد</string>
   <string name="standard">معروف</string>
@@ -367,7 +376,6 @@
   <string name="block">منع کریں</string>
   <string name="blocked">ممنوعہ</string>
   <string name="unblock">ممانعت ختم کریں</string>
-  <string name="followsYou">آپ کا پیروکار ہے</string>
   <string name="xStartedFollowingY">%1$s نے %2$s کو فالو کرنا شروع کر دیا ہے</string>
   <plurals name="nbFollowers">
     <item quantity="one">%s پیروکار</item>
@@ -399,9 +407,6 @@
   <string name="safeTournamentName">ٹورنامنٹ کا ایک محتاط نام رکھیں.</string>
   <string name="inappropriateNameWarning">کسی قسم کی نا مناسب حرکت کی وجہ سے آپ کا اکاونٹ بند ہو سکتا ہے۔.</string>
   <string name="emptyTournamentName">خانے کو خالی چھوڑنے سے ٹورنامنٹ کا نام کسی مشہور کھلاڑی پر رکھ دیا جائے گا.</string>
-  <string name="recommendNotTouching">ہمارہ مشورہ ہے کہ اس کے ساتھ چھیڑ چھاڑ نہ کریں.</string>
-  <string name="fewerPlayers">اگر آپ داخلے کی شرائط مقرر کریں گے تو ٹورنامنٹ میں کم کھلاڑی آئیں گے.</string>
-  <string name="showAdvancedSettings">اعلی ترتیبات دکھائیں</string>
   <string name="makePrivateTournament">ٹورنامنٹ کی حیثیت ذاتی کر دیں، اور رسائی صرف پاس ورڈ کے ذریعے ہو سکے گی</string>
   <string name="join">شامل ہوں</string>
   <string name="withdraw">دستبردار ہوں</string>
@@ -438,8 +443,6 @@
   <string name="ifNoneLeaveEmpty">اگر کوئی نہیں تو خالی چھوڑ دیں</string>
   <string name="profile">اکاؤنٹ</string>
   <string name="editProfile">اکاؤنٹ میں ترمیم کریں</string>
-  <string name="firstName">پہلا نام</string>
-  <string name="lastName">آخری نام</string>
   <string name="biography">سوانح حیات</string>
   <string name="thankYou">آپ کا شکریہ!</string>
   <string name="socialMediaLinks">سوشل میڈیا کے لنکس</string>
@@ -456,7 +459,6 @@
   <string name="automaticallyProceedToNextGameAfterMoving">چال چلتے ہی خودبخود اگلے مقابلے پر جائیں</string>
   <string name="autoSwitch">خودکار تبدیلی</string>
   <string name="puzzles">معمہ جات</string>
-  <string name="tournamentWinners">مسابقوں کے فاتحین</string>
   <string name="name">نام</string>
   <string name="description">تفصیل</string>
   <string name="descPrivate">نجی تفصیل</string>
@@ -478,10 +480,8 @@
   <string name="reason">شکایت کی وجہ</string>
   <string name="whatIsIheMatter">معاملہ؟</string>
   <string name="cheat">بدعنوانی</string>
-  <string name="insult">ہتک آمیز گفتگو</string>
   <string name="troll">سیاپہ فروشی</string>
   <string name="other">دیگر</string>
-  <string name="reportDescriptionHelp">متاثرہ مقابلوں کے رابطے یہاں داخل کریں اور شکایت کی وجوہات بیان کریں</string>
   <string name="error.provideOneCheatedGameLink">کم از کم ایک بازی کا لنک دیں گس میں چیٹنگ کی گئی ہو.</string>
   <string name="by">منجانب: %s</string>
   <string name="thisTopicIsNowClosed">یہ موضوع مزید تبصروں کے لیے بند ہے</string>
@@ -670,9 +670,6 @@
   <string name="dark">ڈارک</string>
   <string name="transparent">شفاف</string>
   <string name="backgroundImageUrl">پس منظر کی تصویر URL:</string>
-  <string name="boardGeometry">بساط کی جیومیٹری</string>
-  <string name="boardTheme">بساط کا ڈیزائن</string>
-  <string name="boardSize">بساط کی جسامت</string>
   <string name="pieceSet">مہروں کا ڈیزائن</string>
   <string name="embedInYourWebsite">اپنی ویب سائٹ پرایمبیڈ کریں</string>
   <string name="usernameAlreadyUsed">یہ نام پہلے سے استعمال شدہ ہے، کوئی اور استعمال کریں.</string>
@@ -744,7 +741,6 @@
   </plurals>
   <string name="sorry">معذرت :(</string>
   <string name="weHadToTimeYouOutForAWhile">ہمیں آپ پر کچھ عرصے کے لیے پابندی لگانا پڑی.</string>
-  <string name="timeoutExpires">پابندی %s کے بعد ختم ہو گی.</string>
   <string name="why">کیوں?</string>
   <string name="pleasantChessExperience">ہم سب کو خوشگوار شطرنج کا تجربہ دینا چاہتے ہیں.</string>
   <string name="goodPractice">اس مقصد کے لیے، ہمیں یقینی بنانا چاہئے کہ تمام کھلاڑی اچھی پریکٹس کا مظاہرہ کریں.</string>

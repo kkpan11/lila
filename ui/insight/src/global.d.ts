@@ -1,9 +1,3 @@
-// Extend the global lichess object with a function defined in
-// public/javascripts/insight-refresh.js
-interface Lichess {
-  refreshInsightForm(): void;
-}
-
 /* Type definitions for multiple-select.js */
 
 interface Cash {

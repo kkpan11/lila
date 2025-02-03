@@ -7,8 +7,8 @@ import play.api.mvc.Results.*
 import play.api.routing.*
 import play.api.{ Configuration, Environment, UsefulException }
 
-import lila.common.HTTPRequest
 import lila.api.{ LoginContext, PageContext }
+import lila.common.HTTPRequest
 
 final class ErrorHandler(
     environment: Environment,
@@ -18,36 +18,36 @@ final class ErrorHandler(
     lobbyC: => controllers.Lobby
 )(using Executor)
     extends DefaultHttpErrorHandler(environment, config, router.some)
-    with ResponseWriter:
+    with lila.web.ResponseWriter:
 
   override def onProdServerError(req: RequestHeader, exception: UsefulException) =
     Future {
-      val actionName = HTTPRequest actionName req
-      val client     = HTTPRequest clientName req
-      lila.mon.http.error(actionName, client, req.method, 500).increment()
+      val actionName = HTTPRequest.actionName(req)
+      val client     = HTTPRequest.clientName(req)
+      lila.mon.http.errorCount(actionName, client, req.method, 500).increment()
       lila.log("http").error(s"ERROR 500 $actionName", exception)
       if canShowErrorPage(req) then
         given PageContext = PageContext(
-          lila.api.Context(req, lila.i18n.defaultLang, LoginContext.anon, lila.pref.Pref.default),
-          lila.api.PageData.error(HTTPRequest.isSynchronousHttp(req) option lila.api.Nonce.random)
+          lila.api.Context(req, lila.core.i18n.defaultLang, LoginContext.anon, lila.pref.Pref.default),
+          lila.api.PageData.error(HTTPRequest.isSynchronousHttp(req).option(lila.ui.Nonce.random))
         )
-        InternalServerError(views.html.site.bits.errorPage)
+        InternalServerError(views.base.page(views.site.ui.errorPage))
       else InternalServerError("Sorry, something went wrong.")
-    } recover { case scala.util.control.NonFatal(e) =>
+    }.recover { case scala.util.control.NonFatal(e) =>
       lila.log("http").error(s"""Error handler exception on "${exception.getMessage}\"""", e)
       InternalServerError("Sorry, something went very wrong.")
     }
 
   override def onClientError(req: RequestHeader, statusCode: Int, msg: String): Fu[Result] =
+    def msgOpt = Option(msg).filter(_.nonEmpty)
     statusCode match
-      case 404 if canShowErrorPage(req) => mainC.handlerNotFound(using req)
-      case 404                          => fuccess(NotFound("404 - Resource not found"))
-      case 403                          => lobbyC.handleStatus(Results.Forbidden)(using req)
-      case _ if req.attrs.contains(request.RequestAttrKey.Session) =>
-        lobbyC.handleStatus(Results.BadRequest)(using req)
-      case _ =>
-        fuccess:
-          Results.BadRequest("Sorry, the request could not be processed")
+      case 400 | 404 if canShowErrorPage(req) => mainC.handlerNotFound(msgOpt)(using req)
+      case 400 | 404                  => fuccess(NotFound(s"$statusCode - ${msgOpt | "Resource not found"}"))
+      case 403                        => lobbyC.handleStatus(Results.Forbidden)(using req)
+      case _ if canShowErrorPage(req) => lobbyC.handleStatus(Results.BadRequest)(using req)
+      case _ => fuccess(Results.BadRequest("Sorry, the request could not be processed"))
 
   private def canShowErrorPage(req: RequestHeader): Boolean =
-    HTTPRequest.isSynchronousHttp(req) && !HTTPRequest.hasFileExtension(req)
+    HTTPRequest.isSynchronousHttp(req) &&
+      !HTTPRequest.hasFileExtension(req) &&
+      req.attrs.contains(request.RequestAttrKey.Session)

@@ -1,5 +1,5 @@
 export interface Hovering {
-  fen: Fen;
+  fen: FEN;
   uci: Uci;
 }
 
@@ -19,7 +19,7 @@ export interface ExplorerOpts {
 }
 
 export interface ExplorerData {
-  fen: Fen;
+  fen: FEN;
   moves: MoveStats[];
   isOpening?: true;
   tablebase?: true;
@@ -72,6 +72,7 @@ export interface TablebaseData extends ExplorerData {
   moves: TablebaseMoveStats[];
   dtz: number | null;
   dtm: number | null;
+  dtw: number | null;
   checkmate: boolean;
   stalemate: boolean;
   variant_win: boolean;
@@ -93,10 +94,12 @@ export interface OpeningMoveStats extends MoveStats {
   averageOpponentRating?: number;
   performance?: number;
   game?: OpeningGame;
+  opening?: Opening;
 }
 export interface TablebaseMoveStats extends MoveStats {
   dtz: number | null;
   dtm: number | null;
+  dtw: number | null;
   checkmate: boolean;
   stalemate: boolean;
   variant_win: boolean;
@@ -114,7 +117,7 @@ export function isTablebase(m: ExplorerData): m is TablebaseData {
 }
 
 export interface SimpleTablebaseHit {
-  fen: Fen;
+  fen: FEN;
   best?: Uci; // no move if checkmate/stalemate
   winner: Color | undefined;
 }

@@ -110,7 +110,6 @@
   <string name="replayMode">Modu di rilettura</string>
   <string name="realtimeReplay">Vitezza nurmale</string>
   <string name="byCPL">Par CPP Centi Puntu Persu</string>
-  <string name="openStudy">Studià l\' apertura</string>
   <string name="enable">Attivà</string>
   <string name="bestMoveArrow">Fleccia per u colpu u più forte</string>
   <string name="evaluationGauge">Stazza di valutazione</string>
@@ -126,13 +125,25 @@
     <item quantity="one">%s sbaglione</item>
     <item quantity="other">%s sbaglioni</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="one">%s Sbaglione</item>
+    <item quantity="other">%s Sbaglioni</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="one">%s sbagliu</item>
     <item quantity="other">%s sbagli</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="one">%s Sbagliu</item>
+    <item quantity="other">%s Sbagli</item>
+  </plurals>
   <plurals name="nbInaccuracies">
     <item quantity="one">%s imprecisione</item>
     <item quantity="other">%s imprecisioni</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
+    <item quantity="one">%s Imprecisione</item>
+    <item quantity="other">%s Imprecisioni</item>
   </plurals>
   <string name="moveTimes">Durata di u coplu</string>
   <string name="flipBoard">Vultà a scacchera</string>
@@ -238,7 +249,6 @@
   <string name="playingRightNow">Si ghjoca avà</string>
   <string name="eventInProgress">Si ghjoca avà</string>
   <string name="finished">Finita</string>
-  <string name="finishesX">finisce %s</string>
   <string name="abortGame">Aburtì a partita</string>
   <string name="gameAborted">Partita aburtita</string>
   <string name="standard">Classica</string>
@@ -389,7 +399,6 @@
   <string name="block">Bluccà</string>
   <string name="blocked">Bluccatu</string>
   <string name="unblock">Sbluccà</string>
-  <string name="followsYou">Vi segue</string>
   <string name="xStartedFollowingY">%1$s hà principiatu à segue%2$s</string>
   <plurals name="nbFollowers">
     <item quantity="one">%s sustenidore</item>
@@ -421,9 +430,6 @@
   <string name="safeTournamentName">Scegli un nomu curtesu pè a ghjustra criata.</string>
   <string name="inappropriateNameWarning">S\'è vo date un nomu sgarbatu à u vostru turneu, u vostru contu pò esse chjosu.</string>
   <string name="emptyTournamentName">Lascià viotu darà à a ghjustra u nomu d\' un ghjucadore famosu.</string>
-  <string name="recommendNotTouching">V\' arricumandemu d\' ùn tuccà.</string>
-  <string name="fewerPlayers">S\'è vo create parechji cundizioni d\' intrata, ci seranu menu ghjucadori.</string>
-  <string name="showAdvancedSettings">Mustrà l\' uzzioni avanzati</string>
   <string name="makePrivateTournament">Creà una ghjustra privata è limità ne l\' accessu cù una parolla d\' intesa</string>
   <string name="join">Ghjunghje</string>
   <string name="withdraw">Ritirà si</string>
@@ -462,8 +468,6 @@
   <string name="ifNoneLeaveEmpty">S\'è ùn n\' avete, lasciate viotu</string>
   <string name="profile">Profilu</string>
   <string name="editProfile">Edità u prufilu</string>
-  <string name="firstName">Nome datu</string>
-  <string name="lastName">Cugnome</string>
   <string name="biography">Biugraffia</string>
   <string name="thankYou">À ringrazià vi!</string>
   <string name="socialMediaLinks">Leie di e rete suciale</string>
@@ -483,7 +487,6 @@
   <string name="automaticallyProceedToNextGameAfterMoving">Passà di modu automaticu à a prossima partita dopu à u colpu</string>
   <string name="autoSwitch">Auto cambiamentu</string>
   <string name="puzzles">Puzzle</string>
-  <string name="tournamentWinners">Vincitori di i turnei</string>
   <string name="name">Nome</string>
   <string name="description">Descrizzione</string>
   <string name="descPrivate">Descrizzione privata</string>
@@ -506,11 +509,8 @@
   <string name="reason">Mutivu</string>
   <string name="whatIsIheMatter">Chì hè u ?</string>
   <string name="cheat">Ingannu</string>
-  <string name="insult">Parullaccia</string>
   <string name="troll">Trollu</string>
-  <string name="ratingManipulation">Valutazione trafficata</string>
   <string name="other">Altru</string>
-  <string name="reportDescriptionHelp">Incolla a leia di a partita è spiega ciò ch\' ùn si passa bè cù u cumpurtamentu di u ghjucadore. Ùn scrivi micca soltantu \"inganna\" ma dite dinù perchè. A vostra dumanda serà trattata di modu più prontu s\' ellu hè scrittu in inglese.</string>
   <string name="error.provideOneCheatedGameLink">Pè piace date omancu una leia d\' una partita ingannata.</string>
   <string name="by">da %s</string>
   <string name="importedByX">Impurtata da %s</string>
@@ -719,9 +719,6 @@
   <string name="transparent">Diafanu</string>
   <string name="deviceTheme">Tema dispusitivu</string>
   <string name="backgroundImageUrl">URL di a fiura di u fondu:</string>
-  <string name="boardGeometry">Geumetria di a scacchera</string>
-  <string name="boardTheme">Aspettu di a scacchera</string>
-  <string name="boardSize">Grandezza di a scacchera</string>
   <string name="pieceSet">Aspettu di e pezze</string>
   <string name="embedInYourWebsite">Integrà in u vostru situ web</string>
   <string name="usernameAlreadyUsed">Stu nome d\' utilizatore hè dighjà pigliatu, prova cù un altru.</string>
@@ -793,7 +790,6 @@
   </plurals>
   <string name="sorry">Scusate :(</string>
   <string name="weHadToTimeYouOutForAWhile">Vi avemu messu fora pè un mumentu.</string>
-  <string name="timeoutExpires">A suspensione finisce %s.</string>
   <string name="why">Perchè?</string>
   <string name="pleasantChessExperience">Vulemu prupone una stonda di scacchi piacevule pè tutti.</string>
   <string name="goodPractice">A tale scopu, vulemu assicurà chì tutti i ghjucadori seguitinu e bone pratiche.</string>
@@ -861,8 +857,6 @@
   <string name="minimumRatedGames">Minimu di partite classificate</string>
   <string name="minimumRating">Classifica minimale</string>
   <string name="maximumWeeklyRating">Classifica massimale durante a settimana</string>
-  <string name="onlyTitled">Soltantu ghjucadori cù un titulu</string>
-  <string name="onlyTitledHelp">Ci vole un titulu ufficiale pè ghjunghje u turneu</string>
   <string name="positionInputHelp">Incollate un FEN validu pè principà tutte e partite cù una pusizione scelta.
 Viaghja soltantu cù e partite classiche, ùn viaghja cù e variante.
 Pudete aduprà u %s pè creà a pusizione FEN, pò incollà la.
@@ -890,9 +884,6 @@ Lasciate viotu pè principià a partita cù una pusizione nurmale.</string>
   <string name="focusChat">Palisa a chjachjera</string>
   <string name="showHelpDialog">Mustrà a scatula d\' aiutu</string>
   <string name="reopenYourAccount">Apre da torna u vostru contu</string>
-  <string name="closedAccountChangedMind">S\'è vo avete chjosu u vostru contu, ma ch\' avete cambiatu d\' idea, vi ferma una opportunità di recuperà lu.</string>
-  <string name="onlyWorksOnce">Ùn puderete reapre lu ch\' una volta.</string>
-  <string name="cantDoThisTwice">S\'è vo chjudite u vostru contu una seconda volta, ùn puderete più recuperà lu.</string>
   <string name="emailAssociatedToaccount">Indirizzu mail liati à u contu</string>
   <string name="sentEmailWithLink">Vi avemu mandatu un mail cù una leia.</string>
   <string name="tournamentEntryCode">Codice per arregistrà si in u turneu</string>

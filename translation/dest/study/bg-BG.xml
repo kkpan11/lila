@@ -63,7 +63,6 @@
   <string name="downloadAllGames">Изтегли всички партии</string>
   <string name="chapterPgn">PGN на главата</string>
   <string name="copyChapterPgn">Копирай PGN</string>
-  <string name="copyChapterPgnDescription">Копирай PGN на главата.</string>
   <string name="downloadGame">Изтегли партия</string>
   <string name="studyUrl">URL на казуса</string>
   <string name="currentChapterUrl">URL на настоящата глава</string>
@@ -167,4 +166,5 @@
   <string name="playAgain">Играйте отново</string>
   <string name="whatWouldYouPlay">Какво бихте играли в тази позиция?</string>
   <string name="youCompletedThisLesson">Поздравления! Вие завършихте този урок.</string>
+  <string name="perPage">%s на страница</string>
 </resources>

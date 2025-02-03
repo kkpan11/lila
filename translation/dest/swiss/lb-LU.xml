@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="swiss" comment="Used as an adjective.&#10;&#10;Appears on tournament pages information boxes, to explain that the tournament is Swiss format.">Schwäizer System</string>
   <string name="swissTournaments">Schwäizer Turnéier</string>
   <plurals name="viewAllXRounds" comment="viewAllXRounds [one] [other]&#10;&#10;%s is the number of rounds in the Swiss tournament.">
     <item quantity="one">Ronn ukucken</item>
@@ -26,7 +27,7 @@
     <item quantity="one">%s Minutt tëschent Ronnen</item>
     <item quantity="other">%s Minutten tëschent Ronnen</item>
   </plurals>
-  <string name="startingIn" comment="Displayed above a timer">Start an</string>
+  <string name="startingIn" comment="Displayed above a timer. Is auto-capitalised.">Start an</string>
   <string name="nextRound">Nächst Ronn</string>
   <plurals name="ongoingGames" comment="Displayed next to the ongoing games count">
     <item quantity="one">Lafend Partie</item>
@@ -38,6 +39,7 @@
   <string name="roundInterval">Intervall tëschent de Ronnen</string>
   <string name="forbiddenPairings">Verbuede Paarungen</string>
   <string name="forbiddenPairingsHelp">Benotzernimm vu Spiller déi net géinteneen spillen däerfen (zum Beispill Geschwëster). Zwee Benotzernimm pro Zeil, getrennt duerch en Espace.</string>
+  <string name="manualPairings">Manuell Paarungen an der nächster Ronn</string>
   <string name="newSwiss">Neit Schwäizer Turnéier</string>
   <string name="swissVsArenaQ">Wéini Schwäizer Turnéier statt Arena benotzen?</string>
   <string name="swissVsArenaA">An engem Turnéier nom Schwäizer System spillen all Participanten déi nämmlecht Unzuel u Partien an kënne nëmmen eemol géinteneen spillen.
@@ -111,4 +113,5 @@ De Gewënner ass de Participant mat de meeschte Gesamtpunkte, déi aus alle Ronn
   <string name="predefinedUsers">Nëmmen virdefinéiert Spiller dierfen matmaachen</string>
   <string name="forbiddedUsers">Falls dës Lëscht net eidel ass, kënnen Spiller déi net dropstinn net matmaachen. Een Benotzernumm pro Zeil.</string>
   <string name="playYourGames">Spill deng Partien</string>
+  <string name="tieBreak">Tie-Break</string>
 </resources>

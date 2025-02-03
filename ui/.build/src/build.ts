@@ -1,74 +1,73 @@
-import * as fs from 'node:fs';
-import * as cps from 'node:child_process';
-import * as ps from 'node:process';
-import { parseModules } from './parse';
-import { tsc, stopTsc } from './tsc';
-import { sass, stopSass } from './sass';
-import { esbuild, stopEsbuild } from './esbuild';
-import { copies, stopCopies } from './copies';
-import { startTickling, stopTickling } from './tickler';
-import { clean } from './clean';
-import { LichessModule, env, errorMark, colors as c } from './main';
+import fs from 'node:fs';
+import { execSync } from 'node:child_process';
+import { chdir } from 'node:process';
+import { parsePackages } from './parse.ts';
+import { task, stopTask } from './task.ts';
+import { tsc, stopTsc } from './tsc.ts';
+import { sass, stopSass } from './sass.ts';
+import { esbuild, stopEsbuild } from './esbuild.ts';
+import { sync } from './sync.ts';
+import { hash } from './hash.ts';
+import { stopManifest } from './manifest.ts';
+import { env, errorMark, c } from './env.ts';
+import { i18n } from './i18n.ts';
+import { unique } from './algo.ts';
+import { clean } from './clean.ts';
 
-export let moduleDeps: Map<string, string[]>;
-export let modules: Map<string, LichessModule>;
-export let buildModules: LichessModule[];
+export async function build(pkgs: string[]): Promise<void> {
+  env.startTime = Date.now();
 
-export async function build(mods: string[]) {
-  await stop();
-  await clean();
+  chdir(env.rootDir);
 
-  if (env.install) cps.execSync('pnpm install', { cwd: env.rootDir, stdio: 'inherit' });
-  if (!mods.length) env.log(`Parsing modules in '${c.cyan(env.uiDir)}'`);
+  if (env.install) execSync('pnpm install', { stdio: 'inherit' });
+  if (!pkgs.length) env.log(`Parsing packages in '${c.cyan(env.uiDir)}'`);
 
-  ps.chdir(env.uiDir);
-  [modules, moduleDeps] = await parseModules();
+  await Promise.allSettled([parsePackages(), fs.promises.mkdir(env.buildTempDir)]);
 
-  mods.filter(x => !modules.has(x)).forEach(x => env.exit(`${errorMark} - unknown module '${c.magenta(x)}'`));
+  pkgs
+    .filter(x => !env.packages.has(x))
+    .forEach(x => env.exit(`${errorMark} - unknown package '${c.magenta(x)}'`));
 
-  buildModules = mods.length === 0 ? [...modules.values()] : depsMany(mods);
+  env.building = pkgs.length === 0 ? [...env.packages.values()] : unique(pkgs.flatMap(p => env.deps(p)));
 
-  if (mods.length) env.log(`Building ${c.grey(buildModules.map(x => x.name).join(', '))}`);
+  if (pkgs.length) env.log(`Building ${c.grey(env.building.map(x => x.name).join(', '))}`);
 
-  await Promise.allSettled([fs.promises.mkdir(env.jsDir), fs.promises.mkdir(env.cssDir)]);
-  sass();
-  await tsc();
-  await copies();
-  await esbuild();
-  startTickling(mods);
+  await Promise.all([i18n(), sync().then(hash), sass(), tsc(), esbuild()]);
+  await monitor(pkgs);
 }
 
-export async function stop() {
-  stopTickling();
+function stopBuild(): Promise<any> {
+  stopTask();
   stopSass();
-  stopTsc();
-  stopCopies();
-  await stopEsbuild();
+  stopManifest(true);
+  return Promise.allSettled([stopTsc(), stopEsbuild()]);
 }
 
-export function postBuild() {
-  for (const mod of buildModules) {
-    mod.post.forEach((args: string[]) => {
-      env.log(`[${c.grey(mod.name)}] exec - ${c.cyanBold(args.join(' '))}`);
-      const stdout = cps.execSync(`${args.join(' ')}`, { cwd: mod.root });
-      if (stdout) env.log(stdout, { ctx: mod.name });
-    });
-  }
-}
-
-export function preModule(mod: LichessModule | undefined) {
-  mod?.pre.forEach((args: string[]) => {
-    env.log(`[${c.grey(mod.name)}] exec - ${c.cyanBold(args.join(' '))}`);
-    const stdout = cps.execSync(`${args.join(' ')}`, { cwd: mod.root });
-    if (stdout) env.log(stdout, { ctx: mod.name });
+function monitor(pkgs: string[]) {
+  if (!env.watch) return;
+  return task({
+    key: 'monitor',
+    glob: [
+      { cwd: env.rootDir, path: 'package.json' },
+      { cwd: env.typesDir, path: '*/package.json' },
+      { cwd: env.uiDir, path: '*/package.json' },
+      { cwd: env.typesDir, path: '*/*.d.ts' },
+      { cwd: env.uiDir, path: '*/tsconfig.json' },
+    ],
+    debounce: 1000,
+    monitorOnly: true,
+    execute: async files => {
+      if (files.some(x => x.endsWith('package.json'))) {
+        if (!env.install) env.exit('Exiting due to package.json change');
+        await stopBuild();
+        if (env.clean) await clean();
+        build(pkgs);
+      } else if (files.some(x => x.endsWith('.d.ts') || x.endsWith('tsconfig.json'))) {
+        stopManifest();
+        await Promise.allSettled([stopTsc(), stopEsbuild()]);
+        tsc();
+        esbuild();
+      }
+    },
   });
 }
-
-function depsOne(modName: string): LichessModule[] {
-  const collect = (dep: string): string[] => [...(moduleDeps.get(dep) || []).flatMap(d => collect(d)), dep];
-  return unique(collect(modName).map(name => modules.get(name)));
-}
-
-const depsMany = (modNames: string[]): LichessModule[] => unique(modNames.flatMap(depsOne));
-
-const unique = <T>(mods: (T | undefined)[]): T[] => [...new Set(mods.filter(x => x))] as T[];

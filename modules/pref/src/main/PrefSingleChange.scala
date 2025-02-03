@@ -1,17 +1,13 @@
 package lila.pref
 
+import monocle.syntax.all.*
 import play.api.data.*
 import play.api.data.Forms.*
 
 object PrefSingleChange:
 
-  case class Change[A](field: String, mapping: Mapping[A], update: A => Pref => Pref):
-    def form: Form[A] = Form(single(field -> mapping))
-
-  private def changing[A](field: PrefForm.fields.type => (String, Mapping[A]))(
-      f: A => Pref => Pref
-  ): Change[A] =
-    Change(field(PrefForm.fields)._1, field(PrefForm.fields)._2, f)
+  type Change[A] = lila.common.Form.SingleChange.Change[Pref, A]
+  private def changing[A] = lila.common.Form.SingleChange.changing[Pref, PrefForm.fields.type, A]
 
   val changes: Map[String, Change[?]] = List[Change[?]](
     changing(_.bg): v =>
@@ -50,8 +46,22 @@ object PrefSingleChange:
       _.copy(confirmResign = v),
     changing(_.moretime): v =>
       _.copy(moretime = v),
+    changing(_.clockSound): v =>
+      _.copy(clockSound = v == 1),
+    changing(_.pieceNotation): v =>
+      _.copy(pieceNotation = v),
     changing(_.ratings): v =>
-      _.copy(ratings = v)
+      _.copy(ratings = v),
+    changing(_.follow): v =>
+      _.copy(follow = v == 1),
+    changing(_.challenge): v =>
+      _.copy(challenge = v),
+    changing(_.board.brightness): v =>
+      _.focus(_.board.brightness).replace(v),
+    changing(_.board.opacity): v =>
+      _.focus(_.board.opacity).replace(v),
+    changing(_.board.hue): v =>
+      _.focus(_.board.hue).replace(v)
   ).map: change =>
     change.field -> change
   .toMap

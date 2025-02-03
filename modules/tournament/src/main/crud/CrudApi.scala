@@ -1,21 +1,18 @@
 package lila.tournament
 package crud
 
-import chess.{ Clock, Mode }
-import chess.format.Fen
+import chess.Mode
+import scalalib.paginator.Paginator
 
-import lila.common.config.MaxPerPage
-import lila.common.paginator.Paginator
 import lila.db.dsl.*
 import lila.db.paginator.Adapter
-import lila.user.{ User, Me }
 import lila.tournament.BSONHandlers.given
 
 final class CrudApi(tournamentRepo: TournamentRepo, tourApi: TournamentApi, crudForm: CrudForm):
 
-  def list = tournamentRepo uniques 50
+  def list = tournamentRepo.uniques(50)
 
-  export tournamentRepo.{ uniqueById as one }
+  export tournamentRepo.uniqueById as one
 
   def editForm(tour: Tournament)(using Me) =
     crudForm.edit(tour)
@@ -27,12 +24,12 @@ final class CrudApi(tournamentRepo: TournamentRepo, tourApi: TournamentApi, crud
 
   def create(data: CrudForm.Data)(using Me): Fu[Tournament] =
     val tour = data.toTour
-    tournamentRepo insert tour inject tour
+    tournamentRepo.insert(tour).inject(tour)
 
   def clone(old: Tournament) =
     old.copy(
       name = s"${old.name} (clone)",
-      startsAt = nowInstant plusDays 7
+      startsAt = nowInstant.plusDays(7)
     )
 
   def paginator(page: Int)(using Executor) =

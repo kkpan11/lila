@@ -1,11 +1,11 @@
 import { sparkline } from '@fnando/sparkline';
-import * as xhr from 'common/xhr';
-import { throttlePromiseDelay } from 'common/throttle';
-import { withEffect } from 'common';
-import { makeCtrl as makeVoiceCtrl, VoiceCtrl } from 'voice';
+import { text as xhrText, form as xhrForm } from 'common/xhr';
+import { throttlePromiseDelay } from 'common/timing';
+import { myUserId, withEffect } from 'common';
+import { makeVoice, type VoiceCtrl } from 'voice';
 import { storedBooleanProp, storedProp } from 'common/storage';
-import { Api as CgApi } from 'chessground/api';
-import {
+import type { Api as CgApi } from 'chessground/api';
+import type {
   ColorChoice,
   TimeControl,
   CoordinateTrainerConfig,
@@ -14,6 +14,7 @@ import {
   ModeScores,
   Redraw,
 } from './interfaces';
+import { pubsub } from 'common/pubsub';
 
 const orientationFromColorChoice = (colorChoice: ColorChoice): Color =>
   (colorChoice === 'random' ? ['white', 'black'][Math.round(Math.random())] : colorChoice) as Color;
@@ -38,11 +39,10 @@ const newKey = (oldKey: Key | '', selectedFiles?: Set<Files>, selectedRanks?: Se
   return (files[randomChoice(files.length)] + rows[randomChoice(rows.length)]) as Key;
 };
 
-const targetSvg = (target: 'current' | 'next'): string => `
-<g transform="translate(50, 50)">
-  <rect class="${target}-target" fill="none" stroke-width="10" x="-50" y="-50" width="100" height="100" rx="5" />
-</g>
-`;
+const targetSvg = (target: 'current' | 'next'): string => $html`
+  <g transform="translate(50, 50)">
+    <rect class="${target}-target" fill="none" stroke-width="10" x="-50" y="-50" width="100" height="100" rx="5" />
+  </g>`;
 
 const rankWords: { [_: string]: string } = {
   one: '1',
@@ -62,7 +62,7 @@ export default class CoordinateTrainerCtrl {
   chessground: CgApi | undefined;
   currentKey: Key | '' = 'a1';
   hasPlayed = false;
-  isAuth = document.body.hasAttribute('data-user');
+  isAuth = !!myUserId();
   keyboardInput: HTMLInputElement;
   voice: VoiceCtrl;
   modeScores: ModeScores = this.config.scores;
@@ -71,7 +71,6 @@ export default class CoordinateTrainerCtrl {
   score = 0;
   timeAtStart: Date;
   timeLeft = DURATION;
-  trans: Trans = lichess.trans(this.config.i18n);
   wrong: boolean;
   wrongTimeout: number;
   zen: boolean;
@@ -83,27 +82,26 @@ export default class CoordinateTrainerCtrl {
     const setZen = throttlePromiseDelay(
       () => 1000,
       zen =>
-        xhr.text('/pref/zen', {
+        xhrText('/pref/zen', {
           method: 'post',
-          body: xhr.form({ zen: zen ? 1 : 0 }),
+          body: xhrForm({ zen: zen ? 1 : 0 }),
         }),
     );
 
-    lichess.pubsub.on('zen', () => {
+    pubsub.on('zen', () => {
       const zen = $('body').toggleClass('zen').hasClass('zen');
       window.dispatchEvent(new Event('resize'));
       setZen(zen);
     });
 
-    $('#zentog').on('click', () => lichess.pubsub.emit('zen'));
-    lichess.mousetrap.bind('z', () => lichess.pubsub.emit('zen'));
+    $('#zentog').on('click', () => pubsub.emit('zen'));
+    site.mousetrap.bind('z', () => pubsub.emit('zen'));
 
-    lichess.mousetrap.bind('enter', () => (this.playing ? null : this.start()));
+    site.mousetrap.bind('enter', () => (this.playing ? null : this.start()));
 
     window.addEventListener('resize', () => requestAnimationFrame(this.updateCharts), true);
-
-    this.voice = makeVoiceCtrl({ redraw: this.redraw, tpe: 'coords' });
-    lichess.mic.initRecognizer([...'abcdefgh', ...Object.keys(rankWords), 'start', 'stop'], {
+    this.voice = makeVoice({ redraw: this.redraw, tpe: 'coords' });
+    this.voice.mic.initRecognizer([...'abcdefgh', ...Object.keys(rankWords), 'start', 'stop'], {
       partial: true,
       listener: this.onVoice.bind(this),
     });
@@ -183,6 +181,16 @@ export default class CoordinateTrainerCtrl {
     this.chessground?.redrawAll();
   };
 
+  showCoordsOnAllSquares = withEffect<boolean>(
+    storedBooleanProp('coordinateTrainer.showCoordsOnAllSquares', document.body.classList.contains('kid')),
+    (show: boolean) => this.onShowCoordsOnAllSquaresChange(show),
+  );
+
+  onShowCoordsOnAllSquaresChange = (show: boolean) => {
+    this.chessground?.set({ coordinatesOnSquares: show });
+    this.chessground?.redrawAll();
+  };
+
   showPieces = withEffect<boolean>(storedBooleanProp('coordinateTrainer.showPieces', true), () =>
     this.onShowPiecesChange(),
   );
@@ -246,14 +254,13 @@ export default class CoordinateTrainerCtrl {
 
   advanceCoordinates = () => {
     this.currentKey = this.nextKey;
-    if (this.selectionEnabled() === true)
-      this.nextKey = newKey(this.nextKey, this.selectedFiles, this.selectedRanks);
+    if (this.selectionEnabled()) this.nextKey = newKey(this.nextKey, this.selectedFiles, this.selectedRanks);
     else this.nextKey = newKey(this.nextKey);
 
     if (this.mode() === 'nameSquare')
       this.chessground?.setShapes([
         { orig: this.currentKey as Key, customSvg: { html: targetSvg('current') } },
-        { orig: this.nextKey as Key, customSvg: { html: targetSvg('next') } },
+        { orig: this.nextKey, customSvg: { html: targetSvg('next') } },
       ]);
 
     this.redraw();
@@ -272,9 +279,9 @@ export default class CoordinateTrainerCtrl {
     if (this.timeControl() === 'thirtySeconds') {
       this.updateScoreList();
       if (this.isAuth)
-        xhr.text('/training/coordinate/score', {
+        xhrText('/training/coordinate/score', {
           method: 'post',
-          body: xhr.form({ mode: this.mode(), color: this.orientation, score: this.score }),
+          body: xhrForm({ mode: this.mode(), color: this.orientation, score: this.score }),
         });
     }
 

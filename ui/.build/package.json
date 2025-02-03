@@ -4,14 +4,27 @@
   "private": true,
   "author": "Thibault Duplessis",
   "license": "AGPL-3.0-or-later",
-  "type": "commonjs",
+  "type": "module",
+  "optionalDependencies": {
+    "sass-embedded-darwin-arm64": "1.83.3",
+    "sass-embedded-darwin-x64": "1.83.3",
+    "sass-embedded-linux-arm64": "1.83.3",
+    "sass-embedded-linux-x64": "1.83.3",
+    "sass-embedded-win32-arm64": "1.83.3",
+    "sass-embedded-win32-x64": "1.83.3"
+  },
   "dependencies": {
-    "@types/node": "^20.9.1",
-    "typescript": "^5.2.2",
-    "esbuild": "^0.19.5",
-    "fast-glob": "^3.3.2"
+    "@types/micromatch": "^4.0.9",
+    "@types/node": "22.12.0",
+    "@types/tinycolor2": "1.4.6",
+    "esbuild": "0.24.2",
+    "fast-glob": "3.3.3",
+    "fast-xml-parser": "4.5.1",
+    "micromatch": "4.0.8",
+    "tinycolor2": "1.6.0",
+    "typescript": "5.7.3"
   },
   "scripts": {
-    "dev": "tsc && node dist/main.js"
+    "dev": "node --experimental-strip-types --no-warnings src/main.ts $@"
   }
 }

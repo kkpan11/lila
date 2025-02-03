@@ -5,7 +5,6 @@ import reactivemongo.akkastream.cursorProducer
 
 import lila.common.LilaStream
 import lila.db.dsl.{ *, given }
-import lila.user.User
 
 final private class PuzzleTagger(colls: PuzzleColls, openingApi: PuzzleOpeningApi)(using
     ec: Executor,
@@ -18,9 +17,9 @@ final private class PuzzleTagger(colls: PuzzleColls, openingApi: PuzzleOpeningAp
       _.find($doc(Puzzle.BSONFields.tagMe -> true))
         .cursor[Puzzle]()
         .documentSource()
-        .throttle(500, 1 second)
-        .mapAsyncUnordered(2)(p => openingApi.updateOpening(p) inject p)
-        .mapAsyncUnordered(2)(p => addPhase(p) inject p)
+        .throttle(500, 1.second)
+        .mapAsyncUnordered(2)(p => openingApi.updateOpening(p).inject(p))
+        .mapAsyncUnordered(2)(p => addPhase(p).inject(p))
         .mapAsyncUnordered(2)(checkFirstTheme)
         .runWith(LilaStream.sinkCount)
         .chronometer
@@ -55,17 +54,20 @@ final private class PuzzleTagger(colls: PuzzleColls, openingApi: PuzzleOpeningAp
       move  <- puzzle.line.tail.headOption
       first <- init.move(move).toOption.map(_.situationAfter)
     yield first.check
-  }.exists(_.yes) so {
-    colls.round {
-      _.update
-        .one(
-          $id(PuzzleRound.Id(User.lichessId, puzzle.id).toString),
-          $addToSet(PuzzleRound.BSONFields.themes -> PuzzleRound.Theme(PuzzleTheme.checkFirst.key, true))
+  }.exists(_.yes).so {
+    colls
+      .round {
+        _.update
+          .one(
+            $id(PuzzleRound.Id(UserId.lichess, puzzle.id).toString),
+            $addToSet(PuzzleRound.BSONFields.themes -> PuzzleRound.Theme(PuzzleTheme.checkFirst.key, true))
+          )
+      }
+      .zip(colls.puzzle {
+        _.update.one(
+          $id(puzzle.id),
+          $addToSet(Puzzle.BSONFields.themes -> PuzzleTheme.checkFirst.key)
         )
-    } zip colls.puzzle {
-      _.update.one(
-        $id(puzzle.id),
-        $addToSet(Puzzle.BSONFields.themes -> PuzzleTheme.checkFirst.key)
-      )
-    } void
+      })
+      .void
   }

@@ -1,10 +1,14 @@
 package lila.notify
 
-import lila.db.BSON.{ Reader, Writer }
-import lila.db.dsl.{ *, given }
 import reactivemongo.api.bson.*
 
+import lila.db.BSON.{ Reader, Writer }
+import lila.db.dsl.{ *, given }
+import lila.core.notify.*
+
 private object BSONHandlers:
+
+  import NotificationContent.*
   private given BSONDocumentHandler[StreamStart]                       = Macros.handler
   private given BSONDocumentHandler[PrivateMessage]                    = Macros.handler
   private given BSONDocumentHandler[TeamJoined]                        = Macros.handler
@@ -17,6 +21,8 @@ private object BSONHandlers:
   private given BSONDocumentHandler[IrwinDone]                         = Macros.handler
   private given BSONDocumentHandler[KaladinDone]                       = Macros.handler
   private given BSONDocumentHandler[GenericLink]                       = Macros.handler
+  private given BSONDocumentHandler[BroadcastRound]                    = Macros.handler
+  private given BSONDocumentHandler[Recap]                             = Macros.handler
   private given mentionHandler: BSONDocumentHandler[MentionedInThread] = Macros.handler
   private given inviteHandler: BSONDocumentHandler[InvitedToStudy]     = Macros.handler
 
@@ -39,6 +45,8 @@ private object BSONHandlers:
         case x: IrwinDone                  => summon[BSONHandler[IrwinDone]].writeTry(x).get
         case x: KaladinDone                => summon[BSONHandler[KaladinDone]].writeTry(x).get
         case x: GenericLink                => summon[BSONHandler[GenericLink]].writeTry(x).get
+        case x: BroadcastRound             => summon[BSONHandler[BroadcastRound]].writeTry(x).get
+        case x: Recap                      => summon[BSONHandler[Recap]].writeTry(x).get
     } ++ $doc("type" -> notificationContent.key)
 
     def reads(reader: Reader): NotificationContent =
@@ -59,6 +67,8 @@ private object BSONHandlers:
         case "kaladinDone"    => reader.as[KaladinDone]
         case "genericLink"    => reader.as[GenericLink]
         case "streamStart"    => reader.as[StreamStart]
+        case "broadcastRound" => reader.as[BroadcastRound]
+        case "recap"          => reader.as[Recap]
 
     def writes(w: Writer, n: NotificationContent): Bdoc = writeNotificationContent(n)
 

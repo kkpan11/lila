@@ -1,24 +1,21 @@
 package lila.round
-
-import akka.stream.scaladsl.*
-import java.time.{ LocalTime, Duration }
 import reactivemongo.akkastream.cursorProducer
 
-import lila.common.Bus
-import lila.common.LilaStream
+import java.time.{ Duration, LocalTime }
+
+import lila.common.{ Bus, LilaStream }
+import lila.core.game.GameRepo
+import lila.core.misc.mailer.*
+import lila.core.notify.NotifyApi
 import lila.db.dsl.{ *, given }
-import lila.game.{ Game, GameRepo, Pov }
-import lila.hub.actorApi.mailer.*
-import lila.notify.NotifyColls
 import lila.user.UserRepo
 
-final private class CorrespondenceEmail(gameRepo: GameRepo, userRepo: UserRepo, notifyColls: NotifyColls)(
-    using
+final private class CorrespondenceEmail(gameRepo: GameRepo, userRepo: UserRepo, notifyApi: NotifyApi)(using
     Executor,
     akka.stream.Materializer
 ):
 
-  private val (runAfter, runBefore) = (LocalTime parse "05:00", LocalTime parse "05:10")
+  private val (runAfter, runBefore) = (LocalTime.parse("05:00"), LocalTime.parse("05:10"))
 
   def tick(): Unit =
     val now = LocalTime.now
@@ -26,13 +23,13 @@ final private class CorrespondenceEmail(gameRepo: GameRepo, userRepo: UserRepo, 
 
   private def run() =
     opponentStream
-      .map { Bus.publish(_, "dailyCorrespondenceNotif") }
+      .map { Bus.pub(_) }
       .runWith(LilaStream.sinkCount)
       .addEffect(lila.mon.round.correspondenceEmail.emails.record(_))
       .monSuccess(_.round.correspondenceEmail.time)
 
   private def opponentStream =
-    notifyColls.pref
+    notifyApi.prefColl
       .aggregateWith(readPreference = ReadPref.priTemp): framework =>
         import framework.*
         // hit partial index
@@ -40,7 +37,7 @@ final private class CorrespondenceEmail(gameRepo: GameRepo, userRepo: UserRepo, 
           Match($doc("correspondenceEmail" -> true)),
           Project($id(true)),
           PipelineOperator(
-            $lookup.pipeline(
+            $lookup.pipelineBC(
               from = userRepo.coll,
               as = "user",
               local = "_id",
@@ -57,7 +54,7 @@ final private class CorrespondenceEmail(gameRepo: GameRepo, userRepo: UserRepo, 
               from = gameRepo.coll,
               as = "games",
               local = "_id",
-              foreign = Game.BSONFields.playingUids // hit index
+              foreign = lila.game.Game.BSONFields.playingUids // hit index
             )
           )
         )
@@ -70,12 +67,12 @@ final private class CorrespondenceEmail(gameRepo: GameRepo, userRepo: UserRepo, 
           povs = games
             .flatMap(Pov(_, userId))
             .filter(pov => pov.game.isCorrespondence && pov.game.nonAi && pov.isMyTurn)
-            .sortBy(_.remainingSeconds getOrElse Int.MaxValue)
+            .sortBy(_.remainingSeconds.fold(Int.MaxValue)(_.value))
           if !povs.isEmpty
           opponents = povs.map: pov =>
             CorrespondenceOpponent(
               pov.opponent.userId,
-              pov.remainingSeconds.map(s => Duration.ofSeconds(s.toLong)),
+              pov.remainingSeconds.map(s => Duration.ofSeconds(s.value)),
               pov.game.id
             )
         yield CorrespondenceOpponents(userId, opponents)).toList

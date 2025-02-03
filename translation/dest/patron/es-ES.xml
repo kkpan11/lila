@@ -3,6 +3,7 @@
   <string name="donate">Donar</string>
   <string name="donateAsX">Donar como %s</string>
   <string name="lichessPatron">Patrón de Lichess</string>
+  <string name="patronSince" comment="string is a date">Patrón desde %s</string>
   <string name="freeAccount">Cuenta gratuita</string>
   <string name="becomePatron">Hazte patrón de Lichess</string>
   <string name="xBecamePatron">%s se hizo Patrón de Lichess</string>
@@ -69,7 +70,7 @@ Sin embargo, los patrones obtienen derecho a presumir de su nuevo icono de perfi
   <string name="decideHowMuch">Decide cuanto vale Lichess para ti:</string>
   <string name="stopPayments">Retira tu tarjeta de crédito y detén los pagos:</string>
   <string name="stopPaymentsPayPal">Cancelar suscripción de PayPal y detener los pagos:</string>
-  <string name="noLongerSupport">Ya no apoyas a Lichess</string>
+  <string name="noLongerSupport">No apoyar más a Lichess</string>
   <string name="viewOthers">Ver otros Patrones de Lichess</string>
   <string name="date">Fecha</string>
   <string name="amount">Cantidad</string>
@@ -80,4 +81,7 @@ Sin embargo, los patrones obtienen derecho a presumir de su nuevo icono de perfi
   <string name="nowOneMonth">¡Ahora eres un Patrón de Lichess por un mes!</string>
   <string name="downgradeNextMonth">En un mes, NO se te cobrará de nuevo, y tu cuenta de Lichess volverá a la versión normal.</string>
   <string name="changeCurrency">Cambiar moneda</string>
+  <string name="paymentDetails">Detalles del pago</string>
+  <string name="updatePaymentMethod">Actualizar método de pago</string>
+  <string name="stripeManageSub">Administra tu suscripción y descarga tus facturas y recibos</string>
 </resources>

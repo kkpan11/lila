@@ -1,53 +1,57 @@
 package lila.tv
 
-import lila.common.licon
-import lila.common.LightUser
-import lila.game.{ Game, GameRepo, Pov }
-import lila.hub.SyncActor
+import chess.PlayerTitle
+import chess.IntRating
+import scalalib.actor.SyncActor
+
+import lila.core.LightUser
+import lila.game.GameRepo
+import lila.ui.Icon
 
 final class Tv(
     gameRepo: GameRepo,
     actor: SyncActor,
-    gameProxyRepo: lila.round.GameProxyRepo
+    gameProxy: lila.core.game.GameProxy
 )(using Executor):
 
   import Tv.*
   import ChannelSyncActor.*
 
-  import gameProxyRepo.game as roundProxyGame
-
   def getGame(channel: Tv.Channel): Fu[Option[Game]] =
-    actor.ask[Option[GameId]](TvSyncActor.GetGameId(channel, _)) flatMapz roundProxyGame
+    actor
+      .ask[Option[GameId]](TvSyncActor.GetGameId(channel, _))
+      .flatMapz(gameProxy.game)
+      .orElse(gameRepo.random)
 
   def getReplacementGame(channel: Tv.Channel, oldId: GameId, exclude: List[GameId]): Fu[Option[Game]] =
     actor
       .ask[Option[GameId]](TvSyncActor.GetReplacementGameId(channel, oldId, exclude, _))
-      .flatMapz(roundProxyGame)
+      .flatMapz(gameProxy.game)
 
   def getGameAndHistory(channel: Tv.Channel): Fu[Option[(Game, List[Pov])]] =
-    actor.ask[GameIdAndHistory](TvSyncActor.GetGameIdAndHistory(channel, _)) flatMap {
+    actor.ask[GameIdAndHistory](TvSyncActor.GetGameIdAndHistory(channel, _)).flatMap {
       case GameIdAndHistory(gameId, historyIds) =>
         for
-          game <- gameId so roundProxyGame
+          game <- gameId.so(gameProxy.game)
           games <-
             historyIds
               .map: id =>
-                roundProxyGame(id) orElse gameRepo.game(id)
+                gameProxy.game(id).orElse(gameRepo.game(id))
               .parallel
               .dmap(_.flatten)
-          history = games map Pov.naturalOrientation
-        yield game map (_ -> history)
+          history = games.map(Pov.naturalOrientation)
+        yield game.map(_ -> history)
     }
 
   def getGames(channel: Tv.Channel, max: Int): Fu[List[Game]] =
-    getGameIds(channel, max) flatMap {
-      _.map(roundProxyGame).parallel.map(_.flatten)
+    getGameIds(channel, max).flatMap {
+      _.map(gameProxy.game).parallel.map(_.flatten)
     }
 
   def getGameIds(channel: Tv.Channel, max: Int): Fu[List[GameId]] =
     actor.ask[List[GameId]](TvSyncActor.GetGameIds(channel, max, _))
 
-  def getBestGame = getGame(Tv.Channel.Best) orElse gameRepo.random
+  def getBestGame = getGame(Tv.Channel.Best).orElse(gameRepo.random)
 
   def getBestAndHistory = getGameAndHistory(Tv.Channel.Best)
 
@@ -56,17 +60,17 @@ final class Tv(
 
 object Tv:
   import chess.{ variant as V, Speed as S }
-  import lila.rating.{ PerfType as P }
+  import lila.rating.PerfType as P
 
-  case class Champion(user: LightUser, rating: IntRating, gameId: GameId, color: chess.Color)
+  case class Champion(user: LightUser, rating: IntRating, gameId: GameId, color: Color)
   case class Champions(channels: Map[Channel, Champion]):
-    def get = channels.get
+    export channels.get
 
   private[tv] case class Candidate(game: Game, hasBot: Boolean)
 
   enum Channel(
       val name: String,
-      val icon: licon.Icon,
+      val icon: Icon,
       val secondsSinceLastMove: Int,
       filters: Seq[Candidate => Boolean]
   ):
@@ -76,7 +80,7 @@ object Tv:
     case Best
         extends Channel(
           name = "Top Rated",
-          icon = licon.CrownElite,
+          icon = Icon.CrownElite,
           secondsSinceLastMove = freshBlitz,
           filters = Seq(rated(2150), standard, noBot)
         )
@@ -174,14 +178,14 @@ object Tv:
     case Bot
         extends Channel(
           name = "Bot",
-          icon = licon.Cogs,
+          icon = Icon.Cogs,
           secondsSinceLastMove = freshBlitz,
           filters = Seq(standard, hasBot)
         )
     case Computer
         extends Channel(
           name = "Computer",
-          icon = licon.Cogs,
+          icon = Icon.Cogs,
           secondsSinceLastMove = freshBlitz,
           filters = Seq(computerFromInitialPosition)
         )
@@ -190,8 +194,8 @@ object Tv:
     val list  = values.toList
     val byKey = values.mapBy(_.key)
 
-  private def rated(min: Int)           = (c: Candidate) => c.game.rated && hasMinRating(c.game, min)
-  private def speed(speed: chess.Speed) = (c: Candidate) => c.game.speed == speed
+  private def rated(min: Int) = (c: Candidate) => c.game.rated && hasMinRating(c.game, IntRating(min))
+  private def speed(speed: chess.Speed)                 = (c: Candidate) => c.game.speed == speed
   private def variant(variant: chess.variant.Variant)   = (c: Candidate) => c.game.variant == variant
   private val standard                                  = variant(V.Standard)
   private val freshBlitz                                = 60 * 2
@@ -199,22 +203,23 @@ object Tv:
   private def hasBot(c: Candidate)                      = c.hasBot
   private def noBot(c: Candidate)                       = !c.hasBot
 
-  private def fresh(seconds: Int, game: Game): Boolean = {
-    game.isBeingPlayed && !game.olderThan(seconds)
-  } || {
-    game.finished && !game.olderThan(7)
-  } // rematch time
-  private def hasMinRating(g: Game, min: Int) = g.players.exists(_.rating.exists(_ >= min))
+  private def olderThan(g: Game, seconds: Int) = g.movedAt.isBefore(nowInstant.minusSeconds(seconds))
+  private def fresh(seconds: Int, game: Game): Boolean =
+    (game.isBeingPlayed && !olderThan(game, seconds)) ||
+      (game.finished && !olderThan(game, 7)) // rematch time
 
-  private[tv] val titleScores: Map[UserTitle, Int] = Map(
-    UserTitle("GM")  -> 500,
-    UserTitle("WGM") -> 500,
-    UserTitle("IM")  -> 300,
-    UserTitle("WIM") -> 300,
-    UserTitle("FM")  -> 200,
-    UserTitle("WFM") -> 200,
-    UserTitle("NM")  -> 100,
-    UserTitle("CM")  -> 100,
-    UserTitle("WCM") -> 100,
-    UserTitle("WNM") -> 100
+  private def hasMinRating(g: Game, min: IntRating) =
+    g.players.exists(_.rating.exists(_ >= min))
+
+  private[tv] val titleScores: Map[PlayerTitle, Int] = Map(
+    PlayerTitle.GM  -> 500,
+    PlayerTitle.WGM -> 500,
+    PlayerTitle.IM  -> 300,
+    PlayerTitle.WIM -> 300,
+    PlayerTitle.FM  -> 200,
+    PlayerTitle.WFM -> 200,
+    PlayerTitle.NM  -> 100,
+    PlayerTitle.CM  -> 100,
+    PlayerTitle.WCM -> 100,
+    PlayerTitle.WNM -> 100
   )

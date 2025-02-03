@@ -12,7 +12,7 @@ final private class InsightStorage(val coll: AsyncColl)(using Executor):
 
   import InsightStorage.*
   import BSONHandlers.given
-  import InsightEntry.{ BSONFields as F }
+  import InsightEntry.BSONFields as F
 
   def fetchFirst(userId: UserId): Fu[Option[InsightEntry]] =
     coll(_.find(selectUserId(userId)).sort(sortChronological).one[InsightEntry])
@@ -40,7 +40,7 @@ final private class InsightStorage(val coll: AsyncColl)(using Executor):
     coll {
       _.aggregateOne() { framework =>
         import framework.*
-        Match(selectUserId(userId) ++ $doc(F.opening $exists true)) -> List(
+        Match(selectUserId(userId) ++ $doc(F.opening.$exists(true))) -> List(
           Facet(
             List(
               "families" -> List(
@@ -60,7 +60,7 @@ final private class InsightStorage(val coll: AsyncColl)(using Executor):
 
   def nbByPerf(userId: UserId): Fu[Map[PerfType, Int]] =
     coll {
-      _.aggregateList(PerfType.nonPuzzle.size) { framework =>
+      _.aggregateList(lila.rating.PerfType.nonPuzzle.size) { framework =>
         import framework.*
         Match($doc(F.userId -> userId)) -> List(
           GroupField(F.perf)("nb" -> SumAll)
@@ -77,13 +77,13 @@ final private class InsightStorage(val coll: AsyncColl)(using Executor):
 
 object InsightStorage:
 
-  import InsightEntry.{ BSONFields as F }
+  import InsightEntry.BSONFields as F
 
   def selectId(id: String)               = $doc(F.id -> id)
   def selectUserId(id: UserId)           = $doc(F.userId -> id)
-  def selectPeers(peers: Question.Peers) = $doc(F.rating $inRange peers.ratingRange)
-  val sortChronological                  = $sort asc F.date
-  val sortAntiChronological              = $sort desc F.date
+  def selectPeers(peers: Question.Peers) = $doc(F.rating.$inRange(peers.ratingRange))
+  val sortChronological                  = $sort.asc(F.date)
+  val sortAntiChronological              = $sort.desc(F.date)
 
   def combineDocs(docs: List[BSONDocument]) =
     docs.foldLeft(BSONDocument()) { case (acc, doc) =>

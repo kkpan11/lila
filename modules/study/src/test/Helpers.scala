@@ -1,48 +1,75 @@
 package lila.study
 
+import chess.format.pgn.{ PgnStr, Tags }
+import chess.{ Centis, Node as PgnNode, Tree }
 import monocle.syntax.all.*
-import chess.{ Centis, ErrorStr, Node as PgnNode, Tree, Variation }
-import chess.format.UciPath
-import chess.format.pgn.{ Glyphs, ParsedPgn, San, Tags, PgnStr, PgnNodeData, Comment as ChessComment }
-import lila.tree.Node.{ Comment, Comments, Shapes }
+import alleycats.Zero
 
-import lila.tree.{ Branch, Branches, Root, Metas, NewTree, NewBranch, NewRoot, Node }
+import lila.tree.Node.{ Comment, Comments }
+import lila.tree.{ Branch, Branches, Metas, NewBranch, NewRoot, NewTree, Node, Root }
+
+trait LilaTest extends munit.FunSuite with EitherAssertions:
+
+  def assertMatch[A](a: A)(f: PartialFunction[A, Boolean])(using munit.Location) =
+    assert(f.lift(a) | false, s"$a does not match expectations")
+
+  def assertCloseTo[T](a: T, b: T, delta: Double)(using n: Numeric[T])(using munit.Location) =
+    assert(scalalib.Maths.isCloseTo(a, b, delta), s"$a is not close to $b by $delta")
+
+  extension [A](a: A)
+    def matchZero[B: Zero](f: PartialFunction[A, B])(using munit.Location): B =
+      f.lift(a) | Zero[B].zero
+
+trait EitherAssertions extends munit.Assertions:
+
+  extension [E, A](v: Either[E, A])
+    def assertRight(f: A => Any)(using munit.Location): Any = v match
+      case Right(r) => f(r)
+      case Left(e)  => fail(s"Expected Right but received $v")
 
 object Helpers:
   import lila.tree.NewTree.*
 
-  def rootToPgn(root: Root) = PgnDump
-    .rootToPgn(root, Tags.empty)(using PgnDump.WithFlags(true, true, true, true, false))
+  def rootToPgn(root: Root): PgnStr = PgnDump
+    .rootToPgn(root, Tags.empty)(using PgnDump.WithFlags(true, true, true, true, false, none))
     .render
 
-  object NewRootC:
-    def fromRoot(root: Root) =
-      NewRoot(NewTree.fromNode(root), NewTree(root))
+  def rootToPgn(root: NewRoot): PgnStr = PgnDump
+    .rootToPgn(root, Tags.empty)(using PgnDump.WithFlags(true, true, true, true, false, none))
+    .render
+
+  extension (root: Root)
+    def toNewRoot = NewRoot(root)
+
+    def debug = root.ppAs(rootToPgn)
 
   extension (newBranch: NewBranch)
     def toBranch(children: Option[NewTree]): Branch = Branch(
       newBranch.id,
-      newBranch.metas.ply,
+      newBranch.ply,
       newBranch.move,
-      newBranch.metas.fen,
-      newBranch.metas.check,
-      newBranch.metas.dests,
-      newBranch.metas.drops,
-      newBranch.metas.eval,
-      newBranch.metas.shapes,
-      newBranch.metas.comments,
-      newBranch.metas.gamebook,
-      newBranch.metas.glyphs,
+      newBranch.fen,
+      newBranch.check,
+      newBranch.dests,
+      newBranch.drops,
+      newBranch.eval,
+      newBranch.shapes,
+      newBranch.comments,
+      newBranch.gamebook,
+      newBranch.glyphs,
       children.fold(Branches.empty)(_.toBranches),
-      newBranch.metas.opening,
+      newBranch.opening,
       newBranch.comp,
-      newBranch.metas.clock,
-      newBranch.metas.crazyData,
+      newBranch.clock,
+      newBranch.crazyData,
       newBranch.forceVariation
     )
 
   extension (newTree: NewTree)
+    // We lost variations here
+    // newTree.toBranch == newTree.withoutVariations.toBranch
     def toBranch: Branch = newTree.value.toBranch(newTree.child)
+
     def toBranches: Branches =
       val variations = newTree.variations.map(_.toNode.toBranch)
       Branches(newTree.value.toBranch(newTree.child) :: variations)
@@ -50,21 +77,23 @@ object Helpers:
   extension (newRoot: NewRoot)
     def toRoot =
       Root(
-        newRoot.metas.ply,
-        newRoot.metas.fen,
-        newRoot.metas.check,
-        newRoot.metas.dests,
-        newRoot.metas.drops,
-        newRoot.metas.eval,
-        newRoot.metas.shapes,
-        newRoot.metas.comments,
-        newRoot.metas.gamebook,
-        newRoot.metas.glyphs,
+        newRoot.ply,
+        newRoot.fen,
+        newRoot.check,
+        newRoot.dests,
+        newRoot.drops,
+        newRoot.eval,
+        newRoot.shapes,
+        newRoot.comments,
+        newRoot.gamebook,
+        newRoot.glyphs,
         newRoot.tree.fold(Branches.empty)(_.toBranches),
-        newRoot.metas.opening,
-        newRoot.metas.clock,
-        newRoot.metas.crazyData
+        newRoot.opening,
+        newRoot.clock,
+        newRoot.crazyData
       )
+
+    def debug = newRoot.ppAs(rootToPgn)
 
   extension (comments: Comments)
     def cleanup: Comments =
@@ -73,9 +102,10 @@ object Helpers:
   extension (node: NewBranch)
     def cleanup: NewBranch =
       node
+        .focus(_.metas.clock)
+        .set(none)
         .focus(_.metas.comments)
         .modify(_.cleanup)
-        .copy(path = UciPath.root)
 
   extension (root: NewRoot)
     def cleanup: NewRoot =

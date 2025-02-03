@@ -1,20 +1,15 @@
 package lila.tournament
 package crud
 
+import chess.variant.Variant
 import play.api.data.*
 import play.api.data.Forms.*
 
-import chess.variant.Variant
-import chess.format.Fen
-import chess.Clock.IncrementSeconds
-import lila.common.Form.{ given, * }
-import lila.user.Me
-import lila.gathering.GatheringClock
+import lila.common.Form.*
 
 final class CrudForm(repo: TournamentRepo, forms: TournamentForm):
 
   import CrudForm.*
-  import TournamentForm.*
 
   def apply(tour: Option[Tournament])(using me: Me) = Form(
     mapping(
@@ -25,16 +20,18 @@ final class CrudForm(repo: TournamentRepo, forms: TournamentForm):
       "teamBattle"    -> boolean,
       "setup"         -> forms.create(Nil).mapping
     )(Data.apply)(unapply)
-  ) fill Data(
-    id = Tournament.makeId,
-    homepageHours = 0,
-    image = "",
-    headline = "",
-    teamBattle = false,
-    setup = forms.empty()
+  ).fill(
+    Data(
+      id = Tournament.makeId,
+      homepageHours = 0,
+      image = "",
+      headline = "",
+      teamBattle = false,
+      setup = forms.empty()
+    )
   )
 
-  def edit(tour: Tournament)(using me: Me) = apply(tour.some) fill
+  def edit(tour: Tournament)(using me: Me) = apply(tour.some).fill(
     Data(
       id = tour.id,
       homepageHours = ~tour.spotlight.flatMap(_.homepageHours),
@@ -43,6 +40,7 @@ final class CrudForm(repo: TournamentRepo, forms: TournamentForm):
       teamBattle = tour.isTeamBattle,
       setup = forms.fillFromTour(tour)
     )
+  )
 
 object CrudForm:
 
@@ -79,18 +77,12 @@ object CrudForm:
 
     private def withCrud(tour: Tournament) =
       tour.copy(
-        schedule = Schedule(
-          freq = Schedule.Freq.Unique,
-          speed = Schedule.Speed.fromClock(tour.clock),
-          variant = tour.variant,
-          position = tour.position,
-          at = tour.startsAt.dateTime
-        ).some,
+        schedule = Scheduled(freq = Schedule.Freq.Unique, at = tour.startsAt.dateTime).some,
         spotlight = Spotlight(
           headline = headline,
           homepageHours = homepageHours.some.filterNot(0 ==),
           iconFont = none,
           iconImg = image.some.filter(_.nonEmpty)
         ).some,
-        teamBattle = teamBattle option (tour.teamBattle | TeamBattle(Set.empty, 10))
+        teamBattle = teamBattle.option(tour.teamBattle | TeamBattle(Set.empty, 10))
       )

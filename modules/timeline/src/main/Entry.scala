@@ -4,8 +4,8 @@ import play.api.libs.json.*
 import reactivemongo.api.bson.*
 
 import lila.common.Json.given
+import lila.core.timeline.*
 import lila.db.dsl.{ *, given }
-import lila.hub.actorApi.timeline.*
 
 case class Entry(
     _id: BSONObjectID,
@@ -19,7 +19,7 @@ case class Entry(
 
   def similarTo(other: Entry) = typ == other.typ && data == other.data
 
-  lazy val decode: Option[Atom] = atomBsonHandlers.handlers.get(typ).flatMap(_ readOpt data)
+  lazy val decode: Option[Atom] = atomBsonHandlers.handlers.get(typ).flatMap(_.readOpt(data))
 
   def userIds = decode.so(_.userIds)
 
@@ -46,7 +46,6 @@ object Entry:
       case d: StudyLike     => "study-like"      -> toBson(d)
       case d: PlanStart     => "plan-start"      -> toBson(d)
       case d: PlanRenew     => "plan-renew"      -> toBson(d)
-      case d: BlogPost      => "blog-post"       -> toBson(d)
       case d: UblogPostLike => "ublog-post-like" -> toBson(d)
       case d: StreamStart   => "stream-start"    -> toBson(d)
   } match
@@ -66,7 +65,6 @@ object Entry:
     given studyLikeHandler: BSONDocumentHandler[StudyLike]         = Macros.handler
     given planStartHandler: BSONDocumentHandler[PlanStart]         = Macros.handler
     given planRenewHandler: BSONDocumentHandler[PlanRenew]         = Macros.handler
-    given blogPostHandler: BSONDocumentHandler[BlogPost]           = Macros.handler
     given ublogPostLikeHandler: BSONDocumentHandler[UblogPostLike] = Macros.handler
     given streamStartHandler: BSONDocumentHandler[StreamStart]     = Macros.handler
 
@@ -83,7 +81,6 @@ object Entry:
       "study-like"      -> studyLikeHandler,
       "plan-start"      -> planStartHandler,
       "plan-renew"      -> planRenewHandler,
-      "blog-post"       -> blogPostHandler,
       "ublog-post-like" -> ublogPostLikeHandler,
       "stream-start"    -> streamStartHandler
     )
@@ -101,25 +98,23 @@ object Entry:
     val studyLikeWrite     = Json.writes[StudyLike]
     val planStartWrite     = Json.writes[PlanStart]
     val planRenewWrite     = Json.writes[PlanRenew]
-    val blogPostWrite      = Json.writes[BlogPost]
     val ublogPostLikeWrite = Json.writes[UblogPostLike]
     val streamStartWrite   = Json.writes[StreamStart]
     given Writes[Atom] = Writes {
-      case d: Follow        => followWrite writes d
-      case d: TeamJoin      => teamJoinWrite writes d
-      case d: TeamCreate    => teamCreateWrite writes d
-      case d: ForumPost     => forumPostWrite writes d
-      case d: UblogPost     => ublogPostWrite writes d
-      case d: TourJoin      => tourJoinWrite writes d
-      case d: GameEnd       => gameEndWrite writes d
-      case d: SimulCreate   => simulCreateWrite writes d
-      case d: SimulJoin     => simulJoinWrite writes d
-      case d: StudyLike     => studyLikeWrite writes d
-      case d: PlanStart     => planStartWrite writes d
-      case d: PlanRenew     => planRenewWrite writes d
-      case d: BlogPost      => blogPostWrite writes d
-      case d: UblogPostLike => ublogPostLikeWrite writes d
-      case d: StreamStart   => streamStartWrite writes d
+      case d: Follow        => followWrite.writes(d)
+      case d: TeamJoin      => teamJoinWrite.writes(d)
+      case d: TeamCreate    => teamCreateWrite.writes(d)
+      case d: ForumPost     => forumPostWrite.writes(d)
+      case d: UblogPost     => ublogPostWrite.writes(d)
+      case d: TourJoin      => tourJoinWrite.writes(d)
+      case d: GameEnd       => gameEndWrite.writes(d)
+      case d: SimulCreate   => simulCreateWrite.writes(d)
+      case d: SimulJoin     => simulJoinWrite.writes(d)
+      case d: StudyLike     => studyLikeWrite.writes(d)
+      case d: PlanStart     => planStartWrite.writes(d)
+      case d: PlanRenew     => planRenewWrite.writes(d)
+      case d: UblogPostLike => ublogPostLikeWrite.writes(d)
+      case d: StreamStart   => streamStartWrite.writes(d)
     }
 
   given BSONDocumentHandler[Entry] = Macros.handler

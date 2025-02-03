@@ -1,10 +1,10 @@
 .btn-rack {
   @extend %box-radius;
+  @include prevent-select;
 
   display: inline-flex;
   align-items: center;
   border: $border;
-  user-select: none;
 
   .btn-rack {
     /* embedded racks */
@@ -19,7 +19,7 @@
     text-align: center;
     line-height: 2rem;
     cursor: pointer;
-    border-#{$end-direction}: $border;
+    border-inline-end: $border;
     color: $c-font;
     white-space: nowrap;
 

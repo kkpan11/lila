@@ -31,7 +31,7 @@
     <item quantity="other">%s Members</item>
   </plurals>
   <string name="inviteToTheStudy">Invite to the study</string>
-  <string name="pleaseOnlyInvitePeopleYouKnow">Please only invite people you know, and who actively want to join this study.</string>
+  <string name="pleaseOnlyInvitePeopleYouKnow">Please only invite people who know you, and who actively want to join this study.</string>
   <string name="searchByUsername">Search by username</string>
   <string name="spectator">Spectator</string>
   <string name="contributor">Contributor</string>
@@ -53,6 +53,8 @@
   <string name="allSyncMembersRemainOnTheSamePosition">All SYNC members remain on the same position</string>
   <string name="shareChanges">Share changes with spectators and save them on the server</string>
   <string name="playing">Playing</string>
+  <string name="showResults">Results</string>
+  <string name="showEvalBar">Evaluation bars</string>
   <string name="first">First</string>
   <string name="previous">Previous</string>
   <string name="next">Next</string>
@@ -63,7 +65,6 @@
   <string name="downloadAllGames">Download all games</string>
   <string name="chapterPgn">Chapter PGN</string>
   <string name="copyChapterPgn">Copy PGN</string>
-  <string name="copyChapterPgnDescription">Copy chapter PGN to clipboard.</string>
   <string name="downloadGame">Download game</string>
   <string name="studyUrl">Study URL</string>
   <string name="currentChapterUrl">Current chapter URL</string>
@@ -167,4 +168,5 @@
   <string name="playAgain">Play again</string>
   <string name="whatWouldYouPlay">What would you play in this position?</string>
   <string name="youCompletedThisLesson">Congratulations! You completed this lesson.</string>
+  <string name="perPage">%s per page</string>
 </resources>

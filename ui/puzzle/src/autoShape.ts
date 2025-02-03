@@ -1,16 +1,17 @@
-import { winningChances, CevalCtrl } from 'ceval';
-import { DrawModifiers, DrawShape } from 'chessground/draw';
-import { Vm } from './interfaces';
-import { Api as CgApi } from 'chessground/api';
+import { winningChances, type CevalCtrl } from 'ceval';
+import { annotationShapes } from 'chess/glyphs';
+import type { DrawModifiers, DrawShape } from 'chessground/draw';
 import { opposite, parseUci, makeSquare } from 'chessops/util';
-import { NormalMove } from 'chessops/types';
+import type { NormalMove, Square } from 'chessops/types';
 
 interface Opts {
-  vm: Vm;
+  node: Tree.Node;
+  nodeList: Tree.Node[];
+  showComputer(): boolean;
   ceval: CevalCtrl;
-  ground: CgApi;
-  nextNodeBest?: Uci;
-  threatMode: boolean;
+  nextNodeBest(): Uci | undefined;
+  threatMode(): boolean;
+  hint?: Square;
 }
 
 function makeAutoShapesFromUci(
@@ -30,26 +31,20 @@ function makeAutoShapesFromUci(
 }
 
 export default function (opts: Opts): DrawShape[] {
-  const n = opts.vm.node,
+  const n = opts.node,
     hovering = opts.ceval.hovering(),
     color = n.fen.includes(' w ') ? 'white' : 'black';
   let shapes: DrawShape[] = [];
   if (hovering && hovering.fen === n.fen)
     shapes = shapes.concat(makeAutoShapesFromUci(color, hovering.uci, 'paleBlue'));
-  if (opts.vm.showAutoShapes() && opts.vm.showComputer()) {
+  if (opts.showComputer()) {
     if (n.eval) shapes = shapes.concat(makeAutoShapesFromUci(color, n.eval.best!, 'paleGreen'));
     if (!hovering) {
-      let nextBest: Uci | undefined = opts.nextNodeBest;
+      let nextBest: Uci | undefined = opts.nextNodeBest();
       if (!nextBest && opts.ceval.enabled() && n.ceval) nextBest = n.ceval.pvs[0].moves[0];
       if (nextBest) shapes = shapes.concat(makeAutoShapesFromUci(color, nextBest, 'paleBlue'));
-      if (
-        opts.ceval.enabled() &&
-        n.ceval &&
-        n.ceval.pvs &&
-        n.ceval.pvs[1] &&
-        !(opts.threatMode && n.threat && n.threat.pvs[2])
-      ) {
-        n.ceval.pvs.forEach(function (pv) {
+      if (opts.ceval.enabled() && n.ceval?.pvs?.[1] && !(opts.threatMode() && n.threat?.pvs[2])) {
+        n.ceval.pvs.forEach(pv => {
           if (pv.moves[0] === nextBest) return;
           const shift = winningChances.povDiff(color, n.ceval!.pvs[0], pv);
           if (shift > 0.2 || isNaN(shift) || shift < 0) return;
@@ -62,10 +57,10 @@ export default function (opts: Opts): DrawShape[] {
       }
     }
   }
-  if (opts.ceval.enabled() && opts.threatMode && n.threat) {
+  if (opts.ceval.enabled() && opts.threatMode() && n.threat) {
     if (n.threat.pvs[1]) {
       shapes = shapes.concat(makeAutoShapesFromUci(opposite(color), n.threat.pvs[0].moves[0], 'paleRed'));
-      n.threat.pvs.slice(1).forEach(function (pv) {
+      n.threat.pvs.slice(1).forEach(pv => {
         const shift = winningChances.povDiff(opposite(color), pv, n.threat!.pvs[0]);
         if (shift > 0.2 || isNaN(shift) || shift < 0) return;
         shapes = shapes.concat(
@@ -76,5 +71,25 @@ export default function (opts: Opts): DrawShape[] {
       });
     } else shapes = shapes.concat(makeAutoShapesFromUci(opposite(color), n.threat.pvs[0].moves[0], 'red'));
   }
-  return shapes;
+  const feedback = feedbackAnnotation(n);
+  const hint = opts.hint !== undefined ? { orig: makeSquare(opts.hint), brush: 'green' } : undefined;
+  return [
+    ...shapes,
+    ...annotationShapes(n),
+    ...(feedback ? annotationShapes(feedback) : []),
+    ...(hint ? [hint] : []),
+  ];
+}
+
+function feedbackAnnotation(n: Tree.Node): Tree.Node | undefined {
+  let glyph: Tree.Glyph | undefined;
+  switch (n.puzzle) {
+    case 'good':
+    case 'win':
+      glyph = { id: 7, name: 'good', symbol: '✓' };
+      break;
+    case 'fail':
+      glyph = { id: 4, name: 'fail', symbol: '✗' };
+  }
+  return glyph && { ...n, glyphs: [glyph] };
 }

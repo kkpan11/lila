@@ -1,18 +1,19 @@
 package lila.challenge
-
-import play.api.i18n.Lang
 import play.api.libs.json.*
 
 import lila.common.Json.given
-import lila.common.licon
+import lila.core.i18n.{ I18nKey as trans, Translate }
+import lila.core.id.GameFullId
+import lila.core.socket.{ SocketVersion, userLag }
 import lila.game.JsonView.given
-import lila.i18n.{ I18nKeys as trans }
-import lila.socket.{ SocketVersion, UserLagCache }
+import lila.ui.Icon
+import lila.ui.Icon.iconWrites
 
 final class JsonView(
-    baseUrl: lila.common.config.BaseUrl,
-    getLightUser: lila.common.LightUser.GetterSync,
-    isOnline: lila.socket.IsOnline
+    baseUrl: lila.core.config.BaseUrl,
+    getLightUser: lila.core.LightUser.GetterSync,
+    getLagRating: userLag.GetLagRating,
+    isOnline: lila.core.socket.IsOnline
 ):
 
   import Challenge.*
@@ -22,34 +23,47 @@ final class JsonView(
     Json
       .obj(
         "id"     -> r.id,
-        "name"   -> light.fold(r.id into UserName)(_.name),
+        "name"   -> light.fold(r.id.into(UserName))(_.name),
         "rating" -> r.rating.int
       )
       .add("title" -> light.map(_.title))
       .add("provisional" -> r.rating.provisional)
       .add("patron" -> light.so(_.isPatron))
       .add("flair" -> light.flatMap(_.flair))
-      .add("online" -> isOnline(r.id))
-      .add("lag" -> UserLagCache.getLagRating(r.id))
+      .add("online" -> isOnline.exec(r.id))
+      .add("lag" -> getLagRating(r.id))
 
-  def apply(a: AllChallenges)(using lang: Lang): JsObject =
+  def apply(a: AllChallenges)(using Translate): JsObject =
     Json.obj(
-      "in"   -> a.in.map(apply(Direction.In.some)),
-      "out"  -> a.out.map(apply(Direction.Out.some)),
-      "i18n" -> lila.i18n.JsDump.keysToObject(i18nKeys, lang),
+      "in"  -> a.in.map(apply(Direction.In.some)),
+      "out" -> a.out.map(apply(Direction.Out.some)),
       "reasons" -> JsObject(Challenge.DeclineReason.allExceptBot.map: r =>
         r.key -> JsString(r.trans.txt()))
     )
 
-  def show(challenge: Challenge, socketVersion: SocketVersion, direction: Option[Direction])(using Lang) =
+  def websiteAndLichobile(
+      challenge: Challenge,
+      socketVersion: SocketVersion,
+      direction: Option[Direction]
+  )(using Translate) =
     Json.obj(
       "challenge"     -> apply(direction)(challenge),
       "socketVersion" -> socketVersion
     )
 
+  def apiAndMobile(
+      challenge: Challenge,
+      socketVersion: Option[SocketVersion],
+      direction: Option[Direction],
+      fullId: Option[GameFullId] = none
+  )(using Translate) =
+    apply(direction)(challenge)
+      .add("socketVersion" -> socketVersion)
+      .add("fullId" -> fullId)
+
   private given OWrites[Challenge.Open] = Json.writes
 
-  def apply(direction: Option[Direction])(c: Challenge)(using Lang): JsObject =
+  def apply(direction: Option[Direction])(c: Challenge)(using Translate): JsObject =
     Json
       .obj(
         "id"         -> c.id,
@@ -90,17 +104,7 @@ final class JsonView(
       .add("open" -> c.open)
       .add("rules" -> c.nonEmptyRules)
 
-  private def iconOf(c: Challenge): licon.Icon =
+  private def iconOf(c: Challenge): Icon =
     if c.variant == chess.variant.FromPosition
-    then licon.Feather
+    then Icon.Feather
     else c.perfType.icon
-
-  private val i18nKeys = List(
-    trans.rated,
-    trans.casual,
-    trans.waiting,
-    trans.accept,
-    trans.decline,
-    trans.viewInFullSize,
-    trans.cancel
-  )

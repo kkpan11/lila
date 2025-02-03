@@ -2,45 +2,31 @@ package lila.report
 
 import akka.actor.*
 import com.softwaremill.macwire.*
-import lila.common.autoconfig.{ *, given }
-import play.api.Configuration
 
-import lila.common.config.*
-
-@Module
-private class ReportConfig(
-    @ConfigName("collection.report") val reportColl: CollName,
-    @ConfigName("score.threshold") val scoreThreshold: Int,
-    @ConfigName("actor.name") val actorName: String
-)
+import lila.core.config.*
 
 @Module
 final class Env(
-    appConfig: Configuration,
-    domain: lila.common.config.NetDomain,
     db: lila.db.Db,
-    isOnline: lila.socket.IsOnline,
-    userRepo: lila.user.UserRepo,
-    userApi: lila.user.UserApi,
-    lightUserAsync: lila.common.LightUser.Getter,
-    gameRepo: lila.game.GameRepo,
-    securityApi: lila.security.SecurityApi,
-    userLoginsApi: lila.security.UserLoginsApi,
-    playbanApi: lila.playban.PlaybanApi,
-    ircApi: lila.irc.IrcApi,
-    captcher: lila.hub.actors.Captcher,
-    fishnet: lila.hub.actors.Fishnet,
+    isOnline: lila.core.socket.IsOnline,
+    userApi: lila.core.user.UserApi,
+    lightUserAsync: lila.core.LightUser.Getter,
+    gameApi: lila.core.game.GameApi,
+    gameRepo: lila.core.game.GameRepo,
+    securityApi: lila.core.security.SecurityApi,
+    playbansOf: => lila.core.playban.BansOf,
+    ircApi: lila.core.irc.IrcApi,
     settingStore: lila.memo.SettingStore.Builder,
     cacheApi: lila.memo.CacheApi
-)(using ec: Executor, system: ActorSystem, scheduler: Scheduler):
+)(using Executor, NetDomain)(using scheduler: Scheduler):
 
-  private val config = appConfig.get[ReportConfig]("report")(AutoConfig.loader)
+  private def lazyPlaybansOf = () => playbansOf
 
-  private lazy val reportColl = db(config.reportColl)
+  private lazy val reportColl = db(CollName("report2"))
 
-  lazy val scoreThresholdsSetting = ReportThresholds makeScoreSetting settingStore
+  lazy val scoreThresholdsSetting = ReportThresholds.makeScoreSetting(settingStore)
 
-  lazy val discordScoreThresholdSetting = ReportThresholds makeDiscordSetting settingStore
+  lazy val discordScoreThresholdSetting = ReportThresholds.makeDiscordSetting(settingStore)
 
   private val thresholds = Thresholds(
     score = (() => scoreThresholdsSetting.get()),
@@ -58,23 +44,8 @@ final class Env(
 
   lazy val modFilters = new ModReportFilter
 
-  // api actor
-  system.actorOf(
-    Props(
-      new Actor:
-        def receive =
-          case lila.hub.actorApi.report.Cheater(userId, text) =>
-            api.autoCheatReport(userId, text)
-          case lila.hub.actorApi.report.Shutup(userId, text, critical) =>
-            api.autoCommReport(userId, text, critical)
-    ),
-    name = config.actorName
-  )
-
-  lila.common.Bus.subscribeFun("playban", "autoFlag"):
-    case lila.hub.actorApi.playban.Playban(userId, mins, _) => api.maybeAutoPlaybanReport(userId, mins)
-    case lila.hub.actorApi.report.AutoFlag(suspectId, resource, text, critical) =>
-      api.autoCommFlag(SuspectId(suspectId), resource, text, critical)
-
-  scheduler.scheduleWithFixedDelay(1 minute, 1 minute): () =>
+  scheduler.scheduleWithFixedDelay(1.minute, 1.minute): () =>
     api.inquiries.expire
+
+  lila.common.Bus.subscribeFun("playban"):
+    case lila.core.playban.Playban(userId, mins, _) => api.maybeAutoPlaybanReport(userId, mins)

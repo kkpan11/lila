@@ -1,8 +1,7 @@
-import { fixCrazySan } from 'chess';
-import { attributesModule, classModule, init, h } from 'snabbdom';
-import { plyToTurn } from '../util';
+import { fixCrazySan, plyToTurn } from 'chess';
+import { attributesModule, classModule, eventListenersModule, init, h, VNodeData } from 'snabbdom';
 
-export const patch = init([classModule, attributesModule]);
+export const patch = init([classModule, attributesModule, eventListenersModule]);
 
 export const emptyRedButton = 'button.button.button-red.button-empty';
 
@@ -20,14 +19,5 @@ export function titleNameToId(titleName: string): string {
   return (split.length === 1 ? split[0] : split[1]).toLowerCase();
 }
 
-export const option = (value: string, current: string | undefined, name: string) =>
-  h(
-    'option',
-    {
-      attrs: {
-        value: value,
-        selected: value === current,
-      },
-    },
-    name,
-  );
+export const option = (value: string, current: string | undefined, name: string, data?: VNodeData) =>
+  h('option', { attrs: { value: value, selected: value === current }, ...data }, name);

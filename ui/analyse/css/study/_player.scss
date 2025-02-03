@@ -3,17 +3,17 @@
 $player-height: 1.6rem;
 
 .analyse.has-players {
-  cg-board {
+  .main-board cg-board {
     border-radius: 0;
   }
 
-  @include breakpoint($mq-col2) {
+  @include mq-at-least-col2 {
     .analyse__underboard {
-      margin-top: calc(#{$player-height / 2} + #{$block-gap / 2});
+      margin-top: calc(#{$player-height / 2} + #{$analyse-block-gap} / 2);
     }
   }
 
-  @include breakpoint($mq-col1) {
+  @include mq-is-col1 {
     .analyse__controls {
       margin-top: $player-height;
     }
@@ -24,9 +24,9 @@ $player-height: 1.6rem;
   @extend %flex-between-nowrap, %metal, %box-shadow;
 
   position: absolute;
-  #{$end-direction}: 0;
+  @include inline-end(0);
   font-weight: bold;
-  width: var(--cg-width, 100%);
+  width: var(---cg-width, 100%);
   height: $player-height;
   white-space: nowrap;
 
@@ -38,14 +38,14 @@ $player-height: 1.6rem;
     .is3d & {
       @extend %box-radius;
 
-      top: calc(#{-$player-height} - var(--cg-width) / 20);
+      top: calc(#{-$player-height} - var(---cg-width) / 20);
     }
   }
 
   &-bot {
     @extend %box-radius-bottom;
 
-    top: var(--cg-height, 100%);
+    top: var(---cg-height, 100%);
   }
 
   .left {
@@ -56,20 +56,20 @@ $player-height: 1.6rem;
 
   .result {
     flex: 0 0 auto;
-    margin-#{$start-direction}: 0.8em;
-    padding-#{$end-direction}: 0.8em;
-    border-#{$end-direction}: $border;
+    margin-inline-start: 0.8em;
+    padding-inline-end: 0.8em;
+    border-inline-end: $border;
   }
 
   .analyse__clock {
     @extend %roboto, %flex-center-nowrap;
+    @include padding-direction(0, 0.8em, 0, 0.6em);
 
     height: 100%;
-    font-size: 1.2em;
-    @include padding-direction(0, 0.8em, 0, 0.4em);
-
     border-radius: 0 4px 0 0;
     box-shadow: none;
+    font-size: 1.2em;
+    font-weight: normal;
   }
 
   &-bot .analyse__clock {
@@ -78,30 +78,49 @@ $player-height: 1.6rem;
 
   &.ticking .analyse__clock {
     background: $c-secondary;
-    color: $c-secondary-over;
+    color: $c-over;
     text-shadow: none;
   }
 
   .info {
-    margin-#{$start-direction}: 10px;
-    display: flex;
+    @extend %flex-center-nowrap;
+    margin-inline-start: 10px;
     overflow: hidden;
 
-    > * {
+    .team,
+    .name {
       overflow: hidden;
       text-overflow: ellipsis;
       max-width: fit-content;
       flex: 1;
     }
+    a.name {
+      color: $c-font;
+      &:hover {
+        color: $c-link;
+      }
+    }
   }
 
   .name {
-    margin-#{$start-direction}: 0.5ch;
+    margin-inline-start: 0.5ch;
     flex: 3;
+  }
+  .team {
+    @extend %roboto;
+    margin-inline-end: 1ch;
+    padding: 0 1ch;
+    flex: 2;
+    color: $c-font-dim;
+  }
+  .mini-game__flag {
+    height: 1em;
+    margin-inline-end: 1ch;
+    margin-top: unset;
   }
 
   .elo {
-    margin-#{$start-direction}: 0.5em;
+    margin-inline-start: 0.5em;
     font-weight: normal;
   }
 }
@@ -114,7 +133,7 @@ $player-height: 1.6rem;
     height: 20px;
 
     &.pawn {
-      margin-#{$start-direction}: -10px;
+      margin-inline-start: -10px;
     }
   }
 

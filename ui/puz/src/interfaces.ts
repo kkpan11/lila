@@ -1,23 +1,24 @@
 import type { Clock } from './clock';
 import type { Combo } from './combo';
 import type CurrentPuzzle from './current';
-import { PuzFilters } from './filters';
-import * as Prefs from 'common/prefs';
+import type { PuzFilters } from './filters';
+import type { Coords } from 'common/prefs';
 
 export interface PuzCtrl {
   run: Run;
   filters: PuzFilters;
-  trans: Trans;
+  pref: PuzPrefs;
 }
 
 export interface PuzPrefs {
-  coords: Prefs.Coords;
+  coords: Coords;
   is3d: boolean;
   destination: boolean;
   rookCastle: boolean;
   moveEvent: number;
   highlight: boolean;
   animation: number;
+  ratings: boolean;
 }
 
 export type UserMove = (orig: Key, dest: Key) => void;

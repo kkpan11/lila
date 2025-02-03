@@ -1,12 +1,28 @@
 package lila.oauth
 
+import play.api.data.Form
+import play.api.data.Forms.{ mapping, optional, single, text }
 import play.api.http.HeaderNames
 import play.api.mvc.RequestHeader
 
+import lila.common.Form.into
 import lila.common.String.base64
 
 object AccessTokenRequest:
   import Protocol.*
+
+  val form = Form(
+    mapping(
+      "grant_type"    -> optional(text),
+      "code"          -> optional(text),
+      "code_verifier" -> optional(text),
+      "client_id"     -> optional(text.into[ClientId]),
+      "redirect_uri"  -> optional(text),
+      "client_secret" -> optional(text)
+    )(AccessTokenRequest.Raw.apply)(unapply)
+  )
+
+  val revokeClientForm = Form(single("origin" -> text))
 
   case class Raw(
       grantType: Option[String],
@@ -56,12 +72,15 @@ object AccessTokenRequest:
   case class BasicAuth(clientId: ClientId, clientSecret: LegacyClientApi.ClientSecret)
   object BasicAuth:
     def from(req: RequestHeader): Option[BasicAuth] =
-      req.headers.get(HeaderNames.AUTHORIZATION).flatMap { authorization =>
-        val prefix = "Basic "
-        authorization.startsWith(prefix) option authorization.stripPrefix(prefix)
-      } flatMap base64.decode flatMap {
-        _.split(":", 2) match
-          case Array(clientId, clientSecret) =>
-            Some(BasicAuth(ClientId(clientId), LegacyClientApi.ClientSecret(clientSecret)))
-          case _ => None
-      }
+      req.headers
+        .get(HeaderNames.AUTHORIZATION)
+        .flatMap: authorization =>
+          val prefix = "Basic "
+          Option.when(authorization.startsWith(prefix))(authorization.stripPrefix(prefix))
+        .flatMap(base64.decode)
+        .flatMap {
+          _.split(":", 2) match
+            case Array(clientId, clientSecret) =>
+              Some(BasicAuth(ClientId(clientId), LegacyClientApi.ClientSecret(clientSecret)))
+            case _ => None
+        }

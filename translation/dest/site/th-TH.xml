@@ -5,6 +5,7 @@
   <string name="toInviteSomeoneToPlayGiveThisUrl">ให้ URL นี้เพื่อเชิญคนมาเล่น</string>
   <string name="gameOver">จบเกม</string>
   <string name="waitingForOpponent">กำลังรอคู่แข่ง</string>
+  <string name="orLetYourOpponentScanQrCode">หรือให้คู่แข่งคุณสแกน QR code นี้</string>
   <string name="waiting">กำลังรอ</string>
   <string name="yourTurn">ตาคุณ</string>
   <string name="aiNameLevelAiLevel">%1$s ระดับ %2$s</string>
@@ -68,6 +69,8 @@
   <string name="promoteVariation">เลื่อนขั้นตัวแปร</string>
   <string name="makeMainLine">สร้างเส้นทางหลัก</string>
   <string name="deleteFromHere">ลบจากที่นี่</string>
+  <string name="collapseVariations">ซ่อนตาเดินอื่นๆ</string>
+  <string name="expandVariations">ขยายตาเดินอื่นๆ</string>
   <string name="forceVariation">ทำให้เป็นการผันแปร</string>
   <string name="copyVariationPgn">คัดลอก PGN แขนงต่างๆ</string>
   <string name="move">ตาเดิน</string>
@@ -101,6 +104,9 @@
   <string name="playFirstOpeningEndgameExplorerMove">เล่นการเปิดเกม/จบเกม-ค้นหาตาเดิน</string>
   <string name="winPreventedBy50MoveRule">พลาดชัยชนะเนื่องจากกฎการเดิน 50 รอบ</string>
   <string name="lossSavedBy50MoveRule">รอดจากการแพ้ด้วยกฎการเดิน 50 รอบ</string>
+  <string name="winOr50MovesByPriorMistake">ชนะหรือเดิน 50 ตาโดยไม่ได้ตั้งใจ</string>
+  <string name="lossOr50MovesByPriorMistake">แพ้หรือเดิน 50 ตาโดยไม่ได้ตั้งใจ</string>
+  <string name="unknownDueToRounding">จะรับประกันการแพ้/ชนะ ก็ต่อเมี่อเดินหมากตามฐานตารางตั้งแต่การกินหมากหรือการเดินหมากเบี้ยครั้งสุดท้าย เนื่องจากการปัดเศษค่า DTZ ที่เป็นไปได้ในฐานตาราง Syzygy</string>
   <string name="allSet">พร้อมลุย!</string>
   <string name="importPgn">ป้อน PGN</string>
   <string name="delete">ลบ</string>
@@ -108,7 +114,6 @@
   <string name="replayMode">เล่นซ้ำ</string>
   <string name="realtimeReplay">ตามที่เล่นจริง</string>
   <string name="byCPL">ตามแต้มเสีย</string>
-  <string name="openStudy">เปิดห้องเรียน</string>
   <string name="enable">เปิดใช้งาน</string>
   <string name="bestMoveArrow">ศรตาเดินที่ดีที่สุด</string>
   <string name="showVariationArrows">แสดงศรการเดินอื่นๆ</string>
@@ -118,17 +123,25 @@
   <string name="memory">หน่วยความจำที่ใช้</string>
   <string name="infiniteAnalysis">การวิเคราะห์อนันต์</string>
   <string name="removesTheDepthLimit">ไม่จำกัดความลึก อาจทำให้เครื่องร้อน</string>
-  <string name="engineManager">จัดการเครื่องจักร</string>
   <string name="blunder">พลาดมหันต์</string>
   <string name="mistake">พลาด</string>
   <string name="inaccuracy">ไม่แม่นยำ</string>
   <plurals name="nbBlunders">
     <item quantity="other">%s พลาดมหันต์</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="other">%s พลาดมหันต์</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="other">%s พลาด</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="other">%s พลาด</item>
+  </plurals>
   <plurals name="nbInaccuracies">
+    <item quantity="other">%s ไม่แม่นยำ</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
     <item quantity="other">%s ไม่แม่นยำ</item>
   </plurals>
   <string name="moveTimes">เวลาที่ใช้ในการเดิน</string>
@@ -165,6 +178,7 @@
   <string name="latestForumPosts">โพสต์อภิปรายล่าสุด</string>
   <string name="players">ผู้เล่น</string>
   <string name="friends">เพื่อน</string>
+  <string name="otherPlayers">ผู้เล่นอื่นๆ</string>
   <string name="discussions">การสนทนา</string>
   <string name="today">วันนี้</string>
   <string name="yesterday">เมื่อวาน</string>
@@ -217,6 +231,7 @@
   <string name="emailSent">เราได้ส่งอีเมลไปที่ %s</string>
   <string name="emailCanTakeSomeTime">อาจจะเป็นเวลาสักพักก่อนที่จะได้รับ</string>
   <string name="refreshInboxAfterFiveMinutes">รอ 5 นาทีและรีเฟรชกล่องจดหมายของคุณ</string>
+  <string name="checkSpamFolder">ตรวจสอบโฟลเดอร์สแปมของคุณด้วย มันอาจจะไปอยู่ที่นั่น หากเป็นเช่นนั้น ให้ทำเครื่องหมายว่าไม่ใช่สแปม</string>
   <string name="emailForSignupHelp">ถ้ายังไม่สามารถสมัครได้ ส่งอีเมลมาหาเราที่นี่:</string>
   <string name="copyTextToEmail">คัดลอกและวางข้อความข้างบน แล้วส่งไปที่ %s</string>
   <string name="waitForSignupHelp">เราจะติดต่อคุณอย่างรวดเร็วเพื่อช่วยคุณสมัครบัญชีให้สำเร็จ</string>
@@ -253,10 +268,10 @@
   <string name="playingRightNow">กำลังเล่น</string>
   <string name="eventInProgress">กำลังแข่ง</string>
   <string name="finished">จบแล้ว</string>
-  <string name="finishesX">เสร็จสิ้น%s</string>
   <string name="abortGame">ยกเลิกเกม</string>
   <string name="gameAborted">เกมถูกยกเลิก</string>
   <string name="standard">มาตรฐาน</string>
+  <string name="customPosition">ตำแหน่งที่กำหนดเอง</string>
   <string name="unlimited">ไม่จำกัด</string>
   <string name="mode">รูปแบบการเล่น</string>
   <string name="casual">เกมสบาย ๆ</string>
@@ -373,7 +388,7 @@
   <string name="importGame">นำเข้าเกม</string>
   <string name="importGameExplanation">เมื่อวาง PGN ของเกมแล้ว คุณจะได้รับความสามารถเรียกดูการเล่นซ้ำ, การวิเคราะห์ด้วยคอมพิวเตอร์, แชทของเกม และ URL ที่สามารถแชร์ได้</string>
   <string name="importGameCaveat">การเดินรูปแบบต่างๆ จะถูกลบทิ้ง หากต้องการเก็บไว้ ให้นำเข้า PGN ผ่านการศึกษา</string>
-  <string name="importGameCaveat2">PGN นี้เป็นสาธารณะ หากอยากจะนำเข้าเกม โปรดใช้หน้ากรณีศึกษา</string>
+  <string name="importGameDataPrivacyWarning">PGN นี้เป็นสาธารณะ หากอยากจะนำเข้าเกมแบบส่วนตัว โปรดใช้หน้ากรณีศึกษา</string>
   <plurals name="nbImportedGames">
     <item quantity="other">%s เกมที่ถูกนำเข้า</item>
   </plurals>
@@ -385,6 +400,7 @@
   <string name="blackCheckmatesInOneMove">ดำต้องรุกจนโดยเดินครั้งเดียว</string>
   <string name="retry">ลองอีกครั้ง</string>
   <string name="reconnecting">กำลังเชื่อมต่อใหม่</string>
+  <string name="noNetwork">ออฟไลน์</string>
   <plurals name="nbFriendsOnline">
     <item quantity="other">เพื่อนออนไลน์ %s คน</item>
   </plurals>
@@ -397,7 +413,6 @@
   <string name="block">กีดกัน</string>
   <string name="blocked">ถูกกีดกัน</string>
   <string name="unblock">เลิกกีดกัน</string>
-  <string name="followsYou">ติดตามคุณ</string>
   <string name="xStartedFollowingY">%1$s ได้เริ่มติดตาม %2$s</string>
   <plurals name="nbFollowers">
     <item quantity="other">ผู้ติดตาม %s</item>
@@ -426,9 +441,6 @@
   <string name="safeTournamentName">เลือกชื่อที่ปลอดภัยสุดสำหรับทัวร์นาเมนต์</string>
   <string name="inappropriateNameWarning">อะไรที่ไม่เหมาะสมแม้เพียงเล็กน้อย ก็สามารถทำให้บัญชีของคุณถูกปิดได้</string>
   <string name="emptyTournamentName">ปล่อยว่างไว้เพื่อตั้งชื่อทัวร์นาเมนต์หลังจากสุ่มแกรนด์มาสเตอร์</string>
-  <string name="recommendNotTouching">เราแนะนำว่าอย่าแตะต้องสิ่งเหล่านี้</string>
-  <string name="fewerPlayers">ถ้าคุณตั้งค่าเงื่อนไขการเข้าร่วม ทัวร์นาเมนต์ของคุณจะมีผู้เข้าเล่นได้น้อยลง</string>
-  <string name="showAdvancedSettings">แสดงการตั้งค่าขั้นสูง</string>
   <string name="makePrivateTournament">ทำทัวร์นาเมนต์ให้เป็นส่วนตัว และจำกัดการเข้าถึงด้วยรหัสผ่าน</string>
   <string name="join">เข้าร่วม</string>
   <string name="withdraw">ถอนตัว</string>
@@ -468,9 +480,9 @@
   <string name="ifNoneLeaveEmpty">ถ้าไม่มี, จงเว้นว่าง</string>
   <string name="profile">ข้อมูลประจำตัว</string>
   <string name="editProfile">แก้ไขข้อมูลประจำตัว</string>
-  <string name="firstName">ชื่อจริง</string>
-  <string name="lastName">นามสกุล</string>
+  <string name="realName">ชื่อจริง</string>
   <string name="setFlair">ตั้งค่ารูปตกแต่ง</string>
+  <string name="flair">รูปตกแต่ง</string>
   <string name="youCanHideFlair">มันมีการตั้งค่าที่ทำให้ไม่สามารถเห็นรูปตกแต่งของผู้ใช้ได้ทั้งเวบไซต์</string>
   <string name="biography">ชีวประวัติ</string>
   <string name="countryRegion" comment="flag&#10;Appears when you edit your profile. Lets a player add a country/flag (not all flags are for countries) to their profile">ประเทศหรือภูมิภาค</string>
@@ -491,13 +503,15 @@
   <string name="automaticallyProceedToNextGameAfterMoving">ดำเนินสู่เกมถัดไปอัตโนมัติหลังจากการเดิน</string>
   <string name="autoSwitch">สลับอัตโนมัติ</string>
   <string name="puzzles">ปริศนา</string>
-  <string name="tournamentWinners">ผู้ชนะทัวร์นาเมนต์</string>
+  <string name="onlineBots">บอทออนไลน์</string>
   <string name="name">ชื่อ</string>
   <string name="description">คำอธิบาย</string>
   <string name="descPrivate">คำบรรยายส่วนตัว</string>
   <string name="descPrivateHelp">ข้อความที่สมาชิกทีมเท่านั้นที่เห็นได้ ถ้าตั้งไว้ก็จะไปแทนที่คำอธิบายสาธารณะสำหรับสมาชิกทีม</string>
   <string name="no">ไม่</string>
   <string name="yes">ใช่</string>
+  <string name="website">เวบไซต์</string>
+  <string name="mobile">มือถือ</string>
   <string name="help">ช่วยเหลือ:</string>
   <string name="createANewTopic">สร้างหัวข้อใหม่</string>
   <string name="topics">หัวข้อ</string>
@@ -514,11 +528,11 @@
   <string name="reason">เหตุผล</string>
   <string name="whatIsIheMatter">เกิดอะไรขึ้น?</string>
   <string name="cheat">โกง</string>
-  <string name="insult">ดูหมิ่น</string>
   <string name="troll">ป่วน</string>
-  <string name="ratingManipulation">การปรับแต่งระดับคะแนน</string>
   <string name="other">อื่นๆ</string>
-  <string name="reportDescriptionHelp">วางลิงค์ที่ไปสู่เกม และอธิบายว่าผู้ใช้นี้มีพฤติกรรมที่ผิดอะไร อย่าบอกเพียงว่า \"พวกเขาโกง\" แต่บอกเราว่าคุณสรุปแบบนี้เพราะอะไร การรายงานของคุณจะเร็วขึ้นถ้าเขียนด้วยภาษาอังกฤษ</string>
+  <string name="reportCheatBoostHelp">วางลิงก์ไปยังเกม และอธิบายสิ่งผิดปกติเกี่ยวกับพฤติกรรมของผู้ใช้นี้ อย่าแค่พูดว่า \"พวกเขาโกง\" แต่บอกเราว่าคุณมาถึงข้อสรุปนี้ได้อย่างไร</string>
+  <string name="reportUsernameHelp">อธิบายว่าชื่อผู้ใช้นี้ไม่เหมาะสมอย่างไร อย่าเพียงแค่พูดว่า \"มันน่ารังเกียจ/ไม่เหมาะสม\" แต่บอกเราว่าคุณมาถึงข้อสรุปนี้ได้อย่างไร โดยเฉพาะหากชื่อนั้นคลุมเครือ ไม่ใช่ภาษาอังกฤษ เป็นคำสแลง หรือเป็นการอ้างอิงทางประวัติศาสตร์/วัฒนธรรม</string>
+  <string name="reportProcessedFasterInEnglish">รายงานของคุณจะได้รับการดำเนินการเร็วขึ้นหากเขียนเป็นภาษาอังกฤษ</string>
   <string name="error.provideOneCheatedGameLink">โปรดระบุอย่างน้อยหนึ่งลิงก์ เพื่อเชื่อมโยงไปยังเกมที่มีการโกง</string>
   <string name="by">โดย %s</string>
   <string name="importedByX">ถูกนำเข้าโดย %s</string>
@@ -551,6 +565,7 @@
   <string name="slow">ช้า</string>
   <string name="insideTheBoard">ด้านในกระดาน</string>
   <string name="outsideTheBoard">ด้านนอกกระดาน</string>
+  <string name="allSquaresOfTheBoard">ทุกช่องบนกระดาน</string>
   <string name="onSlowGames">ในเกมรูปแบบช้า</string>
   <string name="always">เสมอ</string>
   <string name="never">ไม่ต้อง</string>
@@ -662,6 +677,7 @@
   <string name="toggleVariationArrows">ควบคุมศรตาเดินแขนงอื่น</string>
   <string name="cyclePreviousOrNextVariation">กู้คืน ตาเดินแขนงก่อนหน้า หรือ แขนงถัดไป</string>
   <string name="toggleGlyphAnnotations">สลับคำอธิบายประกอบสัญลักษณ์</string>
+  <string name="togglePositionAnnotations">สลับคำอธิบายประกอบหมากรุก</string>
   <string name="variationArrowsInfo">ตาเดินอื่นๆ ทำให้คุณนำร่องตาเดินได้โดยไม่ต้องให้ดูแผ่นตาเดิน</string>
   <string name="playSelectedMove">เล่นตาเดินที่เลือก</string>
   <string name="newTournament">ทัวร์นาเมนต์ใหม่</string>
@@ -705,6 +721,7 @@
   <string name="withFriends">กับเพื่อนๆ</string>
   <string name="withEverybody">กับทุกคน</string>
   <string name="kidMode">โหมดเด็ก</string>
+  <string name="kidModeIsEnabled">โหมดเด็กถูกเปิดใช้งาน</string>
   <string name="kidModeExplanation">สิ่งนี้เป็นเรื่องเกี่ยวกับความปลอดภัย ในโหมดสำหรับเด็ก การสื่อสารของไซต์ทั้งหมดจะถูกปิด จงใช้งานสิ่งนี้สำหรับเด็กและนักเรียนของคุณ เพื่อปกป้องพวกเขาจากผู้ใช้อินเทอร์เน็ตอื่นๆ</string>
   <string name="inKidModeTheLichessLogoGetsIconX">ในโหมดสำหรับเด็ก โลโก้ lichess จะมีไอคอน %s เพื่อให้คุณรู้ว่าเด็กๆของคุณปลอดภัย</string>
   <string name="askYourChessTeacherAboutLiftingKidMode">บัญชีของคุณได้รับการจัดการ ถามครูหมากรุกของคุณเกี่ยวกับการยกระดับโหมดเด็ก</string>
@@ -743,9 +760,12 @@
   <string name="transparent">โปร่งใส</string>
   <string name="deviceTheme">ธีมของเครื่อง</string>
   <string name="backgroundImageUrl">URL รูปภาพพื้นหลัง:</string>
-  <string name="boardGeometry">ทรงกระดาน</string>
-  <string name="boardTheme">รูปลักษณ์กระดาน</string>
-  <string name="boardSize">ขนาดกระดาน</string>
+  <string name="board">สีกระดาน</string>
+  <string name="size">ขนาด</string>
+  <string name="opacity">ค่าความทึบ</string>
+  <string name="brightness">ความสว่าง</string>
+  <string name="hue">เฉดสี</string>
+  <string name="boardReset">เปลี่ยนสีเป็นค่าตั้งต้น</string>
   <string name="pieceSet">ชุดหมาก</string>
   <string name="embedInYourWebsite">ฝังในเว็บไซต์ของคุณ</string>
   <string name="usernameAlreadyUsed">ชื่อผู้ใช้นี้ถูกใช้ไปแล้ว, โปรดตั้งชื่อใหม่</string>
@@ -814,9 +834,10 @@
   <plurals name="andSaveNbPremoveLines">
     <item quantity="other">และบันทึก %s เส้นทางเดินล่วงหน้า</item>
   </plurals>
+  <string name="showUnreadLichessMessage">คุณได้รับข้อความส่วนตัวจาก Lichess</string>
+  <string name="clickHereToReadIt">คลิกที่นี้เพื่ออ่าน</string>
   <string name="sorry">ขออภัย :(</string>
   <string name="weHadToTimeYouOutForAWhile">เราจำเป็นต้องให้คุณรอคอยสักช่วงหนึ่ง</string>
-  <string name="timeoutExpires">เวลารอคอย สิ้นสุดใน %s</string>
   <string name="why">ทำไม?</string>
   <string name="pleasantChessExperience">เรามุ่งหวังจะมอบประสบการณ์เกมหมากรุกที่น่าพอใจให้กับทุกคน</string>
   <string name="goodPractice">เพื่อให้ได้ผล เราต้องแน่ใจว่าผู้เล่นทุกคนได้ปฏิบัติตามเป็นอย่างดี</string>
@@ -836,6 +857,7 @@
   <string name="agreementPolicy">ฉันยอมรับว่า ฉันจะปฏิบัติตามทุกนโยบายของ Lichess</string>
   <string name="searchOrStartNewDiscussion">ค้นหา หรือเริ่มการสนทนาใหม่</string>
   <string name="edit">แก้ไข</string>
+  <string name="bullet" comment="Probably best left untranslated. Leave it as 'Bullet' unless your language has a better word for it.">บูลเล็ต</string>
   <string name="blitz" comment="Probably best left untranslated. Leave it as 'Blitz' unless your language has a better word for it.">บลิตซ์</string>
   <string name="rapid">แรปพิด</string>
   <string name="classical">คลาสสิก</string>
@@ -887,8 +909,10 @@
   <string name="minimumRatedGames">จำนวนเกมต่ำสุดที่คิดคะแนน</string>
   <string name="minimumRating">ระดับคะแนนต่ำสุด</string>
   <string name="maximumWeeklyRating">ระดับคะแนนรายสัปดาห์สูงสุด</string>
-  <string name="onlyTitled">เฉพาะผู้เล่นที่เคยชนะเลิศ</string>
-  <string name="onlyTitledHelp">ต้องการชื่อเรียกแบบทางการเพื่อเข้าร่วมทัวร์นาเมนต์</string>
+  <string name="positionInputHelp">ใส่ค่าตำแหน่ง FEN ที่ถูกต้อง เพี่อที่จะเริ่มเกมทุกเกมในทัวร์นาเมนต์ด้วยตำแหน่งหมากที่กำหนดไว้
+การใส่ค่าตำแหน่ง FEN สามารถใช้งานได้กับเกมปกติเท่านั้น ไม่สามารถใช้ได้กับเกมตัวแปรกติกาได้
+คุณสามารถใช้ %s เพี่อสร้างค่าตำแหน่ง FEN แล้วนำมาวางที่นี่
+ถ้าปล่อยว่าง จะเริ่มเกมจากตำแหน่งปกติ</string>
   <string name="cancelSimul">ยกเลิกไซมัล</string>
   <string name="simulHostcolor">สีโฮสต์ในแต่ละเกม</string>
   <string name="estimatedStart">เวลาเริ่มโดยประมาณ</string>
@@ -912,9 +936,6 @@
   <string name="focusChat">โฟกัสที่แชท</string>
   <string name="showHelpDialog">แสดงกรอบช่วยเหลือนี้</string>
   <string name="reopenYourAccount">เปิดบัญชีของคุณอีกครั้ง</string>
-  <string name="closedAccountChangedMind">ถ้าคุณได้ปิดบัญชีแล้ว แต่เกิดเปลี่ยนใจ คุณมีโอกาสอีกครั้งเดียวในการเรียกบัญชีของคุณคืนมา</string>
-  <string name="onlyWorksOnce">นี่จะทำได้เพียงครั้งเดียว</string>
-  <string name="cantDoThisTwice">ถ้าคุณปิดบัญชีเป็นครั้งที่สอง จะไม่มีโอกาสเรียกมันกลับมาได้อีก</string>
   <string name="emailAssociatedToaccount">ที่อยู่อีเมลถูกผูกกับบัญชี</string>
   <string name="sentEmailWithLink">เราได้ส่งอีเมลให้คุณพร้อมลิงก์แล้ว</string>
   <string name="tournamentEntryCode">รหัสการเข้าทัวร์นาเมนต์</string>
@@ -933,4 +954,5 @@
   <string name="showMeEverything">แสดงให้ฉันทุกอย่าง</string>
   <string name="lichessPatronInfo">Lichess เป็นมูลนิธิ และเป็นซอฟต์แวร์โอเพนซอร์สที่ฟรีอย่างสิ้นเชิง
 ค่าบริการ การพัฒนา และเนี้อหาของ Lichess ได้รับทุนสนับสนุนจากการบริจาคเงินของผู้ใช้เว็บไซต์อย่างเดียว</string>
+  <string name="nothingToSeeHere">ไม่มีอะไรให้ดูในขณะนี้</string>
 </resources>

@@ -1,10 +1,12 @@
 package lila.round
 
-import chess.{ Color, ByColor }
+import chess.{ ByColor, Color }
 
-import lila.game.{ Event, Game, Pov, Progress }
+import lila.core.data.Preload
+import lila.core.round.ClientError
+import lila.game.GameExt.withClock
+import lila.game.{ Event, Progress }
 import lila.pref.{ Pref, PrefApi }
-import lila.common.Preload
 
 final class Moretimer(
     messenger: Messenger,
@@ -15,20 +17,25 @@ final class Moretimer(
   private val maxTime = 60.seconds
 
   // pov of the player giving more time
-  def apply(pov: Pov, duration: FiniteDuration): Fu[Option[Progress]] =
-    IfAllowed(pov.game, Preload.none):
-      (pov.game moretimeable !pov.color).so:
-        if pov.game.hasClock
+  def apply(pov: Pov, duration: FiniteDuration, force: Boolean): Fu[Option[Progress]] =
+    isAllowedIn(pov.game, Preload.none, force).map:
+      case false =>
+        logger.warn(s"[moretimer] not allowed on ${pov.game.id}")
+        none
+      case true =>
+        if pov.game.clock.exists(_.moretimeable(!pov.color))
         then give(pov.game, List(!pov.color), duration).some
-        else
-          pov.game.hasCorrespondenceClock.option:
-            messenger.volatile(pov.game, s"${!pov.color} gets more time")
-            val p = pov.game.correspondenceGiveTime
-            p.game.correspondenceClock.map(Event.CorrespondenceClock.apply).fold(p)(p + _)
+        else if pov.game.correspondenceClock.exists(_.moretimeable(!pov.color))
+        then
+          messenger.volatile(pov.game, s"${!pov.color} gets more time")
+          val p = Progress(pov.game, pov.game.copy(movedAt = nowInstant))
+          p.game.correspondenceClock.map(Event.CorrespondenceClock.apply).foldLeft(p)(_ + _).some
+        else none
 
-  def isAllowedIn(game: Game, prefs: Preload[ByColor[Pref]]): Fu[Boolean] =
-    (game.canTakebackOrAddTime && game.playable && !game.metadata.hasRule(_.NoGiveTime)) so
-      isAllowedByPrefs(game, prefs)
+  def isAllowedIn(game: Game, prefs: Preload[ByColor[Pref]], force: Boolean): Fu[Boolean] =
+    (game.playable && !game.isUnlimited && game.canTakebackOrAddTime).so:
+      if force then fuccess(true)
+      else (!game.hasRule(_.noGiveTime)).so(isAllowedByPrefs(game, prefs))
 
   private[round] def give(game: Game, colors: List[Color], unchecked: FiniteDuration): Progress =
     game.clock.fold(Progress(game)): clock =>
@@ -41,21 +48,12 @@ final class Moretimer(
         c.giveTime(color, centis)
       colors.foreach: c =>
         messenger.volatile(game, s"$c + ${duration.toSeconds} seconds")
-      (game withClock newClock) ++ colors.map { Event.ClockInc(_, centis, newClock) }
+      (game.withClock(newClock)) ++ colors.map { Event.ClockInc(_, centis, newClock) }
 
   private def isAllowedByPrefs(game: Game, prefs: Preload[ByColor[Pref]]): Fu[Boolean] =
     prefs
       .orLoad:
-        prefApi byId game.userIdPair
+        prefApi.byId(game.userIdPair)
       .dmap:
         _.forall: p =>
           p.moretime == Pref.Moretime.ALWAYS || (p.moretime == Pref.Moretime.CASUAL && game.casual)
-
-  private def IfAllowed[A](game: Game, prefs: Preload[ByColor[Pref]])(f: => A): Fu[A] =
-    if !game.playable then fufail(ClientError("[moretimer] game is over " + game.id))
-    else if !game.canTakebackOrAddTime || game.metadata.hasRule(_.NoGiveTime) then
-      fufail(ClientError("[moretimer] game disallows it " + game.id))
-    else
-      isAllowedByPrefs(game, prefs) flatMap:
-        if _ then fuccess(f)
-        else fufail(ClientError("[moretimer] disallowed by preferences " + game.id))

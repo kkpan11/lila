@@ -1,40 +1,51 @@
 package controllers
 
-import play.api.data.Form
-import play.api.data.FormBinding
+import play.api.data.{ Form, FormBinding }
 import play.api.http.*
-import play.api.i18n.Lang
-import play.api.libs.json.{ JsArray, JsNumber, JsObject, JsString, JsValue, Json, Writes }
+import play.api.libs.json.Writes
 import play.api.mvc.*
 
 import lila.app.{ *, given }
-import lila.common.{ ApiVersion, HTTPRequest, config }
-import lila.i18n.{ I18nKey, I18nLangPicker }
-import lila.oauth.{ OAuthScope, OAuthScopes, OAuthServer, EndpointScopes, TokenScopes }
-import lila.security.{ AppealUser, FingerPrintedUser, Granter, Permission }
+import lila.common.HTTPRequest
+import lila.core.i18n.Language
+import lila.core.perf.UserWithPerfs
+import lila.core.perm.Permission
+import lila.i18n.LangPicker
+import lila.oauth.{ EndpointScopes, OAuthScope, OAuthScopes, OAuthServer, TokenScopes }
+import lila.ui.{ Page, Snippet }
 
 abstract private[controllers] class LilaController(val env: Env)
     extends BaseController
-    with http.RequestGetter
+    with lila.web.RequestGetter
+    with lila.web.ResponseBuilder(using env.executor)
     with http.ResponseBuilder(using env.executor)
-    with http.ResponseHeaders
-    with http.ResponseWriter
-    with http.CtrlExtensions
-    with http.CtrlConversions
-    with http.CtrlFilters
+    with lila.web.ResponseHeaders
+    with lila.web.ResponseWriter
+    with lila.web.CtrlExtensions
+    with http.CtrlFilters(using env.executor)
     with http.CtrlPage(using env.executor)
     with http.RequestContext(using env.executor)
-    with http.CtrlErrors:
+    with lila.web.CtrlErrors:
 
-  def controllerComponents = env.controllerComponents
-  given Executor           = env.executor
-  given Scheduler          = env.scheduler
-  given FormBinding        = parse.formBinding(parse.DefaultMaxTextLength)
+  def controllerComponents                           = env.controllerComponents
+  given Executor                                     = env.executor
+  given Scheduler                                    = env.scheduler
+  given FormBinding                                  = parse.formBinding(parse.DefaultMaxTextLength)
+  given lila.core.i18n.Translator                    = env.translator
+  given reqBody(using r: BodyContext[?]): Request[?] = r.body
 
-  given lila.common.config.NetDomain = env.net.domain
+  given (using codec: Codec, pc: PageContext): Writeable[Page] =
+    Writeable(page => codec.encode(views.base.page(page).html))
+
+  given Conversion[Page, Fu[Page]]       = fuccess(_)
+  given Conversion[Snippet, Fu[Snippet]] = fuccess(_)
+
+  given netDomain: lila.core.config.NetDomain = env.net.domain
 
   inline def ctx(using it: Context)       = it // `ctx` is shorter and nicer than `summon[Context]`
   inline def req(using it: RequestHeader) = it // `req` is shorter and nicer than `summon[RequestHeader]`
+
+  val limit = lila.web.Limiters(using env.executor, env.net.rateLimit)
 
   /* Anonymous requests */
   def Anon(f: Context ?=> Fu[Result]): EssentialAction =
@@ -226,13 +237,15 @@ abstract private[controllers] class LilaController(val env: Env)
       oauthBodyContext(scoped).flatMap: ctx =>
         f(using ctx)(using scoped.me)
 
-  private def handleScopedCommon(selectors: Seq[OAuthScope.Selector])(using req: RequestHeader)(
+  private def handleScopedCommon(selectors: Seq[OAuthScope.Selector])(using
+      req: RequestHeader
+  )(
       f: OAuthScope.Scoped => Fu[Result]
   ) =
-    val accepted = OAuthScope.select(selectors) into EndpointScopes
+    val accepted = OAuthScope.select(selectors).into(EndpointScopes)
     env.security.api.oauthScoped(req, accepted).flatMap {
       case Left(e)       => handleScopedFail(accepted, e)
-      case Right(scoped) => f(scoped) map OAuthServer.responseHeaders(accepted, scoped.scopes)
+      case Right(scoped) => f(scoped).map(OAuthServer.responseHeaders(accepted, scoped.scopes))
     }
 
   def handleScopedFail(accepted: EndpointScopes, e: OAuthServer.AuthError)(using RequestHeader) = e match
@@ -292,12 +305,10 @@ abstract private[controllers] class LilaController(val env: Env)
   def FormFuResult[A, B: Writeable](
       form: Form[A]
   )(err: Form[A] => Fu[B])(op: A => Fu[Result])(using Request[?]): Fu[Result] =
-    form
-      .bindFromRequest()
-      .fold(
-        form => err(form) dmap { BadRequest(_) },
-        op
-      )
+    bindForm(form)(
+      form => err(form).dmap { BadRequest(_) },
+      op
+    )
 
   def HeadLastModifiedAt(updatedAt: Instant)(f: => Fu[Result])(using RequestHeader): Fu[Result] =
     if req.method == "HEAD" then NoContent.withDateHeaders(lastModified(updatedAt))
@@ -306,14 +317,14 @@ abstract private[controllers] class LilaController(val env: Env)
   def pageHit(using req: RequestHeader): Unit =
     if HTTPRequest.isHuman(req) then lila.mon.http.path(req.path).increment()
 
-  def LangPage(call: Call)(f: Context ?=> Fu[Result])(langCode: String): EssentialAction =
-    LangPage(call.url)(f)(langCode)
-  def LangPage(path: String)(f: Context ?=> Fu[Result])(langCode: String): EssentialAction = Open:
+  def LangPage(call: Call)(f: Context ?=> Fu[Result])(language: Language): EssentialAction =
+    LangPage(call.url)(f)(language)
+  def LangPage(path: String)(f: Context ?=> Fu[Result])(language: Language): EssentialAction = Open:
     if ctx.isAuth
     then redirectWithQueryString(path)
     else
-      import I18nLangPicker.ByHref
-      I18nLangPicker.byHref(langCode, ctx.req) match
+      import LangPicker.ByHref
+      LangPicker.byHref(language, ctx.req) match
         case ByHref.NotFound => notFound(using ctx)
         case ByHref.Redir(code) =>
           redirectWithQueryString(s"/$code${~path.some.filter("/" !=)}")
@@ -321,23 +332,25 @@ abstract private[controllers] class LilaController(val env: Env)
         case ByHref.Found(lang) =>
           f(using ctx.withLang(lang))
 
-  import lila.rating.{ Perf, PerfType }
-  def WithMyPerf[A](pt: PerfType)(f: Perf ?=> Fu[A])(using me: Option[Me]): Fu[A] = me
+  def WithMyPerf[A](pt: lila.rating.PerfType)(f: Perf ?=> Fu[A])(using me: Option[Me]): Fu[A] = me
     .soFu(env.user.perfsRepo.perfOf(_, pt))
     .flatMap: perf =>
-      f(using perf | Perf.default)
-  def WithMyPerfs[A](f: Option[lila.user.User.WithPerfs] ?=> Fu[A])(using me: Option[Me]): Fu[A] = me
+      f(using perf | lila.rating.Perf.default)
+  def WithMyPerfs[A](f: Option[UserWithPerfs] ?=> Fu[A])(using me: Option[Me]): Fu[A] = me
     .soFu(me => env.user.api.withPerfs(me.value))
     .flatMap:
       f(using _)
 
+  def meOrFetch[U: UserIdOf](id: U)(using ctx: Context): Fu[Option[lila.user.User]] =
+    if id.is(UserId("me")) then fuccess(ctx.user)
+    else ctx.user.filter(_.is(id)).fold(env.user.repo.byId(id))(u => fuccess(u.some))
+
+  def meOrFetch[U: UserIdOf](id: Option[U])(using ctx: Context): Fu[Option[lila.user.User]] =
+    id.fold(fuccess(ctx.user))(meOrFetch)
+
   given (using req: RequestHeader): lila.chat.AllMessages = lila.chat.AllMessages(HTTPRequest.isLitools(req))
 
-  /* We roll our own action, as we don't want to compose play Actions. */
-  private def action[A](parser: BodyParser[A])(handler: Request[A] ?=> Fu[Result]): EssentialAction = new:
-    import play.api.libs.streams.Accumulator
-    import akka.util.ByteString
-    def apply(rh: RequestHeader): Accumulator[ByteString, Result] =
-      parser(rh).mapFuture:
-        case Left(r)  => fuccess(r)
-        case Right(a) => handler(using Request(rh, a))
+  def anyCaptcha = env.game.captcha.any
+
+  def bindForm[T, R](form: Form[T])(error: Form[T] => R, success: T => R)(using Request[?], FormBinding): R =
+    form.bindFromRequest().fold(error, success)

@@ -33,7 +33,6 @@
     }
 
     .user-link {
-      padding-#{$start-direction}: -1em;
       font-weight: bold;
       color: $c-font-dim;
     }
@@ -49,10 +48,8 @@
       padding: 0.5em 0.4em;
       border-top: $border;
       max-width: 21ch;
-
-      /* prevent leaderboard overflow due to long usernames */
-      &:first-child {
-        padding-#{$start-direction}: 0.7em;
+      @media (max-width: at-most($x-small)) {
+        max-width: 18ch;
       }
 
       &.name a {
@@ -72,19 +69,49 @@
     }
   }
 
-  &__leaderboard,
-  &__winners {
-    td:first-child {
-      @extend %ellipsis;
-    }
-
-    td:last-child {
-      text-align: right;
-      padding-#{$end-direction}: 0.7em;
-    }
-  }
-
   &__blog .lobby__box__top {
     border-bottom: $border;
+  }
+
+  .progress-td {
+    padding: 0.3em 0.4em;
+  }
+  .progress {
+    border-radius: 2em;
+    display: block;
+    position: relative;
+    width: 30ch;
+    height: 1.25em;
+
+    background: $m-bg-page--fade-40;
+    @include if-light {
+      background: $m-shade--fade-40;
+    }
+    @include if-transp {
+      background: $m-bg--fade-40;
+    }
+    overflow: hidden;
+    @media (max-width: at-most($x-small)) {
+      max-width: 23ch;
+      margin: auto;
+    }
+    @media (max-width: at-most($xx-small)) {
+      max-width: 16ch;
+    }
+  }
+  .progress__bar {
+    border-radius: 2em;
+    display: block;
+    height: 100%;
+    background: $m-primary_bg-page__mix-20--fade-70;
+  }
+  .progress__text {
+    position: absolute;
+    color: $c-font;
+    font-size: 0.9em;
+    top: 0;
+    width: 100%;
+    @include inline-start(1.5ch);
+    z-index: 3;
   }
 }

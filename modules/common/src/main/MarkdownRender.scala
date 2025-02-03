@@ -1,14 +1,11 @@
 package lila.common
 
+import chess.format.pgn.PgnStr
+import com.vladsch.flexmark.ast.{ AutoLink, Image, Link, LinkNode }
+import com.vladsch.flexmark.ext.anchorlink.AnchorLinkExtension
 import com.vladsch.flexmark.ext.autolink.AutolinkExtension
 import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension
-import com.vladsch.flexmark.ext.tables.{ TablesExtension, TableBlock }
-import com.vladsch.flexmark.html.{
-  AttributeProvider,
-  HtmlRenderer,
-  HtmlWriter,
-  IndependentAttributeProviderFactory
-}
+import com.vladsch.flexmark.ext.tables.{ TableBlock, TablesExtension }
 import com.vladsch.flexmark.html.renderer.{
   AttributablePart,
   CoreNodeRenderer,
@@ -17,24 +14,28 @@ import com.vladsch.flexmark.html.renderer.{
   NodeRenderer,
   NodeRendererContext,
   NodeRendererFactory,
-  NodeRenderingHandler
+  NodeRenderingHandler,
+  ResolvedLink
+}
+import com.vladsch.flexmark.html.{
+  AttributeProvider,
+  HtmlRenderer,
+  HtmlWriter,
+  IndependentAttributeProviderFactory
 }
 import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.ast.{ Node, TextCollectingVisitor }
 import com.vladsch.flexmark.util.data.{ DataHolder, MutableDataHolder, MutableDataSet }
 import com.vladsch.flexmark.util.html.MutableAttributes
-import com.vladsch.flexmark.ast.{ AutoLink, Image, Link, LinkNode }
-import io.mola.galimatias.URL
+import com.vladsch.flexmark.util.misc.Extension
+
 import java.util.Arrays
 import scala.collection.Set
 import scala.jdk.CollectionConverters.*
-import scala.util.Try
-import com.vladsch.flexmark.util.misc.Extension
-import lila.base.RawHtml
-import com.vladsch.flexmark.html.renderer.ResolvedLink
-import chess.format.pgn.PgnStr
-import lila.common.config.AssetDomain
 import scala.util.matching.Regex
+
+import lila.core.config.{ AssetDomain, NetDomain }
+import lila.core.misc.lpv.LpvEmbed
 
 final class MarkdownRender(
     autoLink: Boolean = true,
@@ -49,6 +50,7 @@ final class MarkdownRender(
 ):
 
   private val extensions = java.util.ArrayList[Extension]()
+  if header then extensions.add(AnchorLinkExtension.create())
   if table then
     extensions.add(TablesExtension.create())
     extensions.add(MarkdownRender.tableWrapperExtension)
@@ -62,18 +64,19 @@ final class MarkdownRender(
 
   private val options = MutableDataSet()
     .set(Parser.EXTENSIONS, extensions)
-    .set(HtmlRenderer.ESCAPE_HTML, Boolean box true)
+    .set(HtmlRenderer.ESCAPE_HTML, Boolean.box(true))
     .set(HtmlRenderer.SOFT_BREAK, "<br>")
     // always disabled
-    .set(Parser.HTML_BLOCK_PARSER, Boolean box false)
-    .set(Parser.INDENTED_CODE_BLOCK_PARSER, Boolean box false)
-    .set(Parser.FENCED_CODE_BLOCK_PARSER, Boolean box code)
+    .set(Parser.HTML_BLOCK_PARSER, Boolean.box(false))
+    .set(Parser.INDENTED_CODE_BLOCK_PARSER, Boolean.box(false))
+    .set(Parser.FENCED_CODE_BLOCK_PARSER, Boolean.box(code))
 
   // configurable
   if table then options.set(TablesExtension.CLASS_NAME, "slist")
-  if !header then options.set(Parser.HEADING_PARSER, Boolean box false)
-  if !blockQuote then options.set(Parser.BLOCK_QUOTE_PARSER, Boolean box false)
-  if !list then options.set(Parser.LIST_BLOCK_PARSER, Boolean box false)
+  if header then options.set(AnchorLinkExtension.ANCHORLINKS_WRAP_TEXT, Boolean.box(false))
+  else options.set(Parser.HEADING_PARSER, Boolean.box(false))
+  if !blockQuote then options.set(Parser.BLOCK_QUOTE_PARSER, Boolean.box(false))
+  if !list then options.set(Parser.LIST_BLOCK_PARSER, Boolean.box(false))
 
   private val immutableOptions = options.toImmutable
 
@@ -107,9 +110,9 @@ object MarkdownRender:
   type Key         = String
   type PgnSourceId = String
 
-  case class PgnSourceExpand(domain: config.NetDomain, getPgn: PgnSourceId => Option[LpvEmbed])
+  case class PgnSourceExpand(domain: NetDomain, getPgn: PgnSourceId => Option[LpvEmbed])
 
-  private val rel = "nofollow noopener noreferrer"
+  private val rel = "nofollow noreferrer"
 
   private object WhitelistedImage:
 
@@ -128,12 +131,14 @@ object MarkdownRender:
         "googleusercontent.com",
         "i.ibb.co",
         "i.postimg.cc",
-        "xkcd.com",
-        "images.prismic.io"
+        "imgs.xkcd.com",
+        "image.lichess1.org",
+        "pic.lichess.org",
+        "127.0.0.1"
       )
 
     private def whitelistedSrc(src: String, assetDomain: Option[AssetDomain]): Option[String] = for
-      url <- Try(URL.parse(src)).toOption
+      url <- lila.common.url.parse(src).toOption
       if url.scheme == "http" || url.scheme == "https"
       host <- Option(url.host).map(_.toHostString)
       if (assetDomain.toList ::: whitelist).exists(h => host == h.value || host.endsWith(s".$h"))
@@ -146,7 +151,7 @@ object MarkdownRender:
           new:
             override def apply(options: DataHolder) = new NodeRenderer:
               override def getNodeRenderingHandlers() =
-                Set(NodeRenderingHandler(classOf[Image], render _)).asJava
+                Set(NodeRenderingHandler(classOf[Image], render(_, _, _))).asJava
 
       private def render(node: Image, context: NodeRendererContext, html: HtmlWriter): Unit =
         // Based on implementation in CoreNodeRenderer.
@@ -169,10 +174,11 @@ object MarkdownRender:
               html
                 .srcPos(node.getChars())
                 .attr("href", url)
+                .attr("target", "_blank")
                 .attr("rel", rel)
                 .withAttr(resolvedLink)
                 .tag("a")
-                .text(altText)
+                .text(if altText.isEmpty then url else altText)
                 .tag("/a")
 
   private class PgnEmbedExtension(expander: PgnSourceExpand) extends HtmlRenderer.HtmlRendererExtension:
@@ -185,21 +191,25 @@ object MarkdownRender:
   private class PgnEmbedNodeRenderer(expander: PgnSourceExpand) extends NodeRenderer:
     override def getNodeRenderingHandlers() = java.util.HashSet:
       Arrays.asList(
-        NodeRenderingHandler(classOf[Link], renderLink _),
-        NodeRenderingHandler(classOf[AutoLink], renderAutoLink _)
+        NodeRenderingHandler(classOf[Link], renderLink(_, _, _)),
+        NodeRenderingHandler(classOf[AutoLink], renderAutoLink(_, _, _))
       )
 
     final class PgnRegexes(val game: Regex, val chapter: Regex)
-    def makePgnRegexes(domain: config.NetDomain): PgnRegexes =
-      val quotedDomain = java.util.regex.Pattern.quote(domain.value)
+    private val pgnRegexes: PgnRegexes =
+      val quotedDomain = java.util.regex.Pattern.quote(expander.domain.value)
       PgnRegexes(
         s"""^(?:https?://)?$quotedDomain/(?:embed/)?(?:game/)?(\\w{8})(?:(?:/(white|black))|\\w{4}|)(?:#(\\d+))?$$""".r,
         s"""^(?:https?://)?$quotedDomain/study/(?:embed/)?(?:\\w{8}/)?(\\w{8})(?:#(last|\\d+))?$$""".r
       )
-    private val pgnRegexes = makePgnRegexes(expander.domain)
 
     private def renderLink(node: Link, context: NodeRendererContext, html: HtmlWriter): Unit =
-      renderLinkNode(node, context, html)
+      renderLinkWithBase(
+        node,
+        context,
+        html,
+        context.resolveLink(LinkType.LINK, node.getUrl().unescape(), null, null)
+      )
 
     private def renderAutoLink(node: AutoLink, context: NodeRendererContext, html: HtmlWriter): Unit =
       renderLinkNode(node, context, html)
@@ -267,7 +277,6 @@ object MarkdownRender:
             .withAttr(link)
             .tag("a")
             .withAttr()
-            .attr("data-icon", licon.Padlock.toString)
             .attr("class", "private-study")
             .attr("title", "Private")
             .attr("aria-label", "Private")
@@ -287,6 +296,7 @@ object MarkdownRender:
   private val lilaLinkAttributeProvider = new AttributeProvider:
     override def setAttributes(node: Node, part: AttributablePart, attributes: MutableAttributes) =
       if (node.isInstanceOf[Link] || node.isInstanceOf[AutoLink]) && part == AttributablePart.LINK then
+        attributes.replaceValue("target", "_blank")
         attributes.replaceValue("rel", rel)
         attributes.replaceValue("href", RawHtml.removeUrlTrackingParameters(attributes.getValue("href")))
 

@@ -13,7 +13,7 @@
   <string name="newTeam">Nova ekipa</string>
   <string name="myTeams">Moje ekipe</string>
   <string name="noTeamFound">Ni najdenih ekip</string>
-  <string name="joinTeam">Pridruži se ekipi</string>
+  <string name="joinTeam" comment="Appears as a button on team pages, and on pages of tournaments that require you to be a member of that team (e.g. Swiss tournaments).&#10;&#10;Please keep as short as possible.">Pridruži se ekipi</string>
   <string name="onlyLeaderLeavesTeam">Pred odhodom dodajte novega vodjo ekipe ali zaprite ekipo.</string>
   <string name="quitTeam">Zapusti ekipo</string>
   <string name="manuallyReviewAdmissionRequests">Ročno preglejte zahteve za sprejem</string>
@@ -54,8 +54,30 @@
   <string name="entryCodeDescriptionForLeader">(Izbirno) Geslo, ki ga morajo poznati novi člani, da se pridružijo tej skupini.</string>
   <string name="incorrectEntryCode">Nepravilna vstopna koda.</string>
   <string name="teamAlreadyExists">Ta ekipa že obstaja.</string>
-  <string name="upcomingTourns">Prihajajoči turnirji</string>
+  <string name="upcomingTournaments">Prihajajoči turnirji</string>
   <string name="completedTourns">Končani turnirji</string>
   <string name="declinedRequests">Zavrnjene zahteve</string>
+  <string name="joinLichessVariantTeam">Pridružite se uradnim %s ali novicam in dogodkom</string>
   <string name="teamPage">Ekipna stran</string>
+  <string name="thisTeamBattleIsOver">Ta turnir je končan in ekip ni več mogoče posodobiti.</string>
+  <string name="listTheTeamsThatWillCompete" comment="&quot;List&quot; is used as a verb in this sentence. You can alternatively translate as &quot;Fill out&quot;, as this is presented in the context of a form.">Naštej ekipe, ki bodo tekmovale v tej bitki.</string>
+  <string name="oneTeamPerLine">Ena ekipa na linijo. Uporabite samodejno dokončanje.</string>
+  <string name="oneTeamPerLineHelp">Ta seznam lahko kopirate in prilepite z enega turnirja na drugega!
+
+Ekipe ne morete odstraniti, če se je igralec z njo že pridružil turnirju.</string>
+  <string name="numberOfLeadsPerTeam">Število vodij na ekipo. Seštevek njihovega rezultata je rezultat ekipe.</string>
+  <string name="numberOfLeadsPerTeamHelp">Te vrednosti res ne bi smeli spreminjati po začetku turnirja!</string>
+  <string name="innerTeam">Notranja ekipa</string>
+  <plurals name="battleOfNbTeams">
+    <item quantity="one">Bitka %s ekipe</item>
+    <item quantity="two">Bitka %s ekip</item>
+    <item quantity="few">Bitka %s ekip</item>
+    <item quantity="other">Bitka %s ekip</item>
+  </plurals>
+  <plurals name="nbLeadersPerTeam">
+    <item quantity="one">En vodja na ekipo</item>
+    <item quantity="two">%s vodji na ekipo</item>
+    <item quantity="few">%s vodje na ekipo</item>
+    <item quantity="other">%s vodij na ekipo</item>
+  </plurals>
 </resources>

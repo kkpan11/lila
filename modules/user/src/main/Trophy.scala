@@ -11,10 +11,10 @@ case class Trophy(
   def timestamp = date.toMillis
 
   def compare(other: Trophy) =
-    if kind.order == other.kind.order then date compareTo other.date
+    if kind.order == other.kind.order then date.compareTo(other.date)
     else Integer.compare(kind.order, other.kind.order)
 
-  def anyUrl = url orElse kind.url
+  def anyUrl = url.orElse(kind.url)
 
 case class TrophyKind(
     _id: String,
@@ -27,16 +27,13 @@ case class TrophyKind(
 )
 
 object TrophyKind:
-  val marathonWinner         = "marathonWinner"
-  val marathonTopTen         = "marathonTopTen"
-  val marathonTopFifty       = "marathonTopFifty"
-  val marathonTopHundred     = "marathonTopHundred"
-  val marathonTopFivehundred = "marathonTopFivehundred"
-  val moderator              = "moderator"
-  val developer              = "developer"
-  val verified               = "verified"
-  val contentTeam            = "contentTeam"
-  val zugMiracle             = "zugMiracle"
+  export lila.core.user.TrophyKind.*
+  val moderator     = "moderator"
+  val developer     = "developer"
+  val verified      = "verified"
+  val contentTeam   = "contentTeam"
+  val broadcastTeam = "broadcastTeam"
+  val zugMiracle    = "zugMiracle"
 
   object Unknown
       extends TrophyKind(

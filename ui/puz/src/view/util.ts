@@ -1,8 +1,15 @@
-import { h, VNode } from 'snabbdom';
-import { Config, Run } from '../interfaces';
+import { h, type VNode } from 'snabbdom';
+import type { Config, Run } from '../interfaces';
 import { getNow } from '../util';
 
-export const playModifiers = (run: Run) => {
+export const playModifiers = (
+  run: Run,
+): {
+  'puz-mod-puzzle': boolean;
+  'puz-mod-move': boolean;
+  'puz-mod-malus-slow': boolean;
+  'puz-mod-bonus-slow': boolean;
+} => {
   const now = getNow();
   const malus = run.modifier.malus;
   const bonus = run.modifier.bonus;
@@ -25,9 +32,7 @@ export const renderCombo =
       ]),
       h('div.puz-combo__bars', [
         h('div.puz-combo__bar', [
-          h('div.puz-combo__bar__in', {
-            attrs: { style: `width:${run.combo.percent()}%` },
-          }),
+          h('div.puz-combo__bar__in', { attrs: { style: `width:${run.combo.percent()}%` } }),
           h('div.puz-combo__bar__in-full'),
         ]),
         h(
@@ -35,11 +40,7 @@ export const renderCombo =
           [0, 1, 2, 3].map(l =>
             h(
               'div.puz-combo__level',
-              {
-                class: {
-                  active: l < level,
-                },
-              },
+              { class: { active: l < level } },
               h('span', renderBonus(config.combo.levels[l + 1][1])),
             ),
           ),

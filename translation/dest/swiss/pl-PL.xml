@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="swiss" comment="Used as an adjective.&#10;&#10;Appears on tournament pages information boxes, to explain that the tournament is Swiss format.">Szwajcarski</string>
   <string name="swissTournaments">System szwajcarski</string>
   <plurals name="viewAllXRounds" comment="viewAllXRounds [one] [other]&#10;&#10;%s is the number of rounds in the Swiss tournament.">
     <item quantity="one">Zobacz rundę</item>
@@ -38,7 +39,7 @@
     <item quantity="many">%s minunt między rundami</item>
     <item quantity="other">%s minut między rundami</item>
   </plurals>
-  <string name="startingIn" comment="Displayed above a timer">Rozpoczęcie za</string>
+  <string name="startingIn" comment="Displayed above a timer. Is auto-capitalised.">Rozpoczęcie za</string>
   <string name="nextRound">Następna runda</string>
   <plurals name="ongoingGames" comment="Displayed next to the ongoing games count">
     <item quantity="one">Trwająca partia</item>
@@ -52,6 +53,16 @@
   <string name="roundInterval">Interwał między rundami</string>
   <string name="forbiddenPairings">Zabronione pary</string>
   <string name="forbiddenPairingsHelp">Nazwy graczy, którzy nie mogą grać ze sobą (na przykład rodzeństwo). Dwie nazwy graczy w linii, oddzielone spacją.</string>
+  <string name="manualPairings">Ręczne parowanie w następnej rundzie</string>
+  <string name="manualPairingsHelp">Określ ręcznie wszystkie pary następnej rundy. Jedna para graczy na linię. Przykład:
+GraczA GraczB
+GraczC GraczD
+Aby przyznać graczowi 1 punkt zamiast pary, dodaj linię taką jak ta:
+GraczE 1
+Brakujących graczy uważamy za nieobecnych i nie dostaną oni punktów.
+Pozostaw to pole puste, aby umożliwić automatyczne parowania.</string>
+  <string name="mustHavePlayedTheirLastSwissGame">Wymagane rozegranie swojej poprzedniej partii w turnieju szwajcarskim</string>
+  <string name="mustHavePlayedTheirLastSwissGameHelp">Pozwól dołączyć graczom tylko wtedy, gdy rozegrali swoją ostatnią partię w turnieju szwajcarskim. Jeśli w ostatnim turnieju szwajcarskim opuszczali partie, nie będą mogli dołączyć do Twojego turnieju. Dzięki temu do turnieju dołączą gracze, którzy stawiają się na wszystkie swoje partie.</string>
   <string name="newSwiss">Nowy turniej systemem szwajcarskim</string>
   <string name="swissVsArenaQ">Kiedy używać systemu szwajcarskiego zamiast aren?</string>
   <string name="swissVsArenaA">W systemie szwajcarskim wszyscy uczestnicy grają tę samą liczbę partii i mogą grać ze sobą tylko raz.
@@ -82,7 +93,7 @@ Dodatkowo, wolny los przyznawany jest uczestnikowi, który dołącza do turnieju
 Następnie system wycofa takiego uczestnika z turnieju, więc nie przegra on więcej partii.
 Uczestnik ten może w każdej chwili ponownie dołączyć do turnieju.</string>
   <string name="protectionAgainstNoShowQ">Co się dzieje z graczami, którzy nie przystępują do partii?</string>
-  <string name="protectionAgainstNoShowA">Gracze, którzy zapisali się do turnieju w systemie szwajcarskim, ale nie rozgrywają swoich partii, stanowią problem.
+  <string name="protectionAgainstNoShowA" comment="By &quot;a game&quot; - we mean just one game. Missing even one game will prevent that player from joining a new Swiss event for a certain amount of time.">Gracze, którzy zapisali się do turnieju w systemie szwajcarskim, ale nie rozgrywają swoich partii, stanowią problem.
 W celu minimalizacji skali takich sytuacji Lichess uniemożliwia przez pewien czas zapisy na turnieje w systemie szwajcarskim graczom, którzy nie podeszli do partii. 
 Twórca turnieju może jednak zezwolić im na dołączenie.</string>
   <string name="lateJoinQ">Czy można dołączyć do turnieju po jego rozpoczęciu?</string>
@@ -128,4 +139,7 @@ Najbardziej zbliżoną formą do systemu kołowego jest właśnie system szwajca
   <string name="predefinedUsers">Zezwalaj na dołączenie do turnieju tylko wstępnie zdefiniowanym użytkownikom</string>
   <string name="forbiddedUsers">Jeśli ta lista nie jest pusta, nazwy użytkowników nieobecne na niej nie będą mogły dołączyć do turnieju. Jedna nazwa użytkownika na linię.</string>
   <string name="playYourGames">Rozegraj swoje partie</string>
+  <string name="byes">Punkty bez gry</string>
+  <string name="absences">Nieobecności</string>
+  <string name="tieBreak">Tie break</string>
 </resources>

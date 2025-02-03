@@ -1,34 +1,25 @@
-package views.html.mod
+package views.mod
 
-import controllers.GameMod
-import controllers.routes
 import play.api.data.Form
-import scala.util.chaining.*
 
-import lila.app.templating.Environment.{ given, * }
-import lila.app.ui.ScalatagsTemplate.{ *, given }
+import lila.app.UiEnv.{ *, given }
+import lila.core.chess.Rank
 import lila.evaluation.PlayerAssessment
-import lila.game.Pov
-import lila.rating.PerfType
-import lila.swiss.Swiss
+import lila.game.GameExt.*
+import lila.mod.GameMod
+import lila.mod.ui.ModUserTableUi.sortNoneTh
 import lila.tournament.LeaderboardApi.TourEntry
-import lila.user.User
-import views.html.mod.userTable.sortNoneTh
 
-object games:
-
-  def apply(
-      user: User,
-      filterForm: Form[GameMod.Filter],
-      games: Either[List[Pov], List[(Pov, Either[PlayerAssessment, PlayerAssessment.Basics])]],
-      arenas: Seq[TourEntry],
-      swisses: Seq[(Swiss.IdName, Rank)]
-  )(using PageContext) =
-    views.html.base.layout(
-      title = s"${user.username} games",
-      moreCss = cssTag("mod.games"),
-      moreJs = jsModule("mod.games")
-    ) {
+def games(
+    user: User,
+    filterForm: Form[GameMod.Filter],
+    games: Either[List[Pov], List[(Pov, Either[PlayerAssessment, PlayerAssessment.Basics])]],
+    arenas: Seq[TourEntry],
+    swisses: Seq[(lila.core.swiss.IdName, Rank)]
+)(using Context) =
+  Page(s"${user.username} games")
+    .css("mod.games")
+    .js(Esm("mod.games")):
       main(cls := "mod-games box")(
         boxTop(
           h1(userLink(user, params = "?mod"), " games"),
@@ -38,7 +29,7 @@ object games:
               form3.input(filterForm("nbGamesOpt"))(placeholder := "Nb games"),
               form3.select(
                 filterForm("perf"),
-                PerfType.nonPuzzle.map: p =>
+                lila.rating.PerfType.nonPuzzle.map: p =>
                   p.key -> p.trans,
                 "Variant".some
               ),
@@ -65,11 +56,13 @@ object games:
           )
         ),
         postForm(action := routes.GameMod.post(user.id), cls := "mod-games__analysis-form")(
-          isGranted(_.UserEvaluate) option submitButton(
-            cls   := "button button-empty button-thin",
-            name  := "action",
-            value := "analyse"
-          )("Analyse selected"),
+          isGranted(_.UserEvaluate).option(
+            submitButton(
+              cls   := "button button-empty button-thin",
+              name  := "action",
+              value := "analyse"
+            )("Analyse selected")
+          ),
           submitButton(cls := "button button-empty button-thin", name := "action", value := "pgn")(
             "Download PGN"
           ),
@@ -85,7 +78,7 @@ object games:
                 ),
                 thSortNumber("Opponent"),
                 thSortNumber("Speed"),
-                th(iconTag(licon.Trophy)),
+                th(iconTag(Icon.Trophy)),
                 thSortNumber("Moves"),
                 thSortNumber("Result"),
                 thSortNumber("ACPL", br, "(Avg ± SD)"),
@@ -97,12 +90,15 @@ object games:
             tbody(
               games.fold(_.map(_ -> None), _.map { case (pov, ass) => pov -> Some(ass) }).map {
                 case (pov, assessment) =>
+                  val analysable = lila.game.GameExt.analysable(pov.game)
                   tr(
-                    td(cls := pov.game.analysable.option("input"))(
-                      pov.game.analysable option input(
-                        tpe      := "checkbox",
-                        name     := s"game[]",
-                        st.value := pov.gameId
+                    td(cls := analysable.option("input"))(
+                      analysable.option(
+                        input(
+                          tpe      := "checkbox",
+                          name     := s"game[]",
+                          st.value := pov.gameId
+                        )
                       )
                     ),
                     td(dataSort := pov.opponent.rating.fold(0)(_.value))(
@@ -117,16 +113,16 @@ object games:
                       shortClockName(pov.game)
                     ),
                     td(dataSort := pov.game.tournamentId.so(_.value))(
-                      pov.game.tournamentId map { tourId =>
+                      pov.game.tournamentId.map { tourId =>
                         a(
-                          dataIcon := licon.Trophy,
+                          dataIcon := Icon.Trophy,
                           href     := routes.Tournament.show(tourId).url,
-                          title    := tournamentIdToName(tourId)
+                          title    := views.tournament.ui.tournamentIdToName(tourId)
                         )
                       },
-                      pov.game.swissId map { swissId =>
+                      pov.game.swissId.map { swissId =>
                         a(
-                          dataIcon := licon.Trophy,
+                          dataIcon := Icon.Trophy,
                           href     := routes.Swiss.show(swissId).url,
                           title    := s"Swiss #${swissId}"
                         )
@@ -140,9 +136,9 @@ object games:
                         case None        => span(cls := "result")("½")
                       ,
                       pov.player.ratingDiff match
-                        case Some(d) if d > 0 => goodTag(s"+$d")
-                        case Some(d) if d < 0 => badTag(d)
-                        case _                => span("-")
+                        case Some(d) if d.positive => goodTag(s"+$d")
+                        case Some(d) if d.negative => badTag(d)
+                        case _                     => span("-")
                     ),
                     assessment match
                       case Some(Left(full)) => td(dataSort := full.analysis.avg)(full.analysis.toString)
@@ -150,15 +146,15 @@ object games:
                     ,
                     assessment match
                       case Some(ass) =>
-                        ass.fold(_.basics, identity) pipe { basics =>
+                        ass.fold(_.basics, identity).pipe { basics =>
                           frag(
                             td(dataSort := basics.moveTimes.sd)(
                               s"${basics.moveTimes / 10}",
-                              basics.mtStreak so frag(br, "streak")
+                              basics.mtStreak.so(frag(br, "streak"))
                             ),
                             td(dataSort := basics.blurs)(
                               s"${basics.blurs}%",
-                              basics.blurStreak.filter(8 <=) map { s =>
+                              basics.blurStreak.filter(8 <=).map { s =>
                                 frag(br, s"streak $s/12")
                               }
                             )
@@ -167,7 +163,7 @@ object games:
                       case _ => frag(td, td)
                     ,
                     td(dataSort := pov.game.movedAt.toSeconds.toString)(
-                      a(href := routes.Round.watcher(pov.gameId, pov.color.name), cls := "glpt")(
+                      a(href := routes.Round.watcher(pov.gameId, pov.color), cls := "glpt")(
                         momentFromNowServerText(pov.game.movedAt)
                       )
                     )
@@ -177,4 +173,3 @@ object games:
           )
         )
       )
-    }

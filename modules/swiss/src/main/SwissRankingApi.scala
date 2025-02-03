@@ -2,6 +2,8 @@ package lila.swiss
 
 import reactivemongo.api.bson.*
 
+import lila.core.chess.Rank
+import lila.core.swiss.Ranking
 import lila.db.dsl.{ *, given }
 import lila.memo.CacheApi
 
@@ -11,7 +13,7 @@ final private class SwissRankingApi(
 )(using Executor):
 
   def apply(swiss: Swiss): Fu[Ranking] =
-    fuccess(scoreCache.getIfPresent(swiss.id)) getOrElse dbCache.get(swiss.id)
+    fuccess(scoreCache.getIfPresent(swiss.id)).getOrElse(dbCache.get(swiss.id))
 
   def update(res: SwissScoring.Result): Unit =
     scoreCache.put(
@@ -21,20 +23,19 @@ final private class SwissRankingApi(
       }.toMap
     )
 
-  private val scoreCache = cacheApi.scaffeine
-    .expireAfterWrite(60 minutes)
+  private val scoreCache = CacheApi.scaffeine
+    .expireAfterWrite(60.minutes)
     .build[SwissId, Ranking]()
 
-  private val dbCache = cacheApi[SwissId, Ranking](512, "swiss.ranking") {
-    _.expireAfterAccess(1 hour)
+  private val dbCache = cacheApi[SwissId, Ranking](512, "swiss.ranking"):
+    _.expireAfterAccess(1.hour)
       .maximumSize(1024)
       .buildAsyncFuture(computeRanking)
-  }
 
   private def computeRanking(id: SwissId): Fu[Ranking] =
     SwissPlayer
       .fields: f =>
-        mongo.player.primitive[UserId]($doc(f.swissId -> id), $sort desc f.score, f.userId)
+        mongo.player.primitive[UserId]($doc(f.swissId -> id), $sort.desc(f.score), f.userId)
       .map:
         _.mapWithIndex: (user, i) =>
           (user, Rank(i + 1))

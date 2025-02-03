@@ -18,11 +18,12 @@ $pocket-height: 60px;
 }
 
 .analyse.variant-crazyhouse {
-  grid-template-rows: $pocket-col1-height auto $pocket-col1-height auto minmax(20em, 30vh);
+  grid-template-rows: $pocket-col1-height auto $pocket-col1-height auto auto minmax(20em, 30vh);
   grid-template-areas:
     'pocket-top'
     'board'
     'pocket-bot'
+    'kb-move'
     'controls'
     'tools'
     'side'
@@ -31,12 +32,13 @@ $pocket-height: 60px;
     'chat'
     'uchat';
 
-  @include breakpoint($mq-col2) {
+  @include mq-at-least-col2 {
     grid-template-rows: $pocket-height auto $pocket-height;
     grid-template-areas:
       'board      gauge pocket-top'
       'board      gauge tools'
       'board      gauge pocket-bot'
+      'kb-move    .     controls'
       'under      .     controls'
       'under      .     round-training'
       'under      .     side'
@@ -44,26 +46,27 @@ $pocket-height: 60px;
       'uchat      .     side';
   }
 
-  @include breakpoint($mq-col3) {
-    grid-template-rows: $pocket-height $meta-height $chat-height $pocket-height;
+  @include mq-at-least-col3 {
+    grid-template-rows: $pocket-height auto auto $pocket-height;
     grid-template-areas:
-      'side    . board gauge pocket-top'
-      'side    . board gauge tools'
-      'chat    . board gauge tools'
-      'chat    . board gauge pocket-bot'
-      'uchat   . under .     controls'
-      'uchat   . under .     round-training';
+      'side    . board   gauge pocket-top'
+      'side    . board   gauge tools'
+      'chat    . board   gauge tools'
+      'chat    . board   gauge pocket-bot'
+      'uchat   . kb-move .     controls'
+      'uchat   . under   .     controls'
+      'uchat   . under   .     round-training';
   }
 }
 
-@include breakpoint($mq-col1) {
+@include mq-is-col1 {
   .pocket {
     &-top {
-      margin-bottom: #{-$block-gap};
+      margin-bottom: $block-gap;
     }
 
     &-bottom {
-      margin-top: #{-$block-gap};
+      margin-top: $block-gap;
     }
   }
 }

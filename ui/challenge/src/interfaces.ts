@@ -6,18 +6,6 @@ export interface ChallengeOpts {
   pulse(): void;
 }
 
-export interface Ctrl {
-  update(data: ChallengeData): void;
-  data(): ChallengeData;
-  trans(): (key: string) => string;
-  showRatings: boolean;
-  reasons(): Reasons;
-  decline(id: string, reason: string): void;
-  cancel(id: string): void;
-  onRedirect(): void;
-  redirecting(): boolean;
-}
-
 type ChallengeStatus = 'created' | 'offline' | 'canceled' | 'declined' | 'accepted';
 export type ChallengeDirection = 'in' | 'out';
 
@@ -47,8 +35,9 @@ export interface Challenge {
   status: ChallengeStatus;
   challenger?: ChallengeUser;
   destUser?: ChallengeUser;
+  rules?: unknown[];
   variant: Variant;
-  initialFen: Fen;
+  initialFen: FEN;
   rated: boolean;
   timeControl: TimeControl;
   color: Color | 'random';
@@ -67,9 +56,6 @@ export type Reasons = {
 export interface ChallengeData {
   in: Array<Challenge>;
   out: Array<Challenge>;
-  i18n?: {
-    [key: string]: string;
-  };
   reasons?: Reasons;
 }
 

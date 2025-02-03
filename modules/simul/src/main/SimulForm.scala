@@ -1,5 +1,7 @@
 package lila.simul
 
+import chess.Clock
+import chess.Clock.{ IncrementSeconds, LimitMinutes, LimitSeconds }
 import chess.format.Fen
 import chess.variant.Variant
 import play.api.data.*
@@ -7,12 +9,11 @@ import play.api.data.Forms.*
 import play.api.data.validation.Constraint
 
 import lila.common.Form.{ *, given }
-import lila.hub.LightTeam
-import lila.user.Me
-import chess.Clock
-import chess.Clock.{ LimitMinutes, LimitSeconds, IncrementSeconds }
+import lila.core.team.LightTeam
 
 object SimulForm:
+
+  type EitherForm = Either[Form[SimulForm.LockedSetup], Form[SimulForm.Setup]]
 
   val clockTimeChoices = options((5 to 15 by 5) ++ (20 to 90 by 10) ++ (120 to 180 by 20), "%d minute{s}")
   val clockTimeDefault = LimitMinutes(20)
@@ -24,8 +25,8 @@ object SimulForm:
   val clockIncrementDefault = IncrementSeconds(60)
 
   val clockExtrasPositive = (0 to 15 by 5) ++ (20 to 60 by 10) ++ (90 to 120 by 30)
-  val clockExtras         = clockExtrasPositive.tail.map(-_).reverse concat clockExtrasPositive
-  val clockExtraChoices = options(clockExtras, "%d minute{s}") map {
+  val clockExtras         = clockExtrasPositive.tail.map(-_).reverse.concat(clockExtrasPositive)
+  val clockExtraChoices = options(clockExtras, "%d minute{s}").map {
     case (d, str) if d > 0 => (d, s"+$str")
     case pair              => pair
   }
@@ -46,44 +47,54 @@ object SimulForm:
     eventName(2, 40, host.isVerifiedOrAdmin).verifying(
       Constraint[String]: (t: String) =>
         if t.toUpperCase.split(' ').exists { word =>
-            lila.user.Title.all.exists: (title, name) =>
-              !host.title.has(title) && (title.value == word || name.toUpperCase == word)
+            chess.PlayerTitle.all.exists: (title, name) =>
+              !host.title.contains(title) && (title.value == word || name.toUpperCase == word)
           }
         then validation.Invalid(validation.ValidationError("Must not contain a title"))
         else validation.Valid
     )
 
   def create(teams: List[LightTeam])(using host: Me) =
-    baseForm(teams) fill Setup(
-      name = host.titleUsername,
-      clockTime = clockTimeDefault,
-      clockIncrement = clockIncrementDefault,
-      clockExtra = clockExtraDefault,
-      clockExtraPerPlayer = clockExtraPerPlayerDefault,
-      variants = List(chess.variant.Standard.id),
-      position = none,
-      color = colorDefault,
-      text = "",
-      estimatedStartAt = none,
-      featured = host.hasTitle.some,
-      conditions = SimulCondition.All.empty
+    baseForm(teams).fill(
+      Setup(
+        name = host.titleUsername,
+        clockTime = clockTimeDefault,
+        clockIncrement = clockIncrementDefault,
+        clockExtra = clockExtraDefault,
+        clockExtraPerPlayer = clockExtraPerPlayerDefault,
+        variants = List(chess.variant.Standard.id),
+        position = none,
+        color = colorDefault,
+        text = "",
+        estimatedStartAt = none,
+        featured = host.hasTitle.some,
+        conditions = SimulCondition.All.empty
+      )
     )
 
-  def edit(teams: List[LightTeam], simul: Simul)(using Me) =
-    baseForm(teams) fill Setup(
-      name = simul.name,
-      clockTime = LimitMinutes(simul.clock.config.limitInMinutes.toInt),
-      clockIncrement = simul.clock.config.incrementSeconds,
-      clockExtra = simul.clock.hostExtraMinutes,
-      clockExtraPerPlayer = simul.clock.hostExtraTimePerPlayer,
-      variants = simul.variants.map(_.id),
-      position = simul.position,
-      color = simul.color | "random",
-      text = simul.text,
-      estimatedStartAt = simul.estimatedStartAt,
-      featured = simul.featurable,
-      conditions = simul.conditions
-    )
+  def edit(teams: List[LightTeam], simul: Simul)(using Me): EitherForm =
+    if simul.isCreated
+    then
+      Right:
+        baseForm(teams).fill(
+          Setup(
+            name = simul.name,
+            clockTime = LimitMinutes(simul.clock.config.limitInMinutes.toInt),
+            clockIncrement = simul.clock.config.incrementSeconds,
+            clockExtra = simul.clock.hostExtraMinutes,
+            clockExtraPerPlayer = simul.clock.hostExtraTimePerPlayer,
+            variants = simul.variants.map(_.id),
+            position = simul.position,
+            color = simul.color | "random",
+            text = simul.text,
+            estimatedStartAt = simul.estimatedStartAt,
+            featured = simul.featurable,
+            conditions = simul.conditions
+          )
+        )
+    else
+      Left:
+        lockedForm(simul).fill(LockedSetup(simul.name, simul.text))
 
   private def baseForm(teams: List[LightTeam])(using host: Me) =
     Form(
@@ -115,7 +126,7 @@ object SimulForm:
       clockExtra: LimitMinutes,
       clockExtraPerPlayer: LimitSeconds,
       variants: List[Variant.Id],
-      position: Option[Fen.Epd],
+      position: Option[Fen.Full],
       color: String,
       text: String,
       estimatedStartAt: Option[Instant] = None,
@@ -132,3 +143,11 @@ object SimulForm:
     def actualVariants = variants.flatMap { Variant(_) }
 
     def realPosition = position.filterNot(_.isInitial)
+
+  def lockedForm(simul: Simul)(using Me) = Form:
+    mapping(
+      "name" -> nameType,
+      "text" -> cleanText
+    )(LockedSetup.apply)(unapply)
+
+  case class LockedSetup(name: String, text: String)

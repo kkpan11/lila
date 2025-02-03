@@ -3,11 +3,11 @@ package lila.mod
 import reactivemongo.api.*
 import reactivemongo.api.bson.*
 
+import java.time.{ Instant, LocalDateTime }
+
 import lila.db.dsl.{ *, given }
 import lila.memo.CacheApi.*
 import lila.report.Room
-import lila.user.User
-import java.time.{ Instant, LocalDateTime }
 
 final class Gamify(
     logRepo: ModlogRepo,
@@ -23,7 +23,7 @@ final class Gamify(
   private given BSONDocumentHandler[HistoryMonth] = Macros.handler
 
   def history(orCompute: Boolean = true): Fu[List[HistoryMonth]] =
-    val until  = nowDateTime minusMonths 1 withDayOfMonth 1
+    val until  = nowDateTime.minusMonths(1).withDayOfMonth(1)
     val lastId = HistoryMonth.makeId(until.getYear, until.getMonthValue)
     historyRepo.coll
       .find($empty)
@@ -34,13 +34,14 @@ final class Gamify(
         )
       )
       .cursor[HistoryMonth]()
-      .listAll() flatMap { months =>
-      months.headOption match
-        case Some(m) if m._id == lastId => fuccess(months)
-        case _ if !orCompute            => fuccess(months)
-        case Some(m)                    => buildHistoryAfter(m.year, m.month, until) >> history(false)
-        case _                          => buildHistoryAfter(2017, 6, until) >> history(false)
-    }
+      .listAll()
+      .flatMap { months =>
+        months.headOption match
+          case Some(m) if m._id == lastId => fuccess(months)
+          case _ if !orCompute            => fuccess(months)
+          case Some(m)                    => buildHistoryAfter(m.year, m.month, until) >> history(false)
+          case _                          => buildHistoryAfter(2017, 6, until) >> history(false)
+      }
 
   private def buildHistoryAfter(afterYear: Int, afterMonth: Int, until: LocalDateTime): Funit =
     (afterYear to until.getYear)
@@ -60,21 +61,19 @@ final class Gamify(
       .toList
       .parallel
       .map(_.flatten)
-      .flatMap {
-        _.map { month =>
+      .flatMap:
+        _.parallelVoid: month =>
           historyRepo.coll.update.one($doc("_id" -> month._id), month, upsert = true).void
-        }.parallel
-      }
-      .void
 
   def leaderboards = leaderboardsCache.getUnit
 
   private val leaderboardsCache = cacheApi.unit[Leaderboards] {
-    _.expireAfterWrite(10 minutes)
+    _.expireAfterWrite(10.minutes)
       .buildAsyncFuture { _ =>
-        mixedLeaderboard(nowInstant minusDays 1, none) zip
-          mixedLeaderboard(nowInstant minusWeeks 1, none) zip
-          mixedLeaderboard(nowInstant minusMonths 1, none) map { case ((daily, weekly), monthly) =>
+        mixedLeaderboard(nowInstant.minusDays(1), none)
+          .zip(mixedLeaderboard(nowInstant.minusWeeks(1), none))
+          .zip(mixedLeaderboard(nowInstant.minusMonths(1), none))
+          .map { case ((daily, weekly), monthly) =>
             Leaderboards(daily, weekly, monthly)
           }
       }
@@ -85,20 +84,25 @@ final class Gamify(
       actions <- actionLeaderboard(after, before)
       reports <- reportLeaderboard(after, before)
       modList <- modApi.allMods
-    yield actions.map(_.modId) intersect modList.map(_.id) diff hidden map { modId =>
-      ModMixed(
-        modId,
-        action = actions.find(_.modId == modId) so (_.count),
-        report = reports.find(_.modId == modId) so (_.count)
-      )
-    } sortBy (-_.score)
+    yield actions
+      .map(_.modId)
+      .intersect(modList.map(_.id))
+      .diff(hidden)
+      .map { modId =>
+        ModMixed(
+          modId,
+          action = actions.find(_.modId == modId).so(_.count),
+          report = reports.find(_.modId == modId).so(_.count)
+        )
+      }
+      .sortBy(-_.score)
 
   private def dateRange(from: Instant, toOption: Option[Instant]) =
     $doc("$gte" -> from) ++ toOption.so { to =>
       $doc("$lt" -> to)
     }
 
-  private val hidden = List(User.lichessId, User.irwinId)
+  private val hidden = List(UserId.lichess, UserId.irwin)
 
   private def actionLeaderboard(after: Instant, before: Option[Instant]): Fu[List[ModCount]] =
     logRepo.coll
@@ -116,7 +120,7 @@ final class Gamify(
         )
       .map:
         _.flatMap: obj =>
-          (obj.getAsOpt[UserId]("_id"), obj.int("nb")) mapN ModCount.apply
+          (obj.getAsOpt[UserId]("_id"), obj.int("nb")).mapN(ModCount.apply)
 
   private def reportLeaderboard(after: Instant, before: Option[Instant]): Fu[List[ModCount]] =
     reportApi.coll

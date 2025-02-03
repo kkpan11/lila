@@ -1,17 +1,17 @@
-import { h, VNode } from 'snabbdom';
+import { h, type VNode } from 'snabbdom';
 import * as licon from 'common/licon';
-import { Notification, Renderer, Renderers } from './interfaces';
+import type { Notification, Renderer, Renderers } from './interfaces';
+import { timeago } from 'common/i18n';
 
-// function generic(n: Notification, url: string | undefined, icon: string, content: VNode[]): VNode {
-export default function makeRenderers(trans: Trans): Renderers {
+export default function makeRenderers(): Renderers {
   return {
     streamStart: {
       html: n =>
         generic(n, `/streamer/${n.content.sid}/redirect`, licon.Mic, [
           h('span', [h('strong', n.content.name), drawTime(n)]),
-          h('span', trans('startedStreaming')),
+          h('span', i18n.site.startedStreaming),
         ]),
-      text: n => trans('xStartedStreaming', n.content.streamerName),
+      text: n => i18n.site.xStartedStreaming(n.content.streamerName),
     },
     genericLink: {
       html: n =>
@@ -21,21 +21,29 @@ export default function makeRenderers(trans: Trans): Renderers {
         ]),
       text: n => n.content.title || n.content.text,
     },
+    broadcastRound: {
+      html: n =>
+        generic(n, n.content.url, licon.RadioTower, [
+          h('span', [h('strong', n.content.title), drawTime(n)]),
+          h('span', n.content.text),
+        ]),
+      text: n => n.content.title || n.content.text,
+    },
     mention: {
       html: n =>
         generic(n, `/forum/redirect/post/${n.content.postId}`, licon.BubbleConvo, [
           h('span', [h('strong', userFullName(n.content.mentionedBy)), drawTime(n)]),
-          h('span', trans('mentionedYouInX', n.content.topic)),
+          h('span', i18n.site.mentionedYouInX(n.content.topic)),
         ]),
-      text: n => trans('xMentionedYouInY', userFullName(n.content.mentionedBy), n.content.topic),
+      text: n => i18n.site.xMentionedYouInY(userFullName(n.content.mentionedBy), n.content.topic),
     },
     invitedStudy: {
       html: n =>
         generic(n, '/study/' + n.content.studyId, licon.StudyBoard, [
           h('span', [h('strong', userFullName(n.content.invitedBy)), drawTime(n)]),
-          h('span', trans('invitedYouToX', n.content.studyName)),
+          h('span', i18n.site.invitedYouToX(n.content.studyName)),
         ]),
-      text: n => trans('xInvitedYouToY', userFullName(n.content.invitedBy), n.content.studyName),
+      text: n => i18n.site.xInvitedYouToY(userFullName(n.content.invitedBy), n.content.studyName),
     },
     privateMessage: {
       html: n =>
@@ -49,9 +57,9 @@ export default function makeRenderers(trans: Trans): Renderers {
       html: n =>
         generic(n, '/team/' + n.content.id, licon.Group, [
           h('span', [h('strong', n.content.name), drawTime(n)]),
-          h('span', trans.noarg('youAreNowPartOfTeam')),
+          h('span', i18n.site.youAreNowPartOfTeam),
         ]),
-      text: n => trans('youHaveJoinedTeamX', n.content.name),
+      text: n => i18n.site.youHaveJoinedTeamX(n.content.name),
     },
     titledTourney: {
       html: n =>
@@ -64,26 +72,26 @@ export default function makeRenderers(trans: Trans): Renderers {
     reportedBanned: {
       html: n =>
         generic(n, undefined, licon.InfoCircle, [
-          h('span', [h('strong', trans.noarg('someoneYouReportedWasBanned'))]),
-          h('span', trans.noarg('thankYou')),
+          h('span', [h('strong', i18n.site.someoneYouReportedWasBanned)]),
+          h('span', i18n.site.thankYou),
         ]),
-      text: _ => trans.noarg('someoneYouReportedWasBanned'),
+      text: _ => i18n.site.someoneYouReportedWasBanned,
     },
     gameEnd: {
       html: n => {
         let result;
         switch (n.content.win) {
           case true:
-            result = trans.noarg('congratsYouWon');
+            result = i18n.site.congratsYouWon;
             break;
           case false:
-            result = trans.noarg('defeat');
+            result = i18n.site.defeat;
             break;
           default:
-            result = trans.noarg('draw');
+            result = i18n.site.draw;
         }
         return generic(n, '/' + n.content.id, licon.PaperAirplane, [
-          h('span', [h('strong', trans('gameVsX', userFullName(n.content.opponent))), drawTime(n)]),
+          h('span', [h('strong', i18n.site.gameVsX(userFullName(n.content.opponent))), drawTime(n)]),
           h('span', result),
         ]);
       },
@@ -91,15 +99,15 @@ export default function makeRenderers(trans: Trans): Renderers {
         let result;
         switch (n.content.win) {
           case true:
-            result = trans.noarg('victory');
+            result = i18n.site.victory;
             break;
           case false:
-            result = trans.noarg('defeat');
+            result = i18n.site.defeat;
             break;
           default:
-            result = trans.noarg('draw');
+            result = i18n.site.draw;
         }
-        return trans('resVsX', result, userFullName(n.content.opponent));
+        return i18n.site.resVsX(result, userFullName(n.content.opponent));
       },
     },
     planStart: {
@@ -117,22 +125,30 @@ export default function makeRenderers(trans: Trans): Renderers {
     ratingRefund: {
       html: n =>
         generic(n, '/faq#rating-refund', licon.InfoCircle, [
-          h('span', [h('strong', trans.noarg('lostAgainstTOSViolator')), drawTime(n)]),
-          h('span', trans('refundXpointsTimeControlY', n.content.points, n.content.perf)),
+          h('span', [h('strong', i18n.site.lostAgainstTOSViolator), drawTime(n)]),
+          h('span', i18n.site.refundXpointsTimeControlY(n.content.points, n.content.perf)),
         ]),
-      text: n => trans('refundXpointsTimeControlY', n.content.points, n.content.perf),
+      text: n => i18n.site.refundXpointsTimeControlY(n.content.points, n.content.perf),
     },
     corresAlarm: {
       html: n =>
         generic(n, '/' + n.content.id, licon.PaperAirplane, [
-          h('span', [h('strong', trans.noarg('timeAlmostUp')), drawTime(n)]),
+          h('span', [h('strong', i18n.site.timeAlmostUp), drawTime(n)]),
           // not a `LightUser`, could be a game against Stockfish
-          h('span', trans('gameVsX', n.content.op)),
+          h('span', i18n.site.gameVsX(n.content.op)),
         ]),
-      text: _ => trans.noarg('timeAlmostUp'),
+      text: _ => i18n.site.timeAlmostUp,
     },
     irwinDone: jobDone('Irwin'),
     kaladinDone: jobDone('Kaladin'),
+    recap: {
+      html: n =>
+        generic(n, '/recap', licon.Logo, [
+          h('span', h('strong', `Your ${n.content.year} recap is ready!`)),
+          h('span', 'What have you been up to this year?'),
+        ]),
+      text: n => `Your ${n.content.year} recap is ready!`,
+    },
   };
 }
 
@@ -149,37 +165,16 @@ function generic(n: Notification, url: string | undefined, icon: string, content
   return h(
     url ? 'a' : 'span',
     {
-      class: {
-        site_notification: true,
-        [n.type]: true,
-        new: !n.read,
-      },
-      attrs: {
-        key: n.date,
-        ...(url ? { href: url } : {}),
-      },
+      class: { site_notification: true, [n.type]: true, new: !n.read },
+      attrs: { key: n.date, ...(url ? { href: url } : {}) },
     },
-    [
-      h('i', {
-        attrs: { 'data-icon': icon },
-      }),
-      h('span.content', content),
-    ],
+    [h('i', { attrs: { 'data-icon': icon } }), h('span.content', content)],
   );
 }
 
 function drawTime(n: Notification) {
   const date = new Date(n.date);
-  return h(
-    'time.timeago',
-    {
-      attrs: {
-        title: date.toLocaleString(),
-        datetime: n.date,
-      },
-    },
-    lichess.timeago(date),
-  );
+  return h('time.timeago', { attrs: { title: date.toLocaleString(), datetime: n.date } }, timeago(date));
 }
 
 function userFullName(u?: LightUser) {

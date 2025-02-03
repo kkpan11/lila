@@ -1,15 +1,15 @@
 package lila.chat
 
 import com.softwaremill.macwire.*
-import lila.common.autoconfig.{ *, given }
 import play.api.Configuration
 
-import lila.common.config.*
+import lila.common.autoconfig.{ *, given }
+import lila.core.config.*
+import lila.core.user.{ FlairGet, FlairGetMap }
 
 private case class ChatConfig(
     @ConfigName("collection.chat") chatColl: CollName,
     @ConfigName("collection.timeout") timeoutColl: CollName,
-    @ConfigName("actor.name") actorName: String,
     @ConfigName("timeout.duration") timeoutDuration: FiniteDuration,
     @ConfigName("timeout.check_every") timeoutCheckEvery: FiniteDuration
 )
@@ -18,17 +18,14 @@ private case class ChatConfig(
 final class Env(
     appConfig: Configuration,
     netDomain: NetDomain,
-    userRepo: lila.user.UserRepo,
-    flairApi: lila.user.FlairApi,
+    userApi: lila.core.user.UserApi,
+    userRepo: lila.core.user.UserRepo,
     db: lila.db.Db,
-    flood: lila.security.Flood,
-    spam: lila.security.Spam,
-    shutup: lila.hub.actors.Shutup,
+    flood: lila.core.security.FloodApi,
+    spam: lila.core.security.SpamApi,
+    shutupApi: lila.core.shutup.ShutupApi,
     cacheApi: lila.memo.CacheApi
-)(using
-    ec: Executor,
-    scheduler: Scheduler
-):
+)(using Executor, FlairGet, FlairGetMap)(using scheduler: Scheduler):
 
   private val config = appConfig.get[ChatConfig]("chat")(AutoConfig.loader)
   import config.*
@@ -44,5 +41,7 @@ final class Env(
 
   lazy val panic = wire[ChatPanic]
 
+  def allowedDuringPanic: lila.core.chat.panic.IsAllowed = panic.allowed
+
   scheduler.scheduleWithFixedDelay(timeoutCheckEvery, timeoutCheckEvery): () =>
-    timeout.checkExpired foreach api.userChat.reinstate
+    timeout.checkExpired.foreach(api.userChat.reinstate)

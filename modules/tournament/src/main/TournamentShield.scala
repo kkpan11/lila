@@ -1,10 +1,11 @@
 package lila.tournament
 
 import chess.variant.Variant.given
-import lila.common.licon
+
+import lila.core.tournament.Status
 import lila.db.dsl.*
-import lila.user.User
 import lila.memo.CacheApi.*
+import lila.ui.Icon
 
 final class TournamentShieldApi(
     tournamentRepo: TournamentRepo,
@@ -23,16 +24,16 @@ final class TournamentShieldApi(
       maxPerCateg.fold(h)(h.take)
 
   def byCategKey(k: String): Fu[Option[(Category, List[Award])]] =
-    Category.byKey.get(k) so { categ =>
+    Category.byKey.get(k).so { categ =>
       cache.getUnit.dmap:
-        _.value get categ map {
+        _.value.get(categ).map {
           categ -> _
         }
     }
 
   def currentOwner(tour: Tournament): Fu[Option[UserId]] =
     tour.isShield.so:
-      Category.of(tour) so { cat =>
+      Category.of(tour).so { cat =>
         history(none).map(_.current(cat).map(_.owner))
       }
 
@@ -43,20 +44,20 @@ final class TournamentShieldApi(
     then clear()
 
   private val cache = cacheApi.unit[History]:
-    _.refreshAfterWrite(1 day).buildAsyncFuture: _ =>
+    _.refreshAfterWrite(1.day).buildAsyncFuture: _ =>
       tournamentRepo.coll
         .find:
           $doc(
             "schedule.freq" -> (Schedule.Freq.Shield: Schedule.Freq),
             "status"        -> (Status.Finished: Status)
           )
-        .sort($sort asc "startsAt")
+        .sort($sort.asc("startsAt"))
         .cursor[Tournament](ReadPref.priTemp)
         .listAll()
         .map: tours =>
           for
             tour   <- tours
-            categ  <- Category of tour
+            categ  <- Category.of(tour)
             winner <- tour.winnerId
           yield Award(
             categ = categ,
@@ -82,48 +83,45 @@ object TournamentShield:
 
     def sorted: List[(Category, List[Award])] =
       Category.list.map: categ =>
-        categ -> ~(value get categ)
+        categ -> ~(value.get(categ))
 
     def userIds: List[UserId] = value.values.flatMap(_.map(_.owner)).toList
 
-    def current(cat: Category): Option[Award] = value get cat flatMap (_.headOption)
+    def current(cat: Category): Option[Award] = value.get(cat).flatMap(_.headOption)
 
     def take(max: Int) =
-      copy(value = value.view.mapValues(_ take max).toMap)
+      copy(value = value.view.mapValues(_.take(max)).toMap)
 
   private type SpeedOrVariant = Either[Schedule.Speed, chess.variant.Variant]
 
-  enum Category(val of: SpeedOrVariant, val icon: licon.Icon):
+  enum Category(val of: SpeedOrVariant, val icon: Icon):
     def key  = of.fold(_.key, _.key.value)
     def name = of.fold(_.name, _.name)
     def matches(tour: Tournament) =
-      if tour.variant.standard then
-        ~(for
-          tourSpeed  <- tour.schedule.map(_.speed)
-          categSpeed <- of.left.toOption
-        yield tourSpeed == categSpeed)
+      if tour.variant.standard
+      then ~(of.left.toOption, tour.scheduleSpeed).mapN(_ == _)
       else of.toOption.has(tour.variant)
 
-    case Bullet        extends Category(Left(Schedule.Speed.Bullet), licon.Bullet)
-    case SuperBlitz    extends Category(Left(Schedule.Speed.SuperBlitz), licon.FlameBlitz)
-    case Blitz         extends Category(Left(Schedule.Speed.Blitz), licon.FlameBlitz)
-    case Rapid         extends Category(Left(Schedule.Speed.Rapid), licon.Rabbit)
-    case Classical     extends Category(Left(Schedule.Speed.Classical), licon.Turtle)
-    case HyperBullet   extends Category(Left(Schedule.Speed.HyperBullet), licon.Bullet)
-    case UltraBullet   extends Category(Left(Schedule.Speed.UltraBullet), licon.UltraBullet)
-    case Chess960      extends Category(Right(chess.variant.Chess960), licon.DieSix)
-    case Crazyhouse    extends Category(Right(chess.variant.Crazyhouse), licon.Crazyhouse)
-    case KingOfTheHill extends Category(Right(chess.variant.KingOfTheHill), licon.FlagKingHill)
-    case ThreeCheck    extends Category(Right(chess.variant.ThreeCheck), licon.ThreeCheckStack)
-    case Antichess     extends Category(Right(chess.variant.Antichess), licon.Antichess)
-    case Atomic        extends Category(Right(chess.variant.Atomic), licon.Atom)
-    case Horde         extends Category(Right(chess.variant.Horde), licon.Keypad)
-    case RacingKings   extends Category(Right(chess.variant.RacingKings), licon.FlagRacingKings)
+    case Bullet        extends Category(Left(Schedule.Speed.Bullet), Icon.Bullet)
+    case SuperBlitz    extends Category(Left(Schedule.Speed.SuperBlitz), Icon.FlameBlitz)
+    case Blitz         extends Category(Left(Schedule.Speed.Blitz), Icon.FlameBlitz)
+    case Rapid         extends Category(Left(Schedule.Speed.Rapid), Icon.Rabbit)
+    case Classical     extends Category(Left(Schedule.Speed.Classical), Icon.Turtle)
+    case HyperBullet   extends Category(Left(Schedule.Speed.HyperBullet), Icon.Bullet)
+    case UltraBullet   extends Category(Left(Schedule.Speed.UltraBullet), Icon.UltraBullet)
+    case Chess960      extends Category(Right(chess.variant.Chess960), Icon.DieSix)
+    case Crazyhouse    extends Category(Right(chess.variant.Crazyhouse), Icon.Crazyhouse)
+    case KingOfTheHill extends Category(Right(chess.variant.KingOfTheHill), Icon.FlagKingHill)
+    case ThreeCheck    extends Category(Right(chess.variant.ThreeCheck), Icon.ThreeCheckStack)
+    case Antichess     extends Category(Right(chess.variant.Antichess), Icon.Antichess)
+    case Atomic        extends Category(Right(chess.variant.Atomic), Icon.Atom)
+    case Horde         extends Category(Right(chess.variant.Horde), Icon.Keypad)
+    case RacingKings   extends Category(Right(chess.variant.RacingKings), Icon.FlagRacingKings)
 
   object Category:
     val list                                = values.toList
     val byKey                               = values.mapBy(_.key)
-    def of(t: Tournament): Option[Category] = list.find(_ matches t)
+    def of(t: Tournament): Option[Category] = list.find(_.matches(t))
 
   def make(name: String)(t: Tournament) = t.copy(
     name = s"$name Shield",
@@ -132,7 +130,7 @@ object TournamentShield:
 The winner keeps it for one month,
 then must defend it during the next $name Shield tournament!""".some,
     spotlight = Spotlight(
-      iconFont = licon.Shield.some,
+      iconFont = Icon.Shield.some,
       headline = s"Battle for the $name Shield",
       homepageHours = 6.some
     ).some

@@ -1,12 +1,12 @@
-import AnalyseCtrl from '../ctrl';
+import type AnalyseCtrl from '../ctrl';
 import contextMenu from './contextMenu';
-import throttle from 'common/throttle';
+import { throttle } from 'common/timing';
 import { enrichText, innerHTML } from 'common/richText';
 import { authorText as commentAuthorText } from '../study/studyComments';
 import { bindMobileTapHold } from 'common/device';
-import { h, Hooks, VNode } from 'snabbdom';
+import { h, type Hooks, type VNode } from 'snabbdom';
 import { isEmpty, defined } from 'common';
-import { MaybeVNodes } from 'common/snabbdom';
+import { type MaybeVNodes } from 'common/snabbdom';
 import { path as treePath } from 'tree';
 import { playable } from 'game';
 
@@ -20,10 +20,7 @@ export function mainHook(ctrl: AnalyseCtrl): Hooks {
       const ctxMenuCallback = (e: MouseEvent) => {
         const path = eventPath(e);
         if (path !== null) {
-          contextMenu(e, {
-            path,
-            root: ctrl,
-          });
+          contextMenu(e, { path, root: ctrl });
         }
         ctrl.redraw();
         return false;
@@ -62,7 +59,8 @@ const autoScroll = throttle(200, (ctrl: AnalyseCtrl, el: HTMLElement) => {
     cont.scrollTop = ctrl.path ? 99999 : 0;
     return;
   }
-  cont.scrollTop = target.offsetTop - cont.offsetHeight / 2 + target.offsetHeight;
+  const targetOffset = target.getBoundingClientRect().y - el.getBoundingClientRect().y;
+  cont.scrollTop = targetOffset - cont.offsetHeight / 2 + target.offsetHeight;
 });
 
 export interface NodeClasses {
@@ -93,14 +91,10 @@ export function nodeClasses(ctx: Ctx, node: Tree.Node, path: Tree.Path): NodeCla
   };
 }
 
-export function findCurrentPath(c: AnalyseCtrl): Tree.Path | undefined {
-  let cur;
-  return (
-    (!c.synthetic && playable(c.data) && c.initialPath) ||
-    (c.retro && (cur = c.retro.current()) && cur.prev.path) ||
-    (c.study && c.study.data.chapter.relay && c.study.data.chapter.relay.path)
-  );
-}
+export const findCurrentPath = (c: AnalyseCtrl): Tree.Path | undefined =>
+  (!c.synthetic && playable(c.data) && c.initialPath) ||
+  c.retro?.current()?.prev.path ||
+  c.study?.data.chapter.relayPath;
 
 export const truncatedComment = (path: string, ctx: Ctx): Hooks => ({
   insert(vnode: VNode) {
@@ -146,9 +140,18 @@ export function truncateComment(text: string, len: number, ctx: Ctx) {
 
 export function retroLine(ctx: Ctx, node: Tree.Node): VNode | undefined {
   return node.comp && ctx.ctrl.retro && ctx.ctrl.retro.hideComputerLine(node)
-    ? h('line', ctx.ctrl.trans.noarg('learnFromThisMistake'))
+    ? h('line', i18n.site.learnFromThisMistake)
     : undefined;
 }
+
+export const renderingCtx = (ctrl: AnalyseCtrl): Ctx => ({
+  ctrl,
+  truncateComments: false,
+  showComputer: ctrl.showComputer() && !ctrl.retro?.isSolving(),
+  showGlyphs: (!!ctrl.study && !ctrl.study?.relay) || ctrl.showComputer(),
+  showEval: ctrl.showComputer(),
+  currentPath: findCurrentPath(ctrl),
+});
 
 export interface Ctx {
   ctrl: AnalyseCtrl;
@@ -162,6 +165,7 @@ export interface Ctx {
 export interface Opts {
   parentPath: Tree.Path;
   isMainline: boolean;
+  depth: number;
   inline?: Tree.Node;
   withIndex?: boolean;
   truncate?: number;

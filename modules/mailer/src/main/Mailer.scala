@@ -1,18 +1,20 @@
 package lila.mailer
 
 import akka.actor.ActorSystem
-import lila.common.autoconfig.*
-import play.api.i18n.Lang
-import play.api.libs.mailer.{ Email, SMTPConfiguration, SMTPMailer }
-import scala.concurrent.blocking
-import scalatags.Text.all.{ html as htmlTag, * }
-import scalatags.Text.tags2.{ title as titleTag }
-import ornicar.scalalib.ThreadLocalRandom
-
-import lila.common.String.html.nl2br
-import lila.common.{ Chronometer, EmailAddress }
-import lila.i18n.I18nKeys.{ emails as trans }
 import play.api.ConfigLoader
+import play.api.libs.mailer.{ Email, SMTPConfiguration, SMTPMailer }
+import scalalib.ThreadLocalRandom
+import scalatags.Text.all.{ html as htmlTag, * }
+import scalatags.Text.tags2.title as titleTag
+import org.apache.commons.mail.EmailException
+
+import scala.concurrent.blocking
+
+import lila.common.Chronometer
+import lila.common.String.html.nl2br
+import lila.common.autoconfig.*
+import lila.core.i18n.I18nKey.emails as trans
+import lila.core.i18n.Translate
 
 final class Mailer(
     config: Mailer.Config,
@@ -38,18 +40,23 @@ final class Mailer(
         Chronometer.syncMon(_.email.send.time):
           blocking:
             val (client, config) = randomClient()
-            client.send:
-              Email(
-                subject = msg.subject,
-                from = config.sender,
-                to = Seq(msg.to.value),
-                bodyText = msg.text.some,
-                bodyHtml = msg.htmlBody map { body => Mailer.html.wrap(msg.subject, body).render }
-              )
+            val email = Email(
+              subject = msg.subject,
+              from = config.sender,
+              to = Seq(msg.to.value),
+              bodyText = msg.text.some,
+              bodyHtml = msg.htmlBody.map { body => Mailer.html.wrap(msg.subject, body).render }
+            )
+            client.send(email)
+      .recoverWith:
+        case e: EmailException if msg.to.normalize.value != msg.to.value =>
+          logger.warn(s"Email ${msg.to} is invalid, trying ${msg.to.normalize}")
+          send(msg.copy(to = msg.to.normalize.into(EmailAddress)))
+      .void
 
 object Mailer:
 
-  private val timeout = 5 seconds
+  private val timeout = 5.seconds
 
   case class Smtp(
       mock: Boolean,
@@ -83,12 +90,12 @@ object Mailer:
 
   object txt:
 
-    private def serviceNote(using Lang): String = s"""
+    private def serviceNote(using Translate): String = s"""
 ${trans.common_note("https://lichess.org").render}
 
 ${trans.common_contact("https://lichess.org/contact").render}"""
 
-    def addServiceNote(body: String)(using Lang) = s"""$body
+    def addServiceNote(body: String)(using Translate) = s"""$body
 
 $serviceNote"""
 
@@ -113,32 +120,32 @@ $serviceNote"""
       href     := "https://lichess.org/"
     )(span(itemprop := "name")("lichess.org"))
 
-    def serviceNote(using Lang) =
+    def serviceNote(using Translate) =
       publisher(
         small(
           trans.common_note(Mailer.html.noteLink),
           " ",
           trans.common_contact(noteContact),
           " ",
-          lila.i18n.I18nKeys.readAboutOur(
+          lila.core.i18n.I18nKey.site.readAboutOur(
             a(href := "https://lichess.org/privacy")(
-              lila.i18n.I18nKeys.privacyPolicy()
+              lila.core.i18n.I18nKey.site.privacyPolicy()
             )
           )
         )
       )
 
-    def standardEmail(body: String)(using Lang): Frag =
+    def standardEmail(body: String)(using Translate): Frag =
       emailMessage(
         pDesc(nl2br(body)),
         serviceNote
       )
 
-    def url(u: String, clickOrPaste: Boolean = true)(using Lang) =
+    def url(u: String, clickOrPaste: Boolean = true)(using Translate) =
       frag(
         meta(itemprop := "url", content := u),
         p(a(itemprop := "target", href := u)(u)),
-        clickOrPaste option p(trans.common_orPaste())
+        clickOrPaste.option(p(trans.common_orPaste()))
       )
 
     private[Mailer] def wrap(subject: String, htmlBody: Frag): Frag =

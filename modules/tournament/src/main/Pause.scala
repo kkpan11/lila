@@ -7,12 +7,12 @@ package lila.tournament
  * (e.g. 20 seconds for second pause in 5+0) with maximum of 120 seconds.
  * After 20 minutes without any pause, the delay is reinitialized to 10s.
  */
-final private class Pause:
+final private class Pause(using Executor):
 
   import Pause.*
 
   private val cache = lila.memo.CacheApi.scaffeineNoScheduler
-    .expireAfterWrite(20 minutes)
+    .expireAfterWrite(20.minutes)
     .build[UserId, Record]()
 
   private def baseDelayOf(tour: Tournament) = Delay:
@@ -21,7 +21,8 @@ final private class Pause:
   private def delayOf(record: Record, tour: Tournament) =
     // 10s for first pause
     // next ones increasing linearly until 120s
-    baseDelayOf(tour).map(_ * (record.pauses - 1) atLeast 10 atMost 120)
+    baseDelayOf(tour).map: delay =>
+      (delay * (record.pauses - 1)).atLeast(10).atMost(120)
 
   def add(userId: UserId): Unit =
     cache.put(
@@ -30,9 +31,9 @@ final private class Pause:
     )
 
   def remainingDelay(userId: UserId, tour: Tournament): Option[Delay] =
-    cache getIfPresent userId flatMap { record =>
+    cache.getIfPresent(userId).flatMap { record =>
       val seconds = record.pausedAt.toSeconds - nowSeconds + delayOf(record, tour).value
-      seconds > 1 option Delay(seconds.toInt)
+      (seconds > 1).option(Delay(seconds.toInt))
     }
 
   def canJoin(userId: UserId, tour: Tournament): Boolean =

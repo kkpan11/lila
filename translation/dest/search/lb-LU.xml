@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="search">Sich</string>
+  <string name="search" comment="May appear either as a button or as grey hint text inside a search box, to indicate what it is for. Please see screenshots for an example.">Sich</string>
   <string name="advancedSearch">Erweidert Sich</string>
   <plurals name="searchInXGames">
     <item quantity="one">Sich an %s Partie</item>
@@ -10,7 +10,7 @@
     <item quantity="one">Eng Partie fonnt</item>
     <item quantity="other">%s Partien fonnt</item>
   </plurals>
-  <string name="opponentName">Géigner Numm</string>
+  <string name="opponentName">Numm vum Géigner</string>
   <string name="loser">Verléierer</string>
   <string name="from">Vun</string>
   <string name="to">Bis</string>

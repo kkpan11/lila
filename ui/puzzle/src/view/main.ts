@@ -1,25 +1,26 @@
 import * as control from '../control';
-import * as keyboard from '../keyboard';
-import * as side from './side';
+import { view as keyboardView } from '../keyboard';
+import { replay, puzzleBox, userBox, streakBox, config } from './side';
 import theme from './theme';
 import chessground from './chessground';
 import feedbackView from './feedback';
 import * as licon from 'common/licon';
-import { stepwiseScroll } from 'common/scroll';
-import { Controller } from '../interfaces';
-import { h, VNode } from 'snabbdom';
-import { onInsert, bindNonPassive } from 'common/snabbdom';
+import { stepwiseScroll } from 'common/controls';
+import { type VNode, h } from 'snabbdom';
+import { onInsert, bindNonPassive, looseH as lh } from 'common/snabbdom';
 import { bindMobileMousedown } from 'common/device';
 import { render as treeView } from './tree';
 import { view as cevalView } from 'ceval';
 import { renderVoiceBar } from 'voice';
 import { render as renderKeyboardMove } from 'keyboardMove';
-import { toggleButton as boardMenuToggleButton } from 'board/menu';
+import { toggleButton as boardMenuToggleButton } from 'common/boardMenu';
 import boardMenu from './boardMenu';
+import { Coords } from 'common/prefs';
+import type PuzzleCtrl from '../ctrl';
+import { dispatchChessgroundResize } from 'common/resize';
+import { storage } from 'common/storage';
 
-import * as Prefs from 'common/prefs';
-
-const renderAnalyse = (ctrl: Controller): VNode => h('div.puzzle__moves.areplay', [treeView(ctrl)]);
+const renderAnalyse = (ctrl: PuzzleCtrl): VNode => lh('div.puzzle__moves.areplay', [treeView(ctrl)]);
 
 function dataAct(e: Event): string | null {
   const target = e.target as HTMLElement;
@@ -27,21 +28,15 @@ function dataAct(e: Event): string | null {
 }
 
 function jumpButton(icon: string, effect: string, disabled: boolean, glowing = false): VNode {
-  return h('button.fbt', {
-    class: { disabled, glowing },
-    attrs: {
-      'data-act': effect,
-      'data-icon': icon,
-    },
-  });
+  return lh('button.fbt', { class: { disabled, glowing }, attrs: { 'data-act': effect, 'data-icon': icon } });
 }
 
-function controls(ctrl: Controller): VNode {
-  const node = ctrl.vm.node;
+function controls(ctrl: PuzzleCtrl): VNode {
+  const node = ctrl.node;
   const nextNode = node.children[0];
-  const notOnLastMove = ctrl.vm.mode == 'play' && nextNode && nextNode.puzzle != 'fail';
-  return h('div.puzzle__controls.analyse-controls', [
-    h(
+  const notOnLastMove = ctrl.mode === 'play' && nextNode && nextNode.puzzle !== 'fail';
+  return lh('div.puzzle__controls.analyse-controls', [
+    lh(
       'div.jumps',
       {
         hook: onInsert(
@@ -59,7 +54,7 @@ function controls(ctrl: Controller): VNode {
         jumpButton(licon.JumpPrev, 'prev', !node.ply),
         jumpButton(licon.JumpNext, 'next', !nextNode),
         jumpButton(licon.JumpLast, 'last', !nextNode, notOnLastMove),
-        boardMenuToggleButton(ctrl.menu, ctrl.trans.noarg('menu')),
+        boardMenuToggleButton(ctrl.menu, i18n.site.menu),
       ],
     ),
     boardMenu(ctrl),
@@ -68,43 +63,43 @@ function controls(ctrl: Controller): VNode {
 
 let cevalShown = false;
 
-export default function (ctrl: Controller): VNode {
+export default function (ctrl: PuzzleCtrl): VNode {
   if (ctrl.nvui) return ctrl.nvui.render(ctrl);
-  const showCeval = ctrl.vm.showComputer(),
+  const showCeval = ctrl.showComputer(),
     gaugeOn = ctrl.showEvalGauge();
   if (cevalShown !== showCeval) {
-    if (!cevalShown) ctrl.vm.autoScrollNow = true;
+    if (!cevalShown) ctrl.autoScrollNow = true;
     cevalShown = showCeval;
   }
-  return h(
-    `main.puzzle.puzzle-${ctrl.getData().replay ? 'replay' : 'play'}${ctrl.streak ? '.puzzle--streak' : ''}`,
+  return lh(
+    `main.puzzle.puzzle-${ctrl.data.replay ? 'replay' : 'play'}${ctrl.streak ? '.puzzle--streak' : ''}`,
     {
       class: { 'gauge-on': gaugeOn },
       hook: {
         postpatch(old, vnode) {
           if (old.data!.gaugeOn !== gaugeOn) {
-            if (ctrl.pref.coords === Prefs.Coords.Outside) {
+            if (ctrl.pref.coords === Coords.Outside) {
               $('body').toggleClass('coords-in', gaugeOn).toggleClass('coords-out', !gaugeOn);
             }
-            document.body.dispatchEvent(new Event('chessground.resize'));
+            dispatchChessgroundResize();
           }
           vnode.data!.gaugeOn = gaugeOn;
         },
       },
     },
     [
-      h('aside.puzzle__side', [
-        side.replay(ctrl),
-        side.puzzleBox(ctrl),
-        ctrl.streak ? side.streakBox(ctrl) : side.userBox(ctrl),
-        side.config(ctrl),
+      lh('aside.puzzle__side', [
+        replay(ctrl),
+        puzzleBox(ctrl),
+        ctrl.streak ? streakBox(ctrl) : userBox(ctrl),
+        config(ctrl),
         theme(ctrl),
       ]),
-      h(
-        'div.puzzle__board.main-board' + (ctrl.pref.blindfold ? '.blindfold' : ''),
+      lh(
+        'div.puzzle__board.main-board' + (ctrl.blindfold() ? '.blindfold' : ''),
         {
           hook:
-            'ontouchstart' in window || !lichess.storage.boolean('scrollMoves').getOrDefault(true)
+            'ontouchstart' in window || !storage.boolean('scrollMoves').getOrDefault(true)
               ? undefined
               : bindNonPassive(
                   'wheel',
@@ -126,74 +121,58 @@ export default function (ctrl: Controller): VNode {
         [chessground(ctrl), ctrl.promotion.view()],
       ),
       cevalView.renderGauge(ctrl),
-      h('div.puzzle__tools', [
-        ctrl.voiceMove ? renderVoiceBar(ctrl.voiceMove.ui, ctrl.redraw, 'puz') : null,
+      lh('div.puzzle__tools', [
+        ctrl.voiceMove ? renderVoiceBar(ctrl.voiceMove.ctrl, ctrl.redraw, 'puz') : null,
         // we need the wrapping div here
         // so the siblings are only updated when ceval is added
-        h(
+        lh(
           'div.ceval-wrap',
-          {
-            class: { none: !showCeval },
-          },
+          { class: { none: !showCeval } },
           showCeval ? [...cevalView.renderCeval(ctrl), cevalView.renderPvs(ctrl)] : [],
         ),
         renderAnalyse(ctrl),
         feedbackView(ctrl),
       ]),
       controls(ctrl),
-      ctrl.keyboardMove ? renderKeyboardMove(ctrl.keyboardMove) : null,
+      ctrl.keyboardMove && renderKeyboardMove(ctrl.keyboardMove),
       session(ctrl),
-      ctrl.keyboardHelp() ? keyboard.view(ctrl) : null,
+      ctrl.keyboardHelp() && keyboardView(ctrl),
     ],
   );
 }
 
-function session(ctrl: Controller) {
+function session(ctrl: PuzzleCtrl) {
   const rounds = ctrl.session.get().rounds,
-    current = ctrl.getData().puzzle.id;
-  return h('div.puzzle__session', [
+    current = ctrl.data.puzzle.id;
+  return lh('div.puzzle__session', [
     ...rounds.map(round => {
       const rd =
-        round.ratingDiff && ctrl.showRatings
+        round.ratingDiff && ctrl.opts.showRatings
           ? round.ratingDiff > 0
             ? '+' + round.ratingDiff
             : round.ratingDiff
           : null;
+
       return h(
         `a.result-${round.result}${rd ? '' : '.result-empty'}`,
         {
           key: round.id,
-          class: {
-            current: current == round.id,
-          },
+          class: { current: current === round.id },
           attrs: {
             href: `/training/${ctrl.session.theme}/${round.id}`,
-            ...(ctrl.streak ? { target: '_blank', rel: 'noopener' } : {}),
+            ...(ctrl.streak ? { target: '_blank' } : {}),
           },
         },
         rd,
       );
     }),
-    rounds.find(r => r.id == current)
-      ? ctrl.streak
-        ? null
-        : h('a.session-new', {
-            key: 'new',
-            attrs: {
-              href: `/training/${ctrl.session.theme}`,
-            },
-          })
-      : h(
+    rounds.find(r => r.id === current)
+      ? !ctrl.streak &&
+        lh('a.session-new', { key: 'new', attrs: { href: `/training/${ctrl.session.theme}` } })
+      : lh(
           'a.result-cursor.current',
-          {
-            key: current,
-            attrs: ctrl.streak
-              ? {}
-              : {
-                  href: `/training/${ctrl.session.theme}/${current}`,
-                },
-          },
-          ctrl.streak?.data.index,
+          { key: current, attrs: ctrl.streak ? {} : { href: `/training/${ctrl.session.theme}/${current}` } },
+          ctrl.streak && (ctrl.streak.data.index + 1).toString(),
         ),
   ]);
 }

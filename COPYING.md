@@ -1,7 +1,7 @@
 # Copying Lila
 
 Any file in this project that does not state otherwise and is not listed as an
-exception below is part of lila and copyright (c) 2012-2023 the lila authors.
+exception below is part of lila and copyright (c) 2012-2024 the lila authors.
 
 For a list of the authors see the commit log or
 https://github.com/lichess-org/lila/graphs/contributors.
@@ -17,16 +17,6 @@ A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
 details.
 
 See the LICENSE file for a copy of the _GNU Affero General Public License_.
-
-## Additional permission under GNU AGPL version 3 section 7
-
-If you modify this Program, or any covered work, by linking or combining it
-with Highcharts (or a modified version of that library), containing parts
-covered by the terms of the _Creative Commons (CC) Attribution-NonCommercial_
-license, the licensors of this Program grant you additional permission to
-convey the resulting work. Corresponding Source for a non-source form of such a
-combination shall include the source code for the parts of Highcharts used as
-well as that of the covered work.
 
 ## Exceptions (free)
 
@@ -52,10 +42,13 @@ public/piece/letter | [usolando](https://lichess.org/@/usolando) | AGPLv3+
 public/piece/pirouetti | [pirouetti](https://lichess.org/@/pirouetti) | AGPLv3+
 public/piece/merida | Armando Hernandez Marroquin | [GPLv2+](https://www.gnu.org/licenses/gpl-2.0.txt)
 public/piece/shapes | [flugsio](https://github.com/flugsio/chess_shapes) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-public/piece/pixel | [therealqtpi](https://twitter.com/therealqtpi) | AGPLv3+
+public/piece/pixel | therealqtpi | AGPLv3+
 public/piece/california | [Jerry S.](https://sites.google.com/view/jerrychess/home) | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 public/piece/caliente | [avi](https://github.com/avi-0/caliente) | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 public/piece/maestro | sadsnake1 | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+public/piece/fantasy | [Maurizio Monge](https://github.com/maurimo/chess-art) | [MIT](https://github.com/maurimo/chess-art/blob/main/LICENSE)
+public/piece/spatial | [Maurizio Monge](https://github.com/maurimo/chess-art) | [MIT](https://github.com/maurimo/chess-art/blob/main/LICENSE)
+public/piece/celtic | [Maurizio Monge](https://github.com/maurimo/chess-art) | [MIT](https://github.com/maurimo/chess-art/blob/main/LICENSE)
 public/piece/fresca | sadsnake1 | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 public/piece/cardinal | sadsnake1 | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 public/piece/icpieces | sadsnake1 | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
@@ -63,16 +56,19 @@ public/piece/gioco | sadsnake1 | [CC BY-NC-SA 4.0](https://creativecommons.org/l
 public/piece/tatiana | sadsnake1 | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 public/piece/staunty | sadsnake1 | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 public/piece/dubrovny | sadsnake1 | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-public/piece/libra | sadsnake1 | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 public/piece/anarcandy | [caderek](https://github.com/caderek) | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 public/piece/disguised | danegraphics | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 public/piece/kiwen-suwi | [neverRare](https://github.com/neverRare) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 public/piece/mpchess | [Maxime Chupin](https://github.com/chupinmaxime) | [GPL3v3+](https://www.gnu.org/licenses/quick-guide-gplv3.en.html)
+public/piece/cooke | [fejfar](https://github.com/fejfar) | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+public/piece/monarchy | [slither77](https://github.com/slither77) | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 public/sounds/futuristic | [Enigmahack](https://github.com/Enigmahack) | AGPLv3+
 public/sounds/nes | [Enigmahack](https://github.com/Enigmahack) | AGPLv3+
 public/sounds/piano | [Enigmahack](https://github.com/Enigmahack) | AGPLv3+
 public/sounds/sfx | [Enigmahack](https://github.com/Enigmahack) | AGPLv3+
 public/sounds/lisp | [EdinburghCollective](http://lichess.org/@/EdinburghCollective) | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+SVG in ui/learn/src/apple.ts | [Sensa](https://www.svgrepo.com/svg/434273/star) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/deed.en)
+public/flair/img/symbols.neovim-mark.webp | Jason Long | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) (Modified by converting to webp and resizing)
 
 ## Exceptions (non-free)
 
@@ -83,12 +79,9 @@ public/logo, public/favicon.ico, public/apple-touch-icon.png | sadsnake1 | Only 
 public/piece/alpha | Eric Bentzen | "free for personal non commercial use" (see [zip](http://www.enpassant.dk/chess/downl/alpha.zip))
 public/piece/chess7 | [Style-7](http://www.styleseven.com/) | "freeware"
 public/piece/companion | David L. Brown | ["freeware"](http://www.enpassant.dk/chess/fonteng.htm#GC)
-public/piece/fantasy | [Maurizio Monge](https://github.com/maurimo/chess-art) | "give credit in a suitable way"
 public/piece/leipzig | Armando Hernandez Marroquin | ["freeware"](http://www.enpassant.dk/chess/fonteng.htm#LEIPZIG)
-public/piece/spatial | [Maurizio Monge](https://github.com/maurimo/chess-art) | "give credit in a suitable way"
 public/piece/reillycraig | [Reilly Craig](https://instagram.com/fader_) |
 public/piece/riohacha | |
-public/piece/celtic | [Maurizio Monge](https://github.com/maurimo/chess-art) | "give credit in a suitable way"
 public/images/staunton/piece/Staunton | [Eden Murs](https://userstyles.org/styles/134558/lichess-pieces-3d-staunton) (?) |
 
 - The other sounds in public/sound
@@ -99,7 +92,6 @@ public/images/staunton/piece/Staunton | [Eden Murs](https://userstyles.org/style
 Lichess as deployed on https://lichess.org/ also uses these external services:
 
 - [Cloudflare](https://www.cloudflare.com/) to serve static assets, DNS lookups for email validation
-- [prismic.io](https://prismic.io/) for help/documentation pages and the blog
 - [twitch](https://www.twitch.tv/) for featured livestreams
 - [YouTube](https://www.youtube.com) for featured livestreams and the [Video library](https://lichess.org/video)
 - [stripe](https://stripe.com/) and [PayPal](https://www.paypal.com) for [Patron donations](https://lichess.org/patron)

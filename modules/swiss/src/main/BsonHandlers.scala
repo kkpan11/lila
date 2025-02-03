@@ -1,7 +1,7 @@
 package lila.swiss
 
-import chess.Color
 import chess.format.Fen
+import chess.IntRating
 import reactivemongo.api.bson.*
 
 import lila.db.BSON
@@ -21,7 +21,7 @@ object BsonHandlers:
         swissId = r.get(swissId),
         userId = r.get(userId),
         rating = r.get[IntRating](rating),
-        provisional = r yesnoD provisional,
+        provisional = r.yesnoD(provisional),
         points = r.get[SwissPoints](points),
         tieBreak = r.get[Swiss.TieBreak](tieBreak),
         performance = r.getO[Swiss.Performance](performance),
@@ -44,6 +44,11 @@ object BsonHandlers:
         byes        -> o.byes.some.filter(_.nonEmpty)
       )
 
+  /* true = ongoing
+   * 0 = white won
+   * 1 = black won
+   * null = draw
+   */
   given BSONHandler[SwissPairing.Status] = lila.db.dsl.quickHandler(
     {
       case BSONBoolean(true)  => Left(SwissPairing.Ongoing)
@@ -70,7 +75,7 @@ object BsonHandlers:
             status = r.getO[SwissPairing.Status](status) | Right(none),
             isForfeit = r.boolD(isForfeit)
           )
-        case _ => sys error "Invalid swiss pairing users"
+        case _ => sys.error("Invalid swiss pairing users")
     def writes(w: BSON.Writer, o: SwissPairing) =
       $doc(
         id        -> o.id,
@@ -89,7 +94,7 @@ object BsonHandlers:
         nbRounds = r.get[Int]("n"),
         rated = r.boolO("r") | true,
         description = r.strO("d"),
-        position = r.getO[Fen.Epd]("f"),
+        position = r.getO[Fen.Full]("f"),
         chatFor = r.intO("c") | Swiss.ChatFor.default,
         roundInterval = (r.intO("i") | 60).seconds,
         password = r.strO("p"),
@@ -116,12 +121,13 @@ object BsonHandlers:
   // "featurable" mostly means that the tournament isn't over yet
   def addFeaturable(s: Swiss): Bdoc =
     bsonWriteObjTry[Swiss](s).get ++ {
-      s.isNotFinished so $doc(
-        "featurable" -> true,
-        "garbage"    -> s.unrealisticSettings.option(true)
+      s.isNotFinished.so(
+        $doc(
+          "featurable" -> true,
+          "garbage"    -> s.unrealisticSettings.option(true)
+        )
       )
     }
 
-  import Swiss.IdName
-  given BSONDocumentHandler[IdName]   = Macros.handler
-  given BSONDocumentHandler[SwissBan] = Macros.handler
+  given BSONDocumentHandler[lila.core.swiss.IdName] = Macros.handler
+  given BSONDocumentHandler[SwissBan]               = Macros.handler

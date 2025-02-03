@@ -1,19 +1,24 @@
 package lila.insight
 
 import chess.{ Color, Role }
+import chess.IntRating
+import chess.eval.WinPercent
+import chess.rating.IntRatingDiff
 import reactivemongo.api.bson.*
 
-import lila.analyse.{ AccuracyPercent, WinPercent }
+import lila.analyse.AccuracyPercent
 import lila.common.SimpleOpening
 import lila.db.BSON
 import lila.db.dsl.{ *, given }
 import lila.rating.BSONHandlers.perfTypeIdHandler
 import lila.rating.PerfType
+import lila.core.game.Source
+import lila.game.BSONHandlers.sourceHandler
 
 object BSONHandlers:
 
   given BSONHandler[Role] = tryHandler(
-    { case BSONString(v) => Role.allByForsyth get v.head toTry s"Invalid role $v" },
+    { case BSONString(v) => Role.allByForsyth.get(v.head).toTry(s"Invalid role $v") },
     e => BSONString(e.forsyth.toString)
   )
   given BSONHandler[RelativeStrength]     = valueMapHandler(RelativeStrength.byId)(_.id)
@@ -102,6 +107,7 @@ object BSONHandlers:
         ratingDiff = r.get[IntRatingDiff](ratingDiff),
         analysed = r.boolD(analysed),
         provisional = r.boolD(provisional),
+        source = r.getO[Source](source),
         date = r.date(date)
       )
     def writes(w: BSON.Writer, e: InsightEntry) =
@@ -109,7 +115,7 @@ object BSONHandlers:
         id               -> e.id,
         userId           -> e.userId,
         color            -> e.color,
-        perf             -> e.perf,
+        perf             -> PerfType(e.perf),
         opening          -> e.opening,
         openingFamily    -> e.opening.map(_.family),
         myCastling       -> e.myCastling,
@@ -124,5 +130,6 @@ object BSONHandlers:
         ratingDiff       -> e.ratingDiff,
         analysed         -> w.boolO(e.analysed),
         provisional      -> w.boolO(e.provisional),
+        source           -> e.source,
         date             -> e.date
       )

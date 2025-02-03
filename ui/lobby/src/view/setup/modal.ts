@@ -1,13 +1,13 @@
 import { h } from 'snabbdom';
-import { MaybeVNode, MaybeVNodes } from 'common/snabbdom';
-import { snabDialog } from 'common/dialog';
+import type { MaybeVNode, MaybeVNodes } from 'common/snabbdom';
 import { userLink } from 'common/userLink';
-import LobbyController from '../../ctrl';
+import { snabDialog } from 'common/dialog';
+import type LobbyController from '../../ctrl';
 import { variantPicker } from './components/variantPicker';
 import { timePickerAndSliders } from './components/timePickerAndSliders';
 import { gameModeButtons } from './components/gameModeButtons';
 import { ratingDifferenceSliders } from './components/ratingDifferenceSliders';
-import { colorButtons } from './components/colorButtons';
+import { createButtons } from './components/colorButtons';
 import { ratingView } from './components/ratingView';
 import { fenInput } from './components/fenInput';
 import { levelButtons } from './components/levelButtons';
@@ -17,42 +17,51 @@ export default function setupModal(ctrl: LobbyController): MaybeVNode {
   if (!setupCtrl.gameType) return null;
   return snabDialog({
     class: 'game-setup',
-    cssPath: 'lobby.setup',
-    onClose: setupCtrl.closeModal,
+    css: [{ hashed: 'lobby.setup' }],
+    onClose: () => {
+      setupCtrl.closeModal = undefined;
+      setupCtrl.gameType = null;
+      setupCtrl.root.redraw();
+    },
+    modal: true,
     vnodes: [...views[setupCtrl.gameType](ctrl), ratingView(ctrl)],
+    onInsert: dlg => {
+      setupCtrl.closeModal = dlg.close;
+      dlg.show();
+    },
   });
 }
 
 const views = {
   hook: (ctrl: LobbyController): MaybeVNodes => [
-    h('h2', ctrl.trans('createAGame')),
+    h('h2', i18n.site.createAGame),
     h('div.setup-content', [
       variantPicker(ctrl),
       timePickerAndSliders(ctrl),
       gameModeButtons(ctrl),
       ratingDifferenceSliders(ctrl),
-      colorButtons(ctrl),
+      createButtons(ctrl),
     ]),
   ],
   friend: (ctrl: LobbyController): MaybeVNodes => [
-    h('h2', ctrl.trans('playWithAFriend')),
+    h('h2', i18n.site.playWithAFriend),
     h('div.setup-content', [
       ctrl.setupCtrl.friendUser ? userLink({ name: ctrl.setupCtrl.friendUser, line: false }) : null,
       variantPicker(ctrl),
       fenInput(ctrl),
       timePickerAndSliders(ctrl, true),
       gameModeButtons(ctrl),
-      colorButtons(ctrl),
+      createButtons(ctrl),
     ]),
   ],
   ai: (ctrl: LobbyController): MaybeVNodes => [
-    h('h2', ctrl.trans('playWithTheMachine')),
+    h('h2', i18n.site.playWithTheMachine),
     h('div.setup-content', [
       variantPicker(ctrl),
       fenInput(ctrl),
       timePickerAndSliders(ctrl, true),
       ...levelButtons(ctrl),
-      colorButtons(ctrl),
+      createButtons(ctrl),
     ]),
   ],
 };

@@ -1,26 +1,19 @@
 .lobby {
-  --cols: 1; // ui/lobby/src/main.ts
+  ---cols: 1; // ui/lobby/src/main.ts
   grid-area: main;
   display: grid;
-  grid-template-areas: 'app' 'table' 'side' 'blog' 'support' 'feed' 'tv' 'puzzle' 'tours' 'leader' 'winner' 'timeline' 'about';
+  grid-template-areas: 'app' 'table' 'side' 'blog' 'support' 'feed' 'tv' 'puzzle' 'tours' 'timeline' 'about';
   grid-gap: $block-gap;
 
   &__tournaments,
-  &__simuls,
-  &__leaderboard,
-  &__winners {
-    max-height: 20em;
-  }
-  // this helps in empty dev mode
-  &__leaderboard,
-  &__winners {
-    min-height: 20em;
+  &__simuls {
+    max-height: 30em;
   }
 
-  @include breakpoint($mq-col2) {
-    --cols: 2; // ui/lobby/src/main.ts
+  @include mq-at-least-col2 {
+    ---cols: 2; // ui/lobby/src/main.ts
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: auto repeat(4, fit-content(0)) 20em;
+    grid-template-rows: auto fit-content(0) repeat(3, min-content) 20em;
     grid-template-areas:
       'app      app'
       'side     table'
@@ -30,7 +23,6 @@
       'feed     feed'
       'tours    tours'
       'timeline timeline'
-      'leader   winner'
       'about    about';
 
     &__support {
@@ -40,22 +32,20 @@
     }
   }
 
-  @include breakpoint($mq-col3) {
-    --cols: 3; // ui/lobby/src/main.ts
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: 12em repeat(2, fit-content(0)) auto fit-content(15em) repeat(2, fit-content(0)) minmax(
-        0,
-        1fr
-      );
+  @include mq-at-least-col3 {
+    ---cols: 3; // ui/lobby/src/main.ts
+    grid-template-columns: 34% 1fr;
+    grid-template-rows:
+      12em fit-content(0) min-content auto fit-content(15em) repeat(2, fit-content(0))
+      minmax(0, 1fr);
     grid-template-areas:
-      'table  app     app'
-      'side   app     app'
-      'tv     blog    blog'
-      'tv     support support'
-      'puzzle feed    feed'
-      'leader tours   tours'
-      'winner tours   tours'
-      'winner about   about';
+      'table  app'
+      'side   app'
+      'tv     blog'
+      'tv     support'
+      'puzzle feed'
+      'tours  tours'
+      'about  about';
 
     &__start {
       margin: 2em 0 0 0;
@@ -70,20 +60,20 @@
 
     &__side,
     &__timeline {
-      margin-#{$start-direction}: 0;
+      margin-inline-start: 0;
     }
   }
 
-  @include breakpoint($mq-col4) {
-    --cols: 4; // ui/lobby/src/main.ts
+  @include mq-at-least-col4 {
+    ---cols: 4; // ui/lobby/src/main.ts
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(2, fit-content(0)) auto fit-content(0) minmax(0, 1fr);
+    grid-template-rows: fit-content(0) min-content auto repeat(3, fit-content(0));
     grid-template-areas:
       'side   app     app     table'
       'tv     blog    blog    puzzle'
       'tv     support support puzzle'
       'feed   feed    tours   tours'
-      'leader winner  about   about';
+      '.      about   about   .';
 
     &__start {
       justify-content: center;
@@ -126,18 +116,6 @@
 
   &__tv {
     grid-area: tv;
-  }
-
-  &__leaderboard {
-    grid-area: leader;
-  }
-
-  &__winners {
-    grid-area: winner;
-  }
-
-  &__wide-winners {
-    grid-area: leader / leader / leader / winner;
   }
 
   &__puzzle {

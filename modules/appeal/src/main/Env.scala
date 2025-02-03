@@ -2,13 +2,12 @@ package lila.appeal
 
 import com.softwaremill.macwire.*
 
-import lila.common.config.*
+import lila.core.config.*
 
 @Module
 final class Env(
     db: lila.db.Db,
-    noteApi: lila.user.NoteApi,
-    userRepo: lila.user.UserRepo,
+    userRepo: lila.core.user.UserRepo,
     cacheApi: lila.memo.CacheApi
 )(using Executor):
 

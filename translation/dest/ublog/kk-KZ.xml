@@ -9,7 +9,7 @@
   <string name="postBody">Мәтін</string>
   <string name="drafts">Уақытша жазбалар</string>
   <string name="published">Жарияланды</string>
-  <string name="createBlogDiscussion">Пікірді рұқсат беру</string>
+  <string name="createBlogDiscussion">Пікірді рұқсат ету</string>
   <string name="createBlogDiscussionHelp">Жазбаңыз туралы пікір айтатындай форумда тақырып құралатын болады</string>
   <string name="publishOnYourBlog">Блогта жария ету</string>
   <string name="publishHelp">Егер белгіленсе, жазба блог тізімінде көрінетін болады, егер белгіленбесе, жасырын, уақытша жазбалар қатарында болады</string>
@@ -36,12 +36,11 @@
   <string name="imageAlt">Суретті сипаттауыш мәтін</string>
   <string name="imageCredit">Суреттің иесі</string>
   <string name="deleteBlog">Бұл блог-жазбаны толығымен жою</string>
-  <string name="deleteImage">Суретті жою</string>
   <string name="safeToUseImages">Суреттерді келесі қауіпсіз сайттардан алуыңызға болады: </string>
   <string name="selectPostTopics">Жазбаңыздың тақырыбын таңдаңыз</string>
   <string name="useImagesYouMadeYourself">Сонымен қатар, ешбіреудің ауторлық құқығымен қорғалмаған суретті қолдануға еркінсіз. Мысалы, өзіңіз салған, түсірген суретіңіз не Личестің экран суреті.</string>
   <string name="safeAndRespectfulContent">Мазмұны қауіпсіз әрі басқаларға сыйласты жазбаны салыңыз. Біреудің жазбасын көшірмеңіз.</string>
   <string name="inappropriateContentAccountClosed">Әдепсіз, орынсыз нәрселер болса, тіркелгіңіз жабылады.</string>
   <string name="blogTips">Керемет блог-жазбаны қалай жазу туралы кеңестер</string>
-  <string name="discussThisBlogPostInTheForum" comment="A button at the bottom of blog posts which will take you to the forum discussion for that post.">Бұл жазбаны форумда талқыға салыңыз</string>
+  <string name="discussThisBlogPostInTheForum">Бұл жазбаны форумда талқыға салыңыз</string>
 </resources>

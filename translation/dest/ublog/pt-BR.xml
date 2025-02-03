@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="communityBlogs">Blogs da comunidade</string>
+  <string name="friendBlogs">Blogs de amigos</string>
+  <string name="likedBlogs">Curtidas em postagens de blogs</string>
+  <string name="blogTopics">Tópicos de blog</string>
+  <plurals name="blogPosts">
+    <item quantity="one">%s postagem de blog</item>
+    <item quantity="other">%s postagens de blog</item>
+  </plurals>
+  <string name="lichessOfficialBlog">Blog oficial do Lichess</string>
+  <string name="continueReadingPost">Continuar lendo a postagem</string>
+  <string name="lichessBlogPostsFromXYear">Posts do lichess blog em %s</string>
+  <string name="previousBlogPosts">Postagens anteriores de blogs</string>
   <string name="xBlog">Blog do(a) %s</string>
   <string name="newPost">Nova postagem</string>
   <string name="editYourBlogPost">Editar sua postagem no blog</string>
@@ -13,6 +25,8 @@
   <string name="createBlogDiscussionHelp">Será criado um tópico do fórum para que as pessoas comentem em sua publicação</string>
   <string name="publishOnYourBlog">Publicar no seu blog</string>
   <string name="publishHelp">Se ativado, a postagem será listada no seu blog. Senão, ficará privada, e salva como rascunho</string>
+  <string name="stickyPost" comment="Label for the toggle that can make this blog post sticky.">Postagem fixa</string>
+  <string name="stickyPostHelp">Se ativado, a postagem ficará no topo da lista de postagens recentes.</string>
   <plurals name="publishedNbBlogPosts">
     <item quantity="one">Fez uma postagem no blog</item>
     <item quantity="other">Fez %s postagens no blog</item>
@@ -36,7 +50,6 @@
   <string name="imageAlt">Texto alternativo para a imagem</string>
   <string name="imageCredit">Crédito da imagem</string>
   <string name="deleteBlog">Excluir esta postagem definitivamente</string>
-  <string name="deleteImage">Excluir a imagem</string>
   <string name="safeToUseImages">É seguro utilizar imagens dos seguintes sites: </string>
   <string name="selectPostTopics">Selecione os assuntos da sua postagem</string>
   <string name="useImagesYouMadeYourself">Você também pode utilizar imagens feitas por você, fotografias que tirou, capturas de tela do Lichess... qualquer coisa que não esteja protegida por direitos autorais de outra pessoa.</string>
@@ -44,4 +57,5 @@
   <string name="inappropriateContentAccountClosed">Qualquer coisa inapropriada pode levar ao encerramento da sua conta.</string>
   <string name="blogTips">Nossas dicas simples para escrever ótimas postagens</string>
   <string name="discussThisBlogPostInTheForum">Discutir esta postagem no fórum</string>
+  <string name="youBlockedByBlogAuthor">Você está bloqueado pelo autor do blog.</string>
 </resources>

@@ -1,6 +1,6 @@
 package lila.swiss
 
-import chess.Clock.{ LimitSeconds, IncrementSeconds }
+import chess.Clock.{ IncrementSeconds, LimitSeconds }
 
 import lila.db.dsl.{ *, given }
 import lila.gathering.Condition.NbRatedGame
@@ -48,10 +48,10 @@ final private class SwissOfficialSchedule(mongo: SwissMongo, cache: SwissCache)(
       .mapWithIndex { (config, position) =>
         val hour    = position / 2
         val minute  = (position % 2) * 30
-        val startAt = dayStart plusHours hour plusMinutes minute
-        mongo.swiss.exists($doc("teamId" -> lichessTeamId, "startsAt" -> startAt)) flatMap {
+        val startAt = dayStart.plusHours(hour).plusMinutes(minute)
+        mongo.swiss.exists($doc("teamId" -> lichessTeamId, "startsAt" -> startAt)).flatMap {
           if _ then fuFalse
-          else mongo.swiss.insert.one(BsonHandlers.addFeaturable(makeSwiss(config, startAt))) inject true
+          else mongo.swiss.insert.one(BsonHandlers.addFeaturable(makeSwiss(config, startAt))).inject(true)
         }
       }
       .parallel
@@ -61,7 +61,7 @@ final private class SwissOfficialSchedule(mongo: SwissMongo, cache: SwissCache)(
 
   private def makeSwiss(config: Config, startAt: Instant) =
     Swiss(
-      _id = Swiss.makeId,
+      id = Swiss.makeId,
       name = config.name,
       clock = config.clock,
       variant = chess.variant.Standard,
@@ -69,7 +69,7 @@ final private class SwissOfficialSchedule(mongo: SwissMongo, cache: SwissCache)(
       nbPlayers = 0,
       nbOngoing = 0,
       createdAt = nowInstant,
-      createdBy = lila.user.User.lichessId,
+      createdBy = UserId.lichess,
       teamId = lichessTeamId,
       nextRoundAt = startAt.some,
       startsAt = startAt,

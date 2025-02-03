@@ -1,11 +1,12 @@
-import { finallyDelay, throttlePromiseDelay } from 'common/throttle';
+import { finallyDelay, throttlePromiseDelay } from 'common/timing';
 import * as xhr from 'common/xhr';
-import TournamentController from './ctrl';
+import type TournamentController from './ctrl';
+import { alert } from 'common/dialog';
 
 // when the tournament no longer exists
 // randomly delay reloads in case of massive tournament to avoid ddos
 const onFail = (): void => {
-  setTimeout(lichess.reload, Math.floor(Math.random() * 9000));
+  setTimeout(site.reload, Math.floor(Math.random() * 9000));
 };
 
 export const join = throttlePromiseDelay(
@@ -25,7 +26,7 @@ export const join = throttlePromiseDelay(
         if (!res.ok)
           res.json().then(t => {
             if (t.error) alert(t.error);
-            else lichess.reload();
+            else site.reload();
           });
       }, onFail),
 );

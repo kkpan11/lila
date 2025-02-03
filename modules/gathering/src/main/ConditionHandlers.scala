@@ -1,9 +1,9 @@
 package lila.gathering
-
-import lila.gathering.Condition.*
-import play.api.i18n.Lang
-import lila.rating.PerfType
 import java.time.format.{ DateTimeFormatter, FormatStyle }
+
+import lila.core.i18n.Translate
+import lila.gathering.Condition.*
+import lila.rating.PerfType
 
 object ConditionHandlers:
 
@@ -15,6 +15,7 @@ object ConditionHandlers:
     given BSONDocumentHandler[MaxRating]   = Macros.handler
     given BSONDocumentHandler[MinRating]   = Macros.handler
     given BSONHandler[Titled.type]         = ifPresentHandler(Titled)
+    given BSONHandler[AccountAge]          = Macros.handler
     given BSONDocumentHandler[TeamMember]  = Macros.handler
     given BSONDocumentHandler[AllowList]   = Macros.handler
 
@@ -22,18 +23,18 @@ object ConditionHandlers:
     import lila.common.Json.given
     import play.api.libs.json.*
 
-    def verdictsFor(verdicts: WithVerdicts, pt: PerfType)(using lang: Lang) =
+    def verdictsFor(verdicts: WithVerdicts, pt: PerfType)(using translate: Translate) =
       Json.obj(
         "list" -> verdicts.list.map { case WithVerdict(cond, verd) =>
           Json.obj(
             "condition" -> cond.name(pt),
             "verdict" -> verd.match
               case Accepted        => JsString("ok")
-              case Refused(reason) => reason(lang)
+              case Refused(reason) => reason(translate)
               case RefusedUntil(until) =>
                 val date = DateTimeFormatter
                   .ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
-                  .withLocale(lang.toLocale)
+                  .withLocale(translate.lang.toLocale)
                 s"Because you missed your last Swiss game, you cannot enter a new Swiss tournament until $date"
           )
         },

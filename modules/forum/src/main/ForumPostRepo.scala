@@ -1,14 +1,12 @@
 package lila.forum
 
-import Filter.*
-import reactivemongo.akkastream.{ cursorProducer, AkkaStreamCursor }
+import reactivemongo.akkastream.{ AkkaStreamCursor, cursorProducer }
 
+import lila.core.forum.ForumPostMini
 import lila.db.dsl.{ *, given }
-import lila.user.User
+import lila.forum.Filter.*
 
-final class ForumPostRepo(val coll: Coll, filter: Filter = Safe)(using
-    Executor
-):
+final class ForumPostRepo(val coll: Coll, filter: Filter = Safe)(using Executor):
 
   def forUser(user: Option[User]) =
     withFilter(user.filter(_.marks.troll).fold[Filter](Safe) { u =>
@@ -25,13 +23,22 @@ final class ForumPostRepo(val coll: Coll, filter: Filter = Safe)(using
     case SafeAnd(u) => $or(noTroll, $doc("userId" -> u))
     case Unsafe     => $empty
 
-  def byIds(ids: Seq[ForumPostId]) = coll.byIds[ForumPost, ForumPostId](ids)
+  private val miniProjection = $doc(
+    "topicId"   -> true,
+    "userId"    -> true,
+    "text"      -> true,
+    "troll"     -> true,
+    "createdAt" -> true
+  )
+
+  def miniByIds(ids: Seq[ForumPostId]) =
+    coll.byOrderedIds[ForumPostMini, ForumPostId](ids, miniProjection.some)(_.id)
 
   def countBeforeNumber(topicId: ForumTopicId, number: Int): Fu[Int] =
     coll.countSel(selectTopic(topicId) ++ $doc("number" -> $lt(number)))
 
   def isFirstPost(topicId: ForumTopicId, postId: ForumPostId): Fu[Boolean] =
-    coll.primitiveOne[String](selectTopic(topicId), $sort.createdAsc, "_id") dmap { _ contains postId }
+    coll.primitiveOne[String](selectTopic(topicId), $sort.createdAsc, "_id").dmap { _ contains postId }
 
   def countByTopic(topic: ForumTopic): Fu[Int] =
     coll.countSel(selectTopic(topic.id))
@@ -49,12 +56,15 @@ final class ForumPostRepo(val coll: Coll, filter: Filter = Safe)(using
       .cursor[ForumPost]()
       .list(nb)
 
-  def recentInCateg(categId: ForumCategId, nb: Int): Fu[List[ForumPost]] =
+  def recentIdsInCateg(categId: ForumCategId, nb: Int): Fu[List[ForumPostId]] =
     coll
-      .find(selectCateg(categId) ++ selectNotErased)
+      .find(selectCateg(categId) ++ selectNotErased, $id(true).some)
       .sort($sort.createdDesc)
-      .cursor[ForumPost]()
+      .cursor[Bdoc]()
       .list(nb)
+      .map:
+        _.flatMap:
+          _.getAsOpt[ForumPostId]("_id")
 
   def allByUserCursor(user: User): AkkaStreamCursor[ForumPost] =
     coll
@@ -73,24 +83,22 @@ final class ForumPostRepo(val coll: Coll, filter: Filter = Safe)(using
   def selectTopic(topicId: ForumTopicId) = $doc("topicId" -> topicId) ++ trollFilter
 
   def selectCateg(categId: ForumCategId)         = $doc("categId" -> categId) ++ trollFilter
-  def selectCategs(categIds: List[ForumCategId]) = $doc("categId" $in categIds) ++ trollFilter
+  def selectCategs(categIds: List[ForumCategId]) = $doc("categId".$in(categIds)) ++ trollFilter
 
-  val selectNotErased = $doc("erasedAt" $exists false)
+  val selectNotErased = $doc("erasedAt".$exists(false))
 
   def selectLangs(langs: List[String]) =
     if langs.isEmpty then $empty
-    else $doc("lang" $in langs)
+    else $doc("lang".$in(langs))
 
   def findDuplicate(post: ForumPost): Fu[Option[ForumPost]] =
     coll.one[ForumPost](
       $doc(
-        "createdAt" $gt nowInstant.minusHours(1),
+        "createdAt".$gt(nowInstant.minusHours(1)),
         "userId" -> post.userId,
         "text"   -> post.text
       )
     )
-
-  def sortQuery = $sort.createdAsc
 
   def idsByTopicId(topicId: ForumTopicId): Fu[List[ForumPostId]] =
     coll.distinctEasy[ForumPostId, List]("_id", $doc("topicId" -> topicId), _.sec)
@@ -102,7 +110,16 @@ final class ForumPostRepo(val coll: Coll, filter: Filter = Safe)(using
       _.sec
     )
 
-  def nonGhostCursor =
+  def eraseAllBy(id: UserId) =
+    coll.update.one(
+      $doc("userId" -> id),
+      $set($doc("userId" -> UserId.ghost, "text" -> "", "erasedAt" -> nowInstant)),
+      multi = true
+    )
+
+  private[forum] def nonGhostCursor(since: Option[Instant]): AkkaStreamCursor[ForumPostMini] =
+    val noGhost = $doc("userId".$ne(UserId.ghost))
+    val filter  = since.fold(noGhost)(instant => $and(noGhost, $doc("createdAt".$gt(instant))))
     coll
-      .find($doc("userId" $ne User.ghostId))
-      .cursor[ForumPost](ReadPref.sec)
+      .find(filter, miniProjection.some)
+      .cursor[ForumPostMini](ReadPref.priTemp)

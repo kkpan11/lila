@@ -31,7 +31,7 @@
     <item quantity="other">%s Mitglieder</item>
   </plurals>
   <string name="inviteToTheStudy">Zur Studie einladen</string>
-  <string name="pleaseOnlyInvitePeopleYouKnow">Bitte lade nur Leute ein, die du kennst und die aktiv an dieser Studie teilnehmen möchten.</string>
+  <string name="pleaseOnlyInvitePeopleYouKnow">Bitte lade nur Leute ein, die dich kennen und die aktiv an dieser Studie teilnehmen möchten.</string>
   <string name="searchByUsername">Suche nach Benutzernamen</string>
   <string name="spectator">Zuschauer</string>
   <string name="contributor">Mitwirkender</string>
@@ -53,6 +53,8 @@
   <string name="allSyncMembersRemainOnTheSamePosition">Alle synchronisierten Mitglieder sehen die gleiche Stellung</string>
   <string name="shareChanges">Teile Änderungen mit den Zuschauern und speichere sie auf dem Server</string>
   <string name="playing">Laufende Partien</string>
+  <string name="showResults">Ergebnisse</string>
+  <string name="showEvalBar">Stellungsbewertungs-Balken</string>
   <string name="first">Erste Seite</string>
   <string name="previous">Zurück</string>
   <string name="next">Weiter</string>
@@ -63,7 +65,6 @@
   <string name="downloadAllGames">Lade alle Partien herunter</string>
   <string name="chapterPgn">Kapitel PGN</string>
   <string name="copyChapterPgn">PGN kopieren</string>
-  <string name="copyChapterPgnDescription">Kapitel-PGN in die Zwischenablage kopieren.</string>
   <string name="downloadGame">Lade die Partie herunter</string>
   <string name="studyUrl">Studien URL</string>
   <string name="currentChapterUrl">URL des aktuellen Kapitels</string>
@@ -167,4 +168,5 @@
   <string name="playAgain">Erneut spielen</string>
   <string name="whatWouldYouPlay">Was würdest du in dieser Stellung spielen?</string>
   <string name="youCompletedThisLesson">Gratulation! Du hast diese Lektion abgeschlossen.</string>
+  <string name="perPage">%s pro Seite</string>
 </resources>

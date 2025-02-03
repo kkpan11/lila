@@ -2,7 +2,7 @@ package lila.practice
 
 import com.softwaremill.macwire.*
 
-import lila.common.config.*
+import lila.core.config.*
 
 @Module
 final class Env(
@@ -19,6 +19,8 @@ final class Env(
 
   lazy val api: PracticeApi = wire[PracticeApi]
 
-  lila.common.Bus.subscribeFun("study") { case lila.study.actorApi.SaveStudy(study) =>
-    api.structure onSave study
+  def getStudies: lila.core.practice.GetStudies = api.structure.getStudies
+
+  lila.common.Bus.subscribeFun("study") { case lila.study.SaveStudy(study) =>
+    api.structure.onSave(study)
   }

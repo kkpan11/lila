@@ -1,6 +1,8 @@
-$mq-col1: $mq-col1-uniboard;
-$mq-col2: $mq-small;
-$mq-col3: $mq-col3-uniboard;
+@mixin mq-at-least-col2 {
+  @media (min-width: at-least($small)) {
+    @content;
+  }
+}
 
 @import 'layout';
 @import 'side';
@@ -23,5 +25,8 @@ $mq-col3: $mq-col3-uniboard;
     padding-bottom: 2em;
 
     /* as quote margin */
+  }
+  &__main .box {
+    overflow: hidden;
   }
 }

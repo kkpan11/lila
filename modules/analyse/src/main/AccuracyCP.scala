@@ -1,8 +1,8 @@
 package lila.analyse
 
-import lila.game.Pov
-import lila.game.Game.SideAndStart
+import lila.core.game.{ Pov, SideAndStart }
 import lila.tree.Eval.*
+import lila.tree.{ Analysis, Info }
 
 object AccuracyCP:
 
@@ -14,7 +14,7 @@ object AccuracyCP:
     .collect { case List(e1, e2) =>
       for s1 <- e1.forceAsCp; s2 <- e2.forceAsCp yield {
         (s2.ceiled.value - s1.ceiled.value) * pov.color.fold(-1, 1)
-      } atLeast 0
+      }.atLeast(0)
     }
     .toList
 
@@ -26,6 +26,6 @@ object AccuracyCP:
   }
 
   def mean(pov: SideAndStart, analysis: Analysis): Option[Int] =
-    lila.common.Maths.mean(diffsList(pov, analysis).flatten).map(x => Math.round(x).toInt)
+    scalalib.Maths.mean(diffsList(pov, analysis).flatten).map(x => Math.round(x).toInt)
 
   def mean(pov: Pov, analysis: Analysis): Option[Int] = mean(pov.sideAndStart, analysis)

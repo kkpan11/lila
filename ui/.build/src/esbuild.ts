@@ -1,84 +1,179 @@
-import * as cps from 'node:child_process';
-import * as path from 'node:path';
-import * as es from 'esbuild';
-import { preModule, buildModules } from './build';
-import { env, errorMark, colors as c } from './main';
+import p from 'node:path';
+import es from 'esbuild';
+import fs from 'node:fs';
+import { env, errorMark, warnMark, c } from './env.ts';
+import { type Manifest, updateManifest } from './manifest.ts';
+import { task, stopTask } from './task.ts';
+import { reduceWhitespace } from './algo.ts';
 
-const typeBundles = new Map<string, Map<string, string>>();
-const esbuildCtx: es.BuildContext[] = [];
+let esbuildCtx: es.BuildContext | undefined;
 
-export async function stopEsbuild() {
-  const proof = Promise.allSettled(esbuildCtx.map(x => x.dispose()));
-  esbuildCtx.length = 0;
-  typeBundles.clear();
-  return proof;
-}
+export async function esbuild(): Promise<any> {
+  if (!env.begin('esbuild')) return;
 
-export async function esbuild(): Promise<void> {
-  if (!env.esbuild) return;
-
-  const define: { [_: string]: string } = {
-    __info__: JSON.stringify({
-      date: new Date(new Date().toUTCString()).toISOString().split('.')[0] + '+00:00',
-      commit: cps.execSync('git rev-parse -q HEAD', { encoding: 'utf-8' }).trim(),
-      message: cps.execSync('git log -1 --pretty=%s', { encoding: 'utf-8' }).trim(),
-    }),
-    __debug__: String(env.debug),
+  const options: es.BuildOptions = {
+    bundle: true,
+    metafile: true,
+    treeShaking: true,
+    splitting: true,
+    format: 'esm',
+    target: 'es2020',
+    logLevel: 'silent',
+    sourcemap: !env.prod,
+    minify: env.prod,
+    outdir: env.jsOutDir,
+    entryNames: '[name].[hash]',
+    chunkNames: 'common.[hash]',
+    plugins,
   };
 
-  for (const mod of buildModules) {
-    preModule(mod);
-    for (const tpe in mod.bundles) {
-      if (!typeBundles.has(tpe)) typeBundles.set(tpe, new Map());
-      for (const r of mod.bundles[tpe]) typeBundles.get(tpe)?.set(r.output, path.join(mod.root, r.input));
-    }
-  }
-  for (const [tpe, bundles] of typeBundles) {
-    const ctx = await es.context({
-      sourcemap: !env.prod,
-      define,
-      format: tpe as es.Format,
-      target: 'es2018',
-      logLevel: 'silent',
-      splitting: env.split && tpe === 'esm',
-      bundle: true,
-      outdir: env.jsDir,
-      minify: env.prod,
-      entryPoints: Object.fromEntries(bundles),
-      treeShaking: true,
-      outExtension: { '.js': env.prod ? '.min.js' : '.js' },
-      plugins: [onEndPlugin],
-    });
-    if (env.watch) {
-      ctx.watch();
-      esbuildCtx.push(ctx);
-    } else {
-      await ctx.rebuild();
-      await ctx.dispose();
-    }
-  }
+  await fs.promises.mkdir(env.jsOutDir).catch(() => {});
+  return Promise.all([
+    inlineTask(),
+    task({
+      key: 'bundle',
+      ctx: 'esbuild',
+      debounce: 300,
+      noEnvStatus: true,
+      globListOnly: true,
+      glob: env.building.flatMap(pkg =>
+        pkg.bundle
+          .map(bundle => bundle.module)
+          .filter((module): module is string => Boolean(module))
+          .map(path => ({ cwd: pkg.root, path })),
+      ),
+      execute: async entryPoints => {
+        await esbuildCtx?.dispose();
+        entryPoints.sort();
+        esbuildCtx = await es.context({ ...options, entryPoints });
+        if (env.watch) esbuildCtx.watch();
+        else {
+          await esbuildCtx.rebuild();
+          await esbuildCtx.dispose();
+        }
+      },
+    }),
+  ]);
 }
 
-const onEndPlugin = {
-  name: 'lichessOnEnd',
-  setup(build: es.PluginBuild) {
-    build.onEnd((result: es.BuildResult) => {
-      for (const err of result.errors) esbuildMessage(err, true);
-      for (const warn of result.warnings) esbuildMessage(warn);
-      typeBundles.delete(typeBundles.keys().next().value);
-      if (result.errors.length || !typeBundles.size) env.done(result.errors.length, 'esbuild');
-    });
-  },
-};
+export async function stopEsbuild(): Promise<void> {
+  stopTask(['bundle', 'inline']);
+  await esbuildCtx?.dispose();
+  esbuildCtx = undefined;
+}
 
-function esbuildMessage(msg: es.Message, error = false) {
-  const file = msg.location?.file.replace(/^[./]*/, '') ?? '<unknown>';
-  const line = msg.location?.line
-    ? `:${msg.location.line}`
-    : '' + (msg.location?.column ? `:${msg.location.column}` : '');
-  const srcText = msg.location?.lineText;
-  env.log(`${error ? errorMark : c.warn('WARNING')} - '${c.cyan(file + line)}' - ${msg.text}`, {
+function inlineTask() {
+  const js: Manifest = {};
+  const inlineToModule: Record<string, string> = {};
+  for (const [pkg, bundle] of env.tasks('bundle'))
+    if (bundle.inline)
+      inlineToModule[p.join(pkg.root, bundle.inline)] = bundle.module
+        ? p.basename(bundle.module, '.ts')
+        : p.basename(bundle.inline, '.inline.ts');
+  return task({
+    key: 'inline',
     ctx: 'esbuild',
+    debounce: 300,
+    noEnvStatus: true,
+    glob: env.building.flatMap(pkg =>
+      pkg.bundle
+        .map(b => b.inline)
+        .filter((i): i is string => Boolean(i))
+        .map(i => ({ cwd: pkg.root, path: i })),
+    ),
+    execute: (_, inlines) =>
+      Promise.all(
+        inlines.map(async inlineSrc => {
+          const moduleName = inlineToModule[inlineSrc];
+          try {
+            const res = await es.transform(await fs.promises.readFile(inlineSrc), {
+              minify: true,
+              loader: 'ts',
+            });
+            esbuildLog(res.warnings);
+            js[moduleName] ??= {};
+            js[moduleName].inline = res.code;
+          } catch (e) {
+            if (e && typeof e === 'object' && 'errors' in e)
+              esbuildLog((e as es.TransformFailure).errors, true);
+            throw '';
+          }
+        }),
+      ).then(() => updateManifest({ js })),
   });
-  if (srcText) env.log('  ' + c.magenta(srcText), { ctx: 'esbuild' });
 }
+
+function bundleManifest(meta: es.Metafile = { inputs: {}, outputs: {} }) {
+  const js: Manifest = {};
+  for (const [filename, info] of Object.entries(meta.outputs)) {
+    const out = splitPath(filename);
+    if (!out) continue;
+    if (out.name === 'common') {
+      out.name = `common.${out.hash}`;
+      js[out.name] = {};
+    } else js[out.name] = { hash: out.hash };
+    const imports: string[] = [];
+    for (const imp of info.imports) {
+      if (imp.kind === 'import-statement') {
+        const path = splitPath(imp.path);
+        if (path) imports.push(`${path.name}.${path.hash}.js`);
+      }
+    }
+    js[out.name].imports = imports;
+  }
+  updateManifest({ js });
+}
+
+function esbuildLog(msgs: es.Message[], error = false): void {
+  for (const msg of msgs) {
+    const file = msg.location?.file.replace(/^[./]*/, '') ?? '<unknown>';
+    const line = msg.location?.line
+      ? `:${msg.location.line}`
+      : '' + (msg.location?.column ? `:${msg.location.column}` : '');
+    const srcText = msg.location?.lineText;
+    env.log(`${error ? errorMark : warnMark} - '${c.cyan(file + line)}' - ${msg.text}`, 'esbuild');
+    if (srcText) env.log('  ' + c.magenta(srcText), 'esbuild');
+  }
+}
+
+function splitPath(path: string) {
+  const match = path.match(/\/public\/compiled\/(.*)\.([A-Z0-9]+)\.js$/);
+  return match ? { name: match[1], hash: match[2] } : undefined;
+}
+
+// our html minifier will only process characters between the first two backticks encountered
+// so:
+//   $html`     <div>    ${    x ?      `<- 2nd backtick   ${y}${z}` : ''    }     </div>`
+//
+// minifies (partially) to:
+//   `<div> ${ x ? `<- 2nd backtick   ${y}${z}` : ''    }     </div>`
+//
+// nested template literals in interpolations are unchanged and still work, but they
+// won't be minified. this is fine, we don't need an ast parser as it's pretty rare
+
+const plugins = [
+  {
+    name: '$html',
+    setup(build: es.PluginBuild) {
+      build.onLoad({ filter: /\.ts$/ }, async (args: es.OnLoadArgs) => ({
+        loader: 'ts',
+        contents: (await fs.promises.readFile(args.path, 'utf8')).replace(
+          /\$html`([^`]*)`/g,
+          (_, s) => `\`${reduceWhitespace(s)}\``,
+        ),
+      }));
+    },
+  },
+  {
+    name: 'onBundleDone',
+    setup(build: es.PluginBuild) {
+      build.onEnd(async (result: es.BuildResult) => {
+        esbuildLog(result.errors, true);
+        esbuildLog(result.warnings);
+        env.begin('esbuild');
+        env.done('esbuild', result.errors.length > 0 ? -3 : 0);
+        if (result.errors.length === 0) bundleManifest(result.metafile!);
+      });
+    },
+  },
+];

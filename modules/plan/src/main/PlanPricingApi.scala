@@ -4,10 +4,13 @@ import java.util.Currency
 
 case class PlanPricing(suggestions: List[Money], min: Money, max: Money, lifetime: Money):
 
-  val default = suggestions.lift(1) orElse suggestions.headOption getOrElse min
+  val default = suggestions.lift(1).orElse(suggestions.headOption).getOrElse(min)
 
   def currency     = min.currency
   def currencyCode = currency.getCurrencyCode
+
+  def payPalSupportsCurrency = CurrencyApi.payPalCurrencies.contains(currency)
+  def stripeSupportsCurrency = CurrencyApi.stripeCurrencies.contains(currency)
 
   def valid(money: Money): Boolean       = money.currency == currency && valid(money.amount)
   def valid(amount: BigDecimal): Boolean = min.amount <= amount && amount <= max.amount
@@ -35,22 +38,21 @@ final class PlanPricingApi(currencyApi: CurrencyApi)(using Executor):
     else if currency == EUR then fuccess(eurPricing.some)
     else
       for
-        allSuggestions <- usdPricing.suggestions.map(convertAndRound(_, currency)).parallel.map(_.sequence)
-        suggestions = allSuggestions.map(_.distinct)
-        min      <- convertAndRound(usdPricing.min, currency)
-        max      <- convertAndRound(usdPricing.max, currency)
-        lifetime <- convertAndRound(usdPricing.lifetime, currency)
-      yield (suggestions, min, max, lifetime).mapN(PlanPricing.apply)
+        allSuggestions <- usdPricing.suggestions.parallel(convertAndRound(_, currency))
+        min            <- convertAndRound(usdPricing.min, currency)
+        max            <- convertAndRound(usdPricing.max, currency)
+        lifetime       <- convertAndRound(usdPricing.lifetime, currency)
+      yield (allSuggestions.sequence, min, max, lifetime).mapN(PlanPricing.apply)
 
   def pricingOrDefault(currency: Currency): Fu[PlanPricing] = pricingFor(currency).dmap(_ | usdPricing)
 
   def isLifetime(money: Money): Fu[Boolean] =
-    pricingFor(money.currency) map {
+    pricingFor(money.currency).map {
       _.exists(_.lifetime.amount <= money.amount)
     }
 
   private def convertAndRound(money: Money, to: Currency): Fu[Option[Money]] =
-    currencyApi.convert(money, to) map2 { case Money(amount, locale) =>
+    currencyApi.convert(money, to).map2 { case Money(amount, locale) =>
       Money(PlanPricingApi.nicelyRound(amount), locale)
     }
 
@@ -58,13 +60,14 @@ object PlanPricingApi:
 
   def nicelyRound(amount: BigDecimal): BigDecimal = {
     val double   = amount.toDouble
-    val scale    = math.floor(math.log10(double));
+    val scale    = math.floor(math.log10(double))
     val fraction = if scale > 1 then 2d else 1d
-    math.round(double * fraction * math.pow(10, -scale)) / fraction / math.pow(10, -scale)
-  } atLeast 1
+    val nice     = math.round(double * fraction * math.pow(10, -scale)) / fraction / math.pow(10, -scale)
+    math.round(nice * 10_000) / 10_000
+  }.atLeast(1)
 
   import play.api.libs.json.*
-  val pricingWrites = OWrites[PlanPricing] { p =>
+  given pricingWrites: OWrites[PlanPricing] = OWrites: p =>
     Json.obj(
       "currency"    -> p.currencyCode,
       "min"         -> p.min.amount,
@@ -73,4 +76,3 @@ object PlanPricingApi:
       "default"     -> p.default.amount,
       "suggestions" -> p.suggestions.map(_.amount)
     )
-  }

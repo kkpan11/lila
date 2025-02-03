@@ -4,9 +4,9 @@ import play.api.data.*
 import play.api.data.Forms.*
 import play.api.libs.json.*
 
-import lila.common.Form.{ numberIn, stringIn, given }
+import lila.common.Form.{ numberIn, stringIn, typeIn, given }
 import lila.common.Json.given
-import chess.Color
+import scalalib.model.Days
 
 object PuzzleForm:
 
@@ -15,19 +15,19 @@ object PuzzleForm:
   case class RoundData(
       win: PuzzleWin,
       rated: Boolean,
-      replayDays: Option[Int],
+      replayDays: Option[Days],
       streakId: Option[String],
       streakScore: Option[Int],
       color: Option[Color]
   ):
-    def streakPuzzleId = streakId flatMap Puzzle.toId
+    def streakPuzzleId = streakId.flatMap(Puzzle.toId)
     def mode           = chess.Mode(rated)
 
   val round = Form(
     mapping(
       "win"         -> of[PuzzleWin],
       "rated"       -> boolean,
-      "replayDays"  -> optional(numberIn(PuzzleDashboard.dayChoices)),
+      "replayDays"  -> optional(typeIn[Days](PuzzleDashboard.dayChoices.toSet)),
       "streakId"    -> optional(nonEmptyText),
       "streakScore" -> optional(number(min = 0, max = maxStreakScore)),
       "color"       -> optional(lila.common.Form.color.mapping)
@@ -36,6 +36,10 @@ object PuzzleForm:
 
   val vote = Form(
     single("vote" -> boolean)
+  )
+
+  val report = Form(
+    single("reason" -> nonEmptyText(1, 200))
   )
 
   val themeVote = Form(

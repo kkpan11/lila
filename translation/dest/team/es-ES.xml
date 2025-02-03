@@ -11,7 +11,7 @@
   <string name="newTeam">Equipo nuevo</string>
   <string name="myTeams">Mis equipos</string>
   <string name="noTeamFound">Ningún equipo encontrado</string>
-  <string name="joinTeam">Unirse al equipo</string>
+  <string name="joinTeam" comment="Appears as a button on team pages, and on pages of tournaments that require you to be a member of that team (e.g. Swiss tournaments).&#10;&#10;Please keep as short as possible.">Unirse al equipo</string>
   <string name="onlyLeaderLeavesTeam">Por favor, añade un nuevo líder de equipo antes de salir, o cierra el equipo.</string>
   <string name="quitTeam">Abandonar el equipo</string>
   <string name="manuallyReviewAdmissionRequests">Revisar manualmente las solicitudes de admisión</string>
@@ -50,9 +50,26 @@ Los jugadores a los que no les guste recibir tus mensajes pueden abandonar el eq
   <string name="entryCodeDescriptionForLeader">(Opcional) Un código de entrada que los nuevos miembros deben saber para unirse a este equipo.</string>
   <string name="incorrectEntryCode">Código de entrada incorrecto.</string>
   <string name="teamAlreadyExists">Este equipo ya existe.</string>
-  <string name="upcomingTourns">Próximos torneos</string>
+  <string name="upcomingTournaments">Próximos torneos</string>
   <string name="completedTourns">Torneos terminados</string>
   <string name="declinedRequests">Solicitudes rechazadas</string>
   <string name="joinLichessVariantTeam">Únete al equipo oficial de %s para noticias y eventos</string>
   <string name="teamPage">Página del equipo</string>
+  <string name="thisTeamBattleIsOver">Este torneo ha terminado y los equipos ya no pueden ser actualizados.</string>
+  <string name="listTheTeamsThatWillCompete" comment="&quot;List&quot; is used as a verb in this sentence. You can alternatively translate as &quot;Fill out&quot;, as this is presented in the context of a form.">Listar los equipos que competirán en esta batalla.</string>
+  <string name="oneTeamPerLine">Un equipo por línea. Utiliza el autocompletado.</string>
+  <string name="oneTeamPerLineHelp">¡Puedes copiar y pegar esta lista de un torneo a otro!
+
+No puedes eliminar un equipo si un jugador ya se ha unido al torneo en ese equipo.</string>
+  <string name="numberOfLeadsPerTeam">Cantidad de líderes por equipo. La suma de sus puntuaciones será la puntuación del equipo.</string>
+  <string name="numberOfLeadsPerTeamHelp">¡No deberías cambiar este valor después de que el torneo haya comenzado!</string>
+  <string name="innerTeam">Equipo interno</string>
+  <plurals name="battleOfNbTeams">
+    <item quantity="one">Batalla de %s equipos</item>
+    <item quantity="other">Batalla de %s equipos</item>
+  </plurals>
+  <plurals name="nbLeadersPerTeam">
+    <item quantity="one">Un líder por equipo</item>
+    <item quantity="other">%s líderes por equipo</item>
+  </plurals>
 </resources>

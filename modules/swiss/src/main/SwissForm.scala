@@ -1,17 +1,15 @@
 package lila.swiss
 
-import chess.Clock.{ Config as ClockConfig, LimitSeconds, IncrementSeconds }
+import chess.Clock.{ Config as ClockConfig, IncrementSeconds, LimitSeconds }
 import chess.Speed
 import chess.format.Fen
 import chess.variant.Variant
 import play.api.data.*
 import play.api.data.Forms.*
-import play.api.Mode
 
 import lila.common.Form.{ *, given }
-import lila.user.User
 
-final class SwissForm(using mode: Mode):
+final class SwissForm(using mode: play.api.Mode):
 
   import SwissForm.*
 
@@ -56,58 +54,59 @@ final class SwissForm(using mode: Mode):
     )
 
   def create(user: User) =
-    form(user) fill SwissData(
-      name = none,
-      clock = ClockConfig(LimitSeconds(180), IncrementSeconds(0)),
-      startsAt = Some(nowInstant plusSeconds {
-        if mode == Mode.Prod then 60 * 10 else 20
-      }),
-      variant = Variant.default.key.some,
-      rated = true.some,
-      nbRounds = 7,
-      description = none,
-      position = none,
-      chatFor = Swiss.ChatFor.default.some,
-      roundInterval = Swiss.RoundInterval.auto.some,
-      password = None,
-      conditions = SwissCondition.All.empty,
-      forbiddenPairings = none,
-      manualPairings = none
-    )
-
-  def edit(user: User, s: Swiss) =
-    form(user, s.round.value) fill SwissData(
-      name = s.name.some,
-      clock = s.clock,
-      startsAt = s.startsAt.some,
-      variant = s.variant.key.some,
-      rated = s.settings.rated.some,
-      nbRounds = s.settings.nbRounds,
-      description = s.settings.description,
-      position = s.settings.position,
-      chatFor = s.settings.chatFor.some,
-      roundInterval = s.settings.roundInterval.toSeconds.toInt.some,
-      password = s.settings.password,
-      conditions = s.settings.conditions,
-      forbiddenPairings = s.settings.forbiddenPairings.some.filter(_.nonEmpty),
-      manualPairings = s.settings.manualPairings.some.filter(_.nonEmpty)
-    )
-
-  def nextRound =
-    Form(
-      single(
-        "date" -> inTheFuture(ISOInstantOrTimestamp.mapping)
+    form(user).fill(
+      SwissData(
+        name = none,
+        clock = ClockConfig(LimitSeconds(180), IncrementSeconds(0)),
+        startsAt = Some(nowInstant.plusSeconds {
+          if mode.isProd then 60 * 10 else 20
+        }),
+        variant = Variant.default.key.some,
+        rated = true.some,
+        nbRounds = 7,
+        description = none,
+        position = none,
+        chatFor = Swiss.ChatFor.default.some,
+        roundInterval = Swiss.RoundInterval.auto.some,
+        password = None,
+        conditions = SwissCondition.All.empty,
+        forbiddenPairings = none,
+        manualPairings = none
       )
     )
 
+  def edit(user: User, s: Swiss) =
+    form(user, s.round.value).fill(
+      SwissData(
+        name = s.name.some,
+        clock = s.clock,
+        startsAt = s.startsAt.some,
+        variant = s.variant.key.some,
+        rated = s.settings.rated.some,
+        nbRounds = s.settings.nbRounds,
+        description = s.settings.description,
+        position = s.settings.position,
+        chatFor = s.settings.chatFor.some,
+        roundInterval = s.settings.roundInterval.toSeconds.toInt.some,
+        password = s.settings.password,
+        conditions = s.settings.conditions,
+        forbiddenPairings = s.settings.forbiddenPairings.some.filter(_.nonEmpty),
+        manualPairings = s.settings.manualPairings.some.filter(_.nonEmpty)
+      )
+    )
+
+  def nextRound = Form:
+    single:
+      "date" -> inTheFuture(ISOInstantOrTimestamp.mapping)
+
 object SwissForm:
 
-  val clockLimits = LimitSeconds from (Seq(0, 15, 30, 45, 60, 90) ++ {
+  val clockLimits = LimitSeconds.from(Seq(0, 15, 30, 45, 60, 90) ++ {
     (120 to 480 by 60) ++ (600 to 2700 by 300) ++ (3000 to 10800 by 600)
   })
 
   val clockLimitChoices = options(
-    LimitSeconds raw clockLimits,
+    LimitSeconds.raw(clockLimits),
     l =>
       s"${chess.Clock.Config(LimitSeconds(l), IncrementSeconds(0)).limitString}${
           if l <= 1 then " minute" else " minutes"
@@ -164,7 +163,7 @@ object SwissForm:
       rated: Option[Boolean],
       nbRounds: Int,
       description: Option[String],
-      position: Option[Fen.Epd],
+      position: Option[Fen.Full],
       chatFor: Option[Int],
       roundInterval: Option[Int],
       password: Option[String],
@@ -179,12 +178,12 @@ object SwissForm:
       (roundInterval | Swiss.RoundInterval.auto) match
         case Swiss.RoundInterval.auto => autoInterval(clock)
         case i                        => i.seconds
-    def realPosition = position ifTrue realVariant.standard
+    def realPosition = position.ifTrue(realVariant.standard)
 
     def isRated = rated | true
     def validRatedVariant =
       !isRated ||
-        lila.game.Game.allowRated(realVariant, clock.some)
+        lila.core.game.allowRated(realVariant, clock.some)
 
   def autoInterval(clock: ClockConfig) = {
     import Speed.*

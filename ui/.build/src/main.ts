@@ -1,263 +1,123 @@
-import * as ps from 'node:process';
-import * as path from 'node:path';
-import * as fs from 'node:fs';
-import { clean } from './clean';
-import { build, postBuild } from './build';
+import ps from 'node:process';
+import { deepClean } from './clean.ts';
+import { build } from './build.ts';
+import { startConsole } from './console.ts';
+import { env, errorMark } from './env.ts';
 
-const shortArgs = 'hrwpsdcn';
-const longArgs = [
-  '--tsc',
-  '--sass',
-  '--esbuild',
-  '--copies',
-  '--no-color',
-  '--no-time',
-  '--no-context',
-  '--help',
-  '--rebuild',
-  '--watch',
-  '--prod',
-  '--split',
-  '--debug',
-  '--clean',
-  '--update',
-  '--no-install',
-];
+// main entry point
+['SIGINT', 'SIGTERM', 'SIGHUP'].forEach(sig => ps.on(sig, () => ps.exit(2)));
 
-export function main() {
-  const args = ps.argv.slice(2);
-  const oneDashArgs = args.filter(x => /^-([a-z]+)$/.test(x))?.flatMap(x => x.slice(1).split(''));
-  oneDashArgs.filter(x => !shortArgs.includes(x)).forEach(arg => env.exit(`Unknown flag '-${arg}'`));
-  args
-    .filter(x => x.startsWith('--') && !longArgs.includes(x))
-    .forEach(arg => env.exit(`Unknown argument '${arg}'`));
-
-  if (['--tsc', '--sass', '--esbuild', '--copies'].filter(x => args.includes(x)).length) {
-    // including one or more of these disables the others
-    if (!args.includes('--sass')) env.exitCode.set('sass', false);
-    if (!args.includes('--tsc')) env.exitCode.set('tsc', false);
-    if (!args.includes('--esbuild')) env.exitCode.set('esbuild', false);
-    env.copies = args.includes('--copies');
-  }
-  if (args.includes('--no-color')) env.color = undefined;
-  if (args.includes('--no-time')) env.logTime = false;
-  if (args.includes('--no-context')) env.logContext = false;
-
-  env.rebuild = args.includes('--rebuild') || oneDashArgs.includes('r');
-  env.watch = env.rebuild || args.includes('--watch') || oneDashArgs.includes('w');
-  env.prod = args.includes('--prod') || oneDashArgs.includes('p');
-  env.split = args.includes('--split') || oneDashArgs.includes('s');
-  env.debug = args.includes('--debug') || oneDashArgs.includes('d');
-  env.clean = args.includes('--clean') || oneDashArgs.includes('c');
-  env.install = !args.includes('--no-install') && !oneDashArgs.includes('n');
-
-  if (env.rebuild && !env.install) {
-    env.warn(`--rebuild incompatible with --no-install`);
-    env.rebuild = false;
-  }
-
-  if (args.length === 1 && (args[0] === '--help' || args[0] === '-h')) {
-    console.log(fs.readFileSync(path.resolve(__dirname, '../readme'), 'utf8'));
-  } else if (args.length === 1 && (args[0] === '--clean' || args[0] === '-c')) {
-    clean();
-  } else {
-    build(args.filter(x => !x.startsWith('-')));
-  }
-}
-
-export interface LichessModule {
-  root: string; // absolute path to package.json parentdir (module root)
-  name: string; // dirname of module root
-  pkg: any; // the entire package.json object
-  pre: string[][]; // pre-bundle build steps from package.json scripts
-  post: string[][]; // post-bundle build steps from package.json scripts
-  hasTsconfig?: boolean; // fileExists('tsconfig.json')
-  bundles?: {
-    [moduleType: string]: LichessBundle[];
-  };
-  copy?: Copy[]; // pre-bundle filesystem copies from package json
-}
-
-export interface Copy {
-  // src must be a file or a glob expression, use <dir>/** to copy whole directory
-  src: string;
-  dest: string;
-  mod: LichessModule;
-}
-
-export interface LichessBundle {
-  input: string; // abs path to source
-  output: string; // abs path to bundle destination
-}
-
-export const lines = (s: string): string[] => s.split(/[\n\r\f]+/).filter(x => x.trim());
-
-const colorLines = (text: string, code: string) =>
-  lines(text)
-    .map(t => (env.color ? escape(t, code) : t))
-    .join('\n');
-
-export const colors = {
-  red: (text: string): string => colorLines(text, codes.red),
-  green: (text: string): string => colorLines(text, codes.green),
-  yellow: (text: string): string => colorLines(text, codes.yellow),
-  blue: (text: string): string => colorLines(text, codes.blue),
-  magenta: (text: string): string => colorLines(text, codes.magenta),
-  cyan: (text: string): string => colorLines(text, codes.cyan),
-  grey: (text: string): string => colorLines(text, codes.grey),
-  black: (text: string): string => colorLines(text, codes.black),
-  error: (text: string): string => colorLines(text, codes.error),
-  warn: (text: string): string => colorLines(text, codes.warn),
-  good: (text: string): string => colorLines(text, codes.green + ';1'),
-  cyanBold: (text: string): string => colorLines(text, codes.cyan + ';1'),
+const args: Record<string, string> = {
+  '--tsc': '',
+  '--sass': '',
+  '--esbuild': '',
+  '--i18n': '',
+  '--no-color': '',
+  '--no-time': '',
+  '--no-context': '',
+  '--no-corepack': '',
+  '--help': 'h',
+  '--watch': 'w',
+  '--prod': 'p',
+  '--debug': 'd',
+  '--test': 't',
+  '--clean-exit': '',
+  '--clean': 'c',
+  '--no-install': 'n',
+  '--log': 'l',
 };
 
-class Env {
-  rootDir = path.resolve(__dirname, '../../..'); // absolute path to lila project root
-  watch = false;
-  rebuild = false;
-  clean = false;
-  prod = false;
-  split = false;
-  debug = false;
-  install = true;
-  copies = true;
-  exitCode = new Map<'sass' | 'tsc' | 'esbuild', number | false>();
-  startTime: number | undefined = Date.now();
-  logTime = true;
-  logContext = true;
-  color: any = {
-    build: 'green',
-    sass: 'magenta',
-    tsc: 'yellow',
-    esbuild: 'blue',
-  };
+const usage = `Usage:
+  ui/build <options>  # multiple short options can be preceded by a single dash
 
-  constructor() {}
-  get sass(): boolean {
-    return this.exitCode.get('sass') !== false;
-  }
-  get tsc(): boolean {
-    return this.exitCode.get('tsc') !== false;
-  }
-  get esbuild(): boolean {
-    return this.exitCode.get('esbuild') !== false;
-  }
-  get uiDir(): string {
-    return path.join(this.rootDir, 'ui');
-  }
-  get outDir(): string {
-    return path.join(this.rootDir, 'public');
-  }
-  get cssDir(): string {
-    return path.join(this.outDir, 'css');
-  }
-  get jsDir(): string {
-    return path.join(this.outDir, 'compiled');
-  }
-  get buildDir(): string {
-    return path.join(this.uiDir, '.build');
-  }
-  get typesDir(): string {
-    return path.join(this.uiDir, '@types');
-  }
-  warn(d: any, ctx = 'build') {
-    this.log(d, { ctx: ctx, warn: true });
-  }
-  error(d: any, ctx = 'build') {
-    this.log(d, { ctx: ctx, error: true });
-  }
-  exit(d: any, ctx = 'build') {
-    this.log(d, { ctx: ctx, error: true });
-    process.exit(1);
-  }
-  good(ctx = 'build') {
-    this.log(colors.good('No errors') + env.watch ? ` - ${colors.grey('Watching')}...` : '', { ctx: ctx });
-  }
-  log(d: any, { ctx = 'build', error = false, warn = false } = {}) {
-    let text: string =
-      typeof d === 'string'
-        ? d
-        : d instanceof Buffer
-        ? d.toString('utf8')
-        : Array.isArray(d)
-        ? d.join('\n')
-        : JSON.stringify(d);
+Options:
+  -h, --help          show this help and exit
+  -w, --watch         build and watch for changes
+  -c, --clean         clean all build artifacts and build fresh
+  -p, --prod          build minified assets (prod builds)
+  -n, --no-install    don't run pnpm install
+  -d, --debug         build assets with site.debug = true
+  -t, --test          typecheck sources in ./tests/**. warning - this enables skipLibCheck for dependencies
+  -l, --log=<url>     monkey patch console log functions in javascript manifest to POST log messages to
+                      <url> or localhost:8666 (default). if used with --watch, the ui/build process
+                      will listen for http on 8666 and display received json as 'web' in build logs
+  --update            update ui/.build/node_modules with pnpm install
+  --no-color          don't use color in logs
+  --no-time           don't log the time
+  --no-context        don't log the context
+  --no-corepack       don't use corepack to install pnpm (protect or restricted system node installs)
 
-    const esc = this.color ? escape : (text: string, _: any) => text;
+Exclusive Options:    (any of these will disable other functions)
+  --tsc               run tsc on {package}/tsconfig.json and dependencies
+  --sass              run sass on {package}/css/build/*.scss and dependencies
+  --esbuild           run esbuild (given in {package}/package.json/lichess/bundles array)
+  --i18n              build @types/lichess/i18n.d.ts and translation/js files
+  --clean-exit        clean all build artifacts and exit
 
-    if (!this.color) text = stripColorEscapes(text);
+Recommended:
+  ui/build -w         # clean and watch for changes
 
-    const prefix = (
-      (this.logTime === false ? '' : prettyTime()) +
-      (!ctx || !this.logContext ? '' : `[${esc(ctx, colorForCtx(ctx, this.color))}] `)
-    ).trim();
+Other Examples:
+  ./build -np         # no pnpm install, build minified
+  ./build --tsc -w    # watch mode but type checking only
+  ./build -dwl=/xyz   # build debug, watch. patch console methods in emitted js to POST log statements
+                        to \${location.origin}/xyz. ui/build watch process displays messages received
+                        via http(s) on this endpoint as 'web' in build logs
+`;
 
-    lines(text).forEach(line =>
-      console.log(
-        `${prefix ? prefix + ' - ' : ''}${
-          error ? esc(line, codes.error) : warn ? esc(line, codes.warn) : line
-        }`,
-      ),
-    );
-  }
-  done(code: number, ctx: 'sass' | 'tsc' | 'esbuild'): void {
-    this.exitCode.set(ctx, code);
-    const err = [...this.exitCode.values()].find(x => x);
-    const allDone = this.exitCode.size === 3;
+const argv = ps.argv.slice(2);
+const oneDashRe = /^-([a-z]+)(?:=[a-zA-Z0-9-_:./]+)?$/;
 
-    this.log(
-      `${code === 0 ? 'Done' : colors.red('Failed')}` +
-        (this.watch ? ` - ${colors.grey('Watching')}...` : ''),
-      {
-        ctx: ctx,
-      },
-    );
-
-    if (allDone) {
-      if (!err) postBuild();
-      if (this.startTime && !err)
-        this.log(`Done in ${colors.green((Date.now() - this.startTime) / 1000 + '')}s`);
-      this.startTime = undefined; // it's pointless to time subsequent builds, they are too fast
-      if (!env.watch) {
-        process.exitCode = err || 0;
-      }
-    }
-  }
-}
-
-export const env = new Env();
-
-export const codes: any = {
-  black: '30',
-  red: '31',
-  green: '32',
-  yellow: '33',
-  blue: '34',
-  magenta: '35',
-  cyan: '36',
-  grey: '90',
-  error: '31',
-  warn: '33',
+const stringArg = (arg: string): string | boolean => {
+  const it = argv.find(x => x.startsWith(arg) || (args[arg] && oneDashRe.exec(x)?.[1]?.includes(args[arg])));
+  return it?.split('=')[1] ?? (it ? true : false);
 };
 
-const colorForCtx = (ctx: string, color: any): string =>
-  color && ctx in color && color[ctx] in codes ? codes[color[ctx]] : codes.grey;
+const oneDashArgs = argv
+  .flatMap(x => oneDashRe.exec(x)?.[1] ?? '')
+  .join('')
+  .split('');
 
-const escape = (text: string, code: string): string => `\x1b[${code}m${stripColorEscapes(text)}\x1b[0m`;
+oneDashArgs.filter(x => !Object.values(args).includes(x)).forEach(arg => env.exit(`Unknown flag '-${arg}'`));
 
-const pad2 = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+argv
+  .filter(x => x.startsWith('--') && !Object.keys(args).includes(x.split('=')[0]))
+  .forEach(arg => env.exit(`Unknown argument '${arg}'`));
 
-function stripColorEscapes(text: string) {
-  // eslint-disable-next-line no-control-regex
-  return text.replace(/\x1b\[[0-9;]*m/, '');
+if (['--tsc', '--sass', '--esbuild', '--i18n'].filter(x => argv.includes(x)).length) {
+  // including one or more of these disables the others
+  env.begin('sass', argv.includes('--sass'));
+  env.begin('tsc', argv.includes('--tsc'));
+  env.begin('esbuild', argv.includes('--esbuild'));
+  env.begin('i18n', argv.includes('--i18n'));
+  env.begin('sync', false);
+  env.begin('hash', false);
 }
 
-export const errorMark = colors.red('✘ ') + colors.error('[ERROR]');
+env.logTime = !argv.includes('--no-time');
+env.logCtx = !argv.includes('--no-context');
+env.logColor = !argv.includes('--no-color');
+env.watch = argv.includes('--watch') || oneDashArgs.includes('w');
+env.prod = argv.includes('--prod') || oneDashArgs.includes('p');
+env.debug = argv.includes('--debug') || oneDashArgs.includes('d');
+env.remoteLog = stringArg('--log');
+env.clean = argv.some(x => x.startsWith('--clean')) || oneDashArgs.includes('c');
+env.install = !argv.includes('--no-install') && !oneDashArgs.includes('n');
+env.rgb = argv.includes('--rgb');
+env.test = argv.includes('--test') || oneDashArgs.includes('t');
 
-function prettyTime() {
-  const now = new Date();
-  return `${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())} `;
+if (argv.includes('--help') || oneDashArgs.includes('h')) {
+  console.log(usage);
+  ps.exit(0);
 }
 
-main();
+if (!env.instanceLock()) env.exit(`${errorMark} - Another instance is already running`);
+
+if (env.clean) {
+  await deepClean();
+  if (argv.includes('--clean-exit')) ps.exit(0);
+}
+
+startConsole();
+
+build(argv.filter(x => !x.startsWith('-')));

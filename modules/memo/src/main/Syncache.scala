@@ -1,8 +1,8 @@
 package lila.memo
 
 import com.github.benmanes.caffeine.cache.*
+
 import java.util.concurrent.TimeUnit
-import scala.util.chaining.*
 import scala.util.Success
 
 import lila.common.Uptime
@@ -40,40 +40,40 @@ final class Syncache[K, V](
               .mon(_ => recCompute) // monitoring: record async time
               .recover { case e: Exception =>
                 logger.branch(s"syncache $name").warn(s"key=$k", e)
-                cache invalidate k
+                cache.invalidate(k)
                 default(k)
               }
       )
 
   // get the value asynchronously, never blocks (preferred)
-  def async(k: K): Fu[V] = cache get k
+  def async(k: K): Fu[V] = cache.get(k)
 
   // get the value synchronously, might block depending on strategy
   def sync(k: K): V =
-    val future = cache get k
+    val future = cache.get(k)
     future.value match
       case Some(Success(v)) => v
       case Some(_) =>
-        cache invalidate k
+        cache.invalidate(k)
         default(k)
       case _ =>
         incMiss()
         strategy match
           case Strategy.NeverWait => default(k)
           case Strategy.WaitAfterUptime(duration, uptime) =>
-            if Uptime startedSinceSeconds uptime then waitForResult(k, future, duration)
+            if Uptime.startedSinceSeconds(uptime) then waitForResult(k, future, duration)
             else default(k)
 
   // maybe optimize later with cache batching
-  def asyncMany(ks: List[K]): Fu[List[V]] = ks traverse async
+  def asyncMany(ks: List[K]): Fu[List[V]] = ks.parallel(async)
 
-  def invalidate(k: K): Unit = cache invalidate k
+  def invalidate(k: K): Unit = cache.invalidate(k)
 
   def preloadOne(k: K): Funit = async(k).void
 
   // maybe optimize later with cache batching
-  def preloadMany(ks: Seq[K]): Funit = ks.distinct.traverse_(preloadOne)
-  def preloadSet(ks: Set[K]): Funit  = ks.toSeq.traverse_(preloadOne)
+  def preloadMany(ks: Seq[K]): Funit = ks.distinct.parallelVoid(preloadOne)
+  def preloadSet(ks: Set[K]): Funit  = ks.toSeq.parallelVoid(preloadOne)
 
   def set(k: K, v: V): Unit = cache.put(k, fuccess(v))
 

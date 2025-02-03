@@ -5,6 +5,7 @@
   <string name="toInviteSomeoneToPlayGiveThisUrl">Kimnidir o\'yinga taklif qilish uchun ushbu URL ni olib unga bering</string>
   <string name="gameOver">O‘yin tugadi</string>
   <string name="waitingForOpponent">Sherik tanlanishi kutilayabdi</string>
+  <string name="orLetYourOpponentScanQrCode">Yoki ushbu QR kodni skanerlash uchun opponentingizga bering</string>
   <string name="waiting">Kutib turing</string>
   <string name="yourTurn">Sizni yurishingiz</string>
   <string name="aiNameLevelAiLevel">%1$s daraja %2$s</string>
@@ -69,7 +70,10 @@
   <string name="promoteVariation">O\'zgarishlarni qo\'llash</string>
   <string name="makeMainLine">Asosiy chiziqni yaratish</string>
   <string name="deleteFromHere">Bu yerdan o\'chirish</string>
+  <string name="collapseVariations">Variantlarni yashirish</string>
+  <string name="expandVariations">Variantlarni koʻrsatish</string>
   <string name="forceVariation">Majburiy o\'zgartirish</string>
+  <string name="copyVariationPgn">Variantning PGN ini nusxalash</string>
   <string name="move">Yurish</string>
   <string name="variantLoss">Yo\'qotish varianti</string>
   <string name="variantWin">Yutuq varianti</string>
@@ -112,16 +116,15 @@
   <string name="replayMode">Qayta o\'ynash rejimi</string>
   <string name="realtimeReplay">Real vaqtda</string>
   <string name="byCPL">SantiPiyodaYo\'qotish bo\'yicha</string>
-  <string name="openStudy">Ochiq ta\'lim</string>
   <string name="enable">Yoqish</string>
   <string name="bestMoveArrow">Yaxshi yo\'l ko\'rsatmasi</string>
+  <string name="showVariationArrows">Variantlar strelkalarini koʻrsatish</string>
   <string name="evaluationGauge">Baholash ko\'rsatkichi</string>
   <string name="multipleLines">Bir nechta chiziqlar</string>
   <string name="cpus">Markaziy protsessorlar soni</string>
   <string name="memory">Xotira</string>
   <string name="infiniteAnalysis">Cheksiz vaqtli tahlil</string>
   <string name="removesTheDepthLimit">Chuqurlik cheagarasini olib tashlaydi va kompyuteringiz issiq tutadi</string>
-  <string name="engineManager">Harakatlantiruvchi boshqaruvchisi</string>
   <string name="blunder">Qo\'pol xato</string>
   <string name="mistake">Xato</string>
   <string name="inaccuracy">Noaniqlik</string>
@@ -129,13 +132,25 @@
     <item quantity="one">%s qo\'pol xato</item>
     <item quantity="other">%s qo\'pol xatolar</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="one">%s Qo\'pol xato</item>
+    <item quantity="other">%s Qo\'pol xatolar</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="one">%s xato</item>
     <item quantity="other">%s xatolar</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="one">%s Xato</item>
+    <item quantity="other">%s Xatolar</item>
+  </plurals>
   <plurals name="nbInaccuracies">
     <item quantity="one">%s noaniqlik</item>
     <item quantity="other">%s noaniqliklar</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
+    <item quantity="one">%s Noaniqlik</item>
+    <item quantity="other">%s Noaniqliklar</item>
   </plurals>
   <string name="moveTimes">Yurishlar soni</string>
   <string name="flipBoard">Taxtani o\'girmoq</string>
@@ -270,10 +285,10 @@
   <string name="playingRightNow">Xozirni o\'zidayoq o\'ynash</string>
   <string name="eventInProgress">Xozirni o\'zidayoq o\'ynash</string>
   <string name="finished">Tugadi</string>
-  <string name="finishesX">%s tugaydi</string>
   <string name="abortGame">O\'yinni bekor qilish</string>
   <string name="gameAborted">O\'yin bekor qilindi</string>
   <string name="standard">Standart</string>
+  <string name="customPosition">Foydalanuvchi joyidan</string>
   <string name="unlimited">Chegaralanmagan</string>
   <string name="mode">Holat</string>
   <string name="casual">Norasmiy</string>
@@ -403,6 +418,7 @@
   <string name="importGame">O\'yinni import qilish</string>
   <string name="importGameExplanation">PGN o\'yinni qo\'ying va qayta o\'ynashlar, kompyuter tahlili, o\'yin chati va ulashish linkiga ega bo\'ling.</string>
   <string name="importGameCaveat">Variantlar o‘chiriladi. Ularni saqlash uchun PGN yordamida \"ta‘lim\"da saqlang.</string>
+  <string name="importGameDataPrivacyWarning">Ushbu PGN ommaga ochiq boʻladi. Oʻyinni yopiq holatda import qilish uchun study - oʻrganish boʻlimidan foydalaning.</string>
   <plurals name="nbImportedGames">
     <item quantity="one">%s import qilingan o\'yin</item>
     <item quantity="other">%s import qilingan o\'yinlar</item>
@@ -415,6 +431,7 @@
   <string name="blackCheckmatesInOneMove">Qoralar bitta yurishda mot</string>
   <string name="retry">Qayta urinish</string>
   <string name="reconnecting">Qaytadan ulanmoqda</string>
+  <string name="noNetwork">Oflayn</string>
   <plurals name="nbFriendsOnline">
     <item quantity="one">%s ta o\'rtoq onlayn</item>
     <item quantity="other">%s ta o\'rtoqlar onlayn</item>
@@ -428,7 +445,6 @@
   <string name="block">Bloklash</string>
   <string name="blocked">Bloklangan</string>
   <string name="unblock">Blokdan chiqarish</string>
-  <string name="followsYou">Sizni kuzatayabdi</string>
   <string name="xStartedFollowingY">%1$s o\'yinchi %2$s ni kuzatishni boshladi</string>
   <plurals name="nbFollowers">
     <item quantity="one">%s kuzatuvchi</item>
@@ -460,9 +476,6 @@
   <string name="safeTournamentName">Turnir uchun juda ham xavfsiz nom tanlash.</string>
   <string name="inappropriateNameWarning">Sal noqulayku lekin so\'rashimiz joiz, balkim sizni akkountingizni yopish kerak.</string>
   <string name="emptyTournamentName">Turnir nomini tasodifiy Grassmeyster nomiga moslab qo\'yish uchun ochiq qoldiring.</string>
-  <string name="recommendNotTouching">Biz sizga bu joyda teginmaslikni maslahat beramiz.</string>
-  <string name="fewerPlayers">Agar siz kirish shartlarini sozlagan bo\'lsangiz, sizni turniringiz kam kishidan iborat bo\'ladi.</string>
-  <string name="showAdvancedSettings">Qo\'shimcha shartlarni namoyish qilish</string>
   <string name="makePrivateTournament">Yopiq turnir yarating va ishtirokchilarga parol yordamida kirishga huquq bering</string>
   <string name="join">Qo\'shilish</string>
   <string name="withdraw">Chekinish</string>
@@ -483,6 +496,7 @@
   <string name="movesPlayed">Yurilgan yo\'llar</string>
   <string name="whiteWins">Oqlar g\'alabalari</string>
   <string name="blackWins">Qoralar g\'alabalari</string>
+  <string name="drawRate">Oʻyin tezligi</string>
   <string name="draws">Durranglar</string>
   <string name="nextXTournament">Keyingi %s turnir:</string>
   <string name="averageOpponent">O\'rtacha raqiblar soni</string>
@@ -501,8 +515,9 @@
   <string name="ifNoneLeaveEmpty">Agar yo\'q bo\'lsa bo\'sh qoldiring</string>
   <string name="profile">Profil</string>
   <string name="editProfile">Profilni o\'zgartirish</string>
-  <string name="firstName">Berilgan nom</string>
-  <string name="lastName">Familiya</string>
+  <string name="realName">Haqiqiy nomi</string>
+  <string name="setFlair">Oʻz kulgichingizni belgilang</string>
+  <string name="flair">Kulgich</string>
   <string name="biography">Biografiya</string>
   <string name="thankYou">Rahmat!</string>
   <string name="socialMediaLinks">Ijtimoiy media linklari</string>
@@ -522,7 +537,6 @@
   <string name="automaticallyProceedToNextGameAfterMoving">Yurishdan so\'ng avtomatik tarzda keyingi o\'yinga o\'tish</string>
   <string name="autoSwitch">Avtomatik ulanish</string>
   <string name="puzzles">Boshqotirmalar</string>
-  <string name="tournamentWinners">Turnir g\'oliblari</string>
   <string name="name">Ism</string>
   <string name="description">Izoh</string>
   <string name="descPrivate">Yopiq izoh</string>
@@ -545,11 +559,8 @@
   <string name="reason">Sabab</string>
   <string name="whatIsIheMatter">Nima gap?</string>
   <string name="cheat">Firibgarlik</string>
-  <string name="insult">Haqorat</string>
   <string name="troll">Yo\'q joydan janjal chiqarish</string>
-  <string name="ratingManipulation">Reyting nayrangliklari</string>
   <string name="other">Boshqa</string>
-  <string name="reportDescriptionHelp">O\'yin(lar)ga murojaatni bering va ushbu o\'yinchini tutishini nimasi yaxshi emas izohlang. Faqatgina \"u aldayabdi\" deb qo\'ya qolmasdan, balkim nima uchun bunday xulosaga kelganingizni ingliz tilida tushuntirsangiz uni ko\'rib chiqishimiz tezlashadi.</string>
   <string name="error.provideOneCheatedGameLink">Iltimos kamida bitta o\'yinga murojatni keltiring.</string>
   <string name="by">%s tomonidan</string>
   <string name="importedByX">%s tomonidan import qilingan</string>
@@ -769,9 +780,6 @@
   <string name="transparent">Shaffof</string>
   <string name="deviceTheme">Qurilma mavzusi</string>
   <string name="backgroundImageUrl">Orqa fon URL:</string>
-  <string name="boardGeometry">Doska geometriyasi</string>
-  <string name="boardTheme">Doska mavzusi</string>
-  <string name="boardSize">Doska o\'lchami</string>
   <string name="pieceSet">Sipohlarni sozlash</string>
   <string name="embedInYourWebsite">O\'z saytingizga joylashtirish</string>
   <string name="usernameAlreadyUsed">Ushbu foydalanuvchi nomi ishlatilayabdi, boshqasini ko\'ring.</string>
@@ -845,7 +853,6 @@
   </plurals>
   <string name="sorry">Kechirasiz :(</string>
   <string name="weHadToTimeYouOutForAWhile">Biz sizga bir muncha vaqtga taym aut berishimiz kerak edi.</string>
-  <string name="timeoutExpires">Taym aut %s dan keyin tugaydi.</string>
   <string name="why">Nima uchun?</string>
   <string name="pleasantChessExperience">Biz har bir kishiga shahmat malakasini oshirishni maqsad qilganmiz.</string>
   <string name="goodPractice">Buning uchun biz barcha o\'yinchilar yaxshi amaliyot ortidan ketishi uchun imkoniyat yaratishimiz kerak.</string>
@@ -916,8 +923,6 @@ va o‘yinchilar reytingiga ta‘sir qiladi</string>
   <string name="minimumRatedGames">Minimal reytingli o‘yinlar</string>
   <string name="minimumRating">Minimal reyting</string>
   <string name="maximumWeeklyRating">Haftalik maksimal reyting</string>
-  <string name="onlyTitled">Faqat titulga ega o‘yinchilar</string>
-  <string name="onlyTitledHelp">Turnirda ishtirok etish uchun rasmiy unvon talab etiladi</string>
   <string name="positionInputHelp">O‘yinni kelgan joyidan boshlash uchun xatosiz FEN ni qo‘ying.
 Bu faqat standart o‘yinlarga ishlaydi, boshqa varinatlar bilan emas.
 Siz %s dan foydalanib FEN ni generatsiya qilishingiz va keyin bu yerga qo‘yishingiz mumkin.
@@ -945,9 +950,6 @@ Normal boshlang‘ich holatdan boshlash uchun uni bo‘sh qoldiring.</string>
   <string name="focusChat">Fokusli suhbat</string>
   <string name="showHelpDialog">Ushbu yordamchi dialogni namoyish etish</string>
   <string name="reopenYourAccount">Sizning akkountingizni qayta ochish</string>
-  <string name="closedAccountChangedMind">Agar siz akkountingizni yopgan bo‘lsangiz va fikringizdan qaytgan bo‘lsangiz u holda sizda akkountingizni qayta tiklash uchun bitta imkoniyat bor.</string>
-  <string name="onlyWorksOnce">Bu faqat bir marta ishlaydi.</string>
-  <string name="cantDoThisTwice">Agar siz akkountingizni ikkinchi bor yopsangiz uni ortga qaytarish imkoni yo‘q.</string>
   <string name="emailAssociatedToaccount">Email manzil akkountga bog‘landi</string>
   <string name="sentEmailWithLink">Biz sizga email va link jo‘natamiz.</string>
   <string name="tournamentEntryCode">Turnirda ishtirok etish kodi</string>

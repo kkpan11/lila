@@ -5,6 +5,7 @@
   <string name="toInviteSomeoneToPlayGiveThisUrl">Чтобы пригласить друга, отправьте ему эту ссылку</string>
   <string name="gameOver">Партия окончена</string>
   <string name="waitingForOpponent">Ожидание соперника</string>
+  <string name="orLetYourOpponentScanQrCode">Или позвольте вашему сопернику отсканировать этот QR-код</string>
   <string name="waiting">Ожидание</string>
   <string name="yourTurn">Ваш ход</string>
   <string name="aiNameLevelAiLevel">%1$s уровня %2$s</string>
@@ -71,6 +72,8 @@
   <string name="promoteVariation">Повысить приоритет варианта</string>
   <string name="makeMainLine">Сделать этот вариант главным</string>
   <string name="deleteFromHere">Удалить с этого места</string>
+  <string name="collapseVariations">Свернуть варианты</string>
+  <string name="expandVariations">Развернуть варианты</string>
   <string name="forceVariation">Сделать вариантом</string>
   <string name="copyVariationPgn">Скопировать вариант в формате PGN</string>
   <string name="move">Ход</string>
@@ -104,12 +107,12 @@
   <string name="openingExplorer">База дебютов</string>
   <string name="openingEndgameExplorer">База дебютов/окончаний</string>
   <string name="xOpeningExplorer">База дебютов для %s</string>
-  <string name="playFirstOpeningEndgameExplorerMove">Играть первый ход изучателя дебютов/эндшпилей</string>
+  <string name="playFirstOpeningEndgameExplorerMove">Играть первый ход изучения дебютов/эндшпилей</string>
   <string name="winPreventedBy50MoveRule">Не удаётся победить из-за правила 50 ходов</string>
   <string name="lossSavedBy50MoveRule">Удаётся избежать поражения из-за правила 50 ходов</string>
   <string name="winOr50MovesByPriorMistake">Победа или правило 50 ходов</string>
   <string name="lossOr50MovesByPriorMistake">Поражение или 50 ходов после последней ошибки</string>
-  <string name="unknownDueToRounding">Победа/поражение гарантируется только если рекомендуемая последовательность ходов была выполнена с момента последнего взятия фигуры или хода пешки из-за возможного округления значений DTZ в базах Syzygy.</string>
+  <string name="unknownDueToRounding">Победа/поражение гарантируется, только если рекомендуемая последовательность ходов была выполнена с момента последнего взятия фигуры или хода пешки из-за возможного округления значений DTZ в базах Syzygy.</string>
   <string name="allSet">Готово!</string>
   <string name="importPgn">Импортировать в PGN</string>
   <string name="delete">Удалить</string>
@@ -117,7 +120,6 @@
   <string name="replayMode">Смотреть в повторе</string>
   <string name="realtimeReplay">Как в партии</string>
   <string name="byCPL">По ошибкам</string>
-  <string name="openStudy">Открыть в студии</string>
   <string name="enable">Включить</string>
   <string name="bestMoveArrow">Показывать лучшие ходы стрелками</string>
   <string name="showVariationArrows">Показать стрелки вариантов</string>
@@ -127,7 +129,6 @@
   <string name="memory">Память</string>
   <string name="infiniteAnalysis">Бесконечный анализ</string>
   <string name="removesTheDepthLimit">Снимает ограничение на глубину анализа, но заставляет поработать ваш компьютер</string>
-  <string name="engineManager">Менеджер движка</string>
   <string name="blunder">Зевок</string>
   <string name="mistake">Ошибка</string>
   <string name="inaccuracy">Неточность</string>
@@ -137,17 +138,35 @@
     <item quantity="many">%s зевков</item>
     <item quantity="other">%s зевков</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="one">%s Зевок</item>
+    <item quantity="few">%s Зевка</item>
+    <item quantity="many">%s Зевков</item>
+    <item quantity="other">%s Зевков</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="one">%s ошибка</item>
     <item quantity="few">%s ошибки</item>
     <item quantity="many">%s ошибок</item>
     <item quantity="other">%s ошибок</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="one">%s Ошибка</item>
+    <item quantity="few">%s Ошибки</item>
+    <item quantity="many">%s Ошибок</item>
+    <item quantity="other">%s Ошибок</item>
+  </plurals>
   <plurals name="nbInaccuracies">
     <item quantity="one">%s неточность</item>
     <item quantity="few">%s неточности</item>
     <item quantity="many">%s неточностей</item>
     <item quantity="other">%s неточностей</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
+    <item quantity="one">%s Неточность</item>
+    <item quantity="few">%s Неточности</item>
+    <item quantity="many">%s Неточностей</item>
+    <item quantity="other">%s Неточностей</item>
   </plurals>
   <string name="moveTimes">Время на ход</string>
   <string name="flipBoard">Перевернуть доску</string>
@@ -185,7 +204,7 @@
   <string name="viewInFullSize">Посмотреть в полном размере</string>
   <string name="logOut">Выйти</string>
   <string name="signIn">Войти</string>
-  <string name="rememberMe">Запомнить меня</string>
+  <string name="rememberMe">Не выходить из аккаунта</string>
   <string name="youNeedAnAccountToDoThat">Вам нужно зарегистрироваться, чтобы сделать это</string>
   <string name="signUp">Регистрация</string>
   <string name="computersAreNotAllowedToPlay">Создание учётных записей для ботов запрещено. Пожалуйста, во время игры не используйте шахматные движки, базы данных или подсказки других игроков. Также учтите, что создание нескольких аккаунтов не приветствуется и чрезмерное их количество приведёт к блокировке.</string>
@@ -195,6 +214,7 @@
   <string name="latestForumPosts">Последние сообщения на форуме</string>
   <string name="players">Игроки</string>
   <string name="friends">Друзья</string>
+  <string name="otherPlayers">другие игроки</string>
   <string name="discussions">Беседы</string>
   <string name="today">Сегодня</string>
   <string name="yesterday">Вчера</string>
@@ -286,6 +306,7 @@
     <item quantity="many">%s партий с вами</item>
     <item quantity="other">%s партий с вами</item>
   </plurals>
+  <string name="ok">ОК</string>
   <string name="cancel">Отменить</string>
   <string name="whiteTimeOut">Белые просрочили время</string>
   <string name="blackTimeOut">Чёрные просрочили время</string>
@@ -302,10 +323,10 @@
   <string name="playingRightNow">Идёт игра</string>
   <string name="eventInProgress">Идёт прямо сейчас</string>
   <string name="finished">Завершён</string>
-  <string name="finishesX">завершится %s</string>
   <string name="abortGame">Отменить игру</string>
   <string name="gameAborted">Игра отменена</string>
   <string name="standard">Классические шахматы</string>
+  <string name="customPosition">Настраиваемая позиция</string>
   <string name="unlimited">Отсутствует</string>
   <string name="mode">Режим</string>
   <string name="casual">Товарищеская</string>
@@ -441,7 +462,7 @@
   <string name="siteDescription">Бесплатный шахматный сервер. Сыграйте в шахматы прямо сейчас в простом интерфейсе без рекламы. Не требует регистрации и скачивания программы. Играйте в шахматы с компьютером, друзьями или случайными соперниками.</string>
   <string name="xJoinedTeamY">%1$s вступил в клуб %2$s</string>
   <string name="xCreatedTeamY">%1$s организовал клуб %2$s</string>
-  <string name="startedStreaming">начал(а) стрим</string>
+  <string name="startedStreaming">начал(-а) стрим</string>
   <string name="xStartedStreaming">%s запустил стрим</string>
   <string name="averageElo">Средний рейтинг участников</string>
   <string name="location">Местоположение</string>
@@ -451,7 +472,7 @@
   <string name="save">Сохранить</string>
   <string name="leaderboard">Лучшие игроки</string>
   <string name="screenshotCurrentPosition">Сделать снимок этой позиции</string>
-  <string name="gameAsGIF">Сохранить как GIF</string>
+  <string name="gameAsGIF">Партия в формате GIF</string>
   <string name="pasteTheFenStringHere">Вставьте строку в формате FEN</string>
   <string name="pasteThePgnStringHere">Вставьте текст в формате PGN</string>
   <string name="orUploadPgnFile">Или загрузите PGN-файл</string>
@@ -461,7 +482,7 @@
   <string name="importGame">Импортировать партию</string>
   <string name="importGameExplanation">Вставьте запись партии в формате PGN, и вы получите возможность переигрывать партию, выполнять компьютерный анализ, общаться в чате и делиться ссылкой на эту игру.</string>
   <string name="importGameCaveat">Варианты будут удалены. Чтобы их сохранить, импортируйте PGN в студии.</string>
-  <string name="importGameCaveat2">Этот PGN-файл может быть доступен публично. Чтобы импортировать игру приватно, используйте студию.</string>
+  <string name="importGameDataPrivacyWarning">Этот PGN-файл может быть доступен публично. Чтобы импортировать игру приватно, используйте студию.</string>
   <plurals name="nbImportedGames">
     <item quantity="one">%s импортированная</item>
     <item quantity="few">%s импортированные</item>
@@ -476,6 +497,7 @@
   <string name="blackCheckmatesInOneMove">Чёрные ставят мат в один ход</string>
   <string name="retry">Повторить</string>
   <string name="reconnecting">Переподключение</string>
+  <string name="noNetwork">Офлайн</string>
   <plurals name="nbFriendsOnline">
     <item quantity="one">%s друг онлайн</item>
     <item quantity="few">%s друга онлайн</item>
@@ -491,7 +513,6 @@
   <string name="block">Заблокировать</string>
   <string name="blocked">Заблокированные</string>
   <string name="unblock">Разблокировать</string>
-  <string name="followsYou">Подписан на вас</string>
   <string name="xStartedFollowingY">%1$s подписался на %2$s</string>
   <plurals name="nbFollowers">
     <item quantity="one">%s подписчик</item>
@@ -529,9 +550,6 @@
   <string name="safeTournamentName">Выберите для турнира как можно более безопасное название.</string>
   <string name="inappropriateNameWarning">Если название хотя бы немного покажется неуместным, вас могут заблокировать.</string>
   <string name="emptyTournamentName">Оставьте пустым, чтобы назвать турнир в честь случайного гроссмейстера.</string>
-  <string name="recommendNotTouching">Мы не рекомендуем задавать эти условия.</string>
-  <string name="fewerPlayers">Если вы зададите условия участия, то в вашем турнире сможет принять участие меньше игроков.</string>
-  <string name="showAdvancedSettings">Показать дополнительные настройки</string>
   <string name="makePrivateTournament">Сделать турнир закрытым и ограничить доступ паролем</string>
   <string name="join">Участвовать</string>
   <string name="withdraw">Покинуть</string>
@@ -571,9 +589,8 @@
   <string name="ifNoneLeaveEmpty">Если нет, оставьте пустым</string>
   <string name="profile">Профиль</string>
   <string name="editProfile">Редактировать профиль</string>
-  <string name="firstName">Имя</string>
-  <string name="lastName">Фамилия</string>
-  <string name="setFlair">Задайте свой эмодзи:</string>
+  <string name="realName">Настоящее имя</string>
+  <string name="setFlair">Задайте свой эмодзи</string>
   <string name="flair">Эмодзи</string>
   <string name="youCanHideFlair">Эта настройка скрывает все эмодзи пользователей на всём сайте.</string>
   <string name="biography">О себе</string>
@@ -582,7 +599,7 @@
   <string name="socialMediaLinks">Ссылки на соцсети</string>
   <string name="oneUrlPerLine">Один URL на строку.</string>
   <string name="inlineNotation">Строчная нотация</string>
-  <string name="makeAStudy">Чтобы сохранить и поделиться, рассмотрите возможность создания Студии.</string>
+  <string name="makeAStudy">Чтобы сохранить и поделиться, рассмотрите возможность создания студии.</string>
   <string name="clearSavedMoves">Очистить ходы</string>
   <string name="previouslyOnLichessTV">Ранее на Lichess TV</string>
   <string name="onlinePlayers">Игроки в сети</string>
@@ -598,13 +615,15 @@
   <string name="automaticallyProceedToNextGameAfterMoving">После хода автоматически переходить к следующей игре</string>
   <string name="autoSwitch">Автосмена</string>
   <string name="puzzles">Задачи</string>
-  <string name="tournamentWinners">Победители турниров</string>
+  <string name="onlineBots">Онлайн боты</string>
   <string name="name">Имя</string>
   <string name="description">Описание</string>
   <string name="descPrivate">Описание для членов команды</string>
-  <string name="descPrivateHelp">Текст, который будут видеть только члены команды(добавленный текст заменит публичное описание для членов команды).</string>
+  <string name="descPrivateHelp">Описание, которое будут видеть только члены клуба. Если установлено, то заменяет публичное описание для всех членов клуба.</string>
   <string name="no">Нет</string>
   <string name="yes">Да</string>
+  <string name="website">Сайт</string>
+  <string name="mobile">Мобильный</string>
   <string name="help">Помощь:</string>
   <string name="createANewTopic">Создать новую тему</string>
   <string name="topics">Темы</string>
@@ -621,11 +640,11 @@
   <string name="reason">Причина</string>
   <string name="whatIsIheMatter">Что это было?</string>
   <string name="cheat">Жульничество</string>
-  <string name="insult">Оскорбление</string>
   <string name="troll">Троллинг</string>
-  <string name="ratingManipulation">Махинации с рейтингом</string>
   <string name="other">Другое</string>
-  <string name="reportDescriptionHelp">Поделитесь с нами ссылками на игры, где, как вам кажется, были нарушены правила, и опишите, в чём дело. Недостаточно просто написать «он мухлюет», пожалуйста, опишите, как вы пришли к такому выводу. Мы сработаем оперативнее, если вы напишете на английском языке.</string>
+  <string name="reportCheatBoostHelp">Вставьте ссылку на игру (или несколько игр) и объясните, что не так в поведении этого пользователя. Не надо просто писать «он жульничал», лучше распишите, как вы пришли к такому выводу.</string>
+  <string name="reportUsernameHelp">Объясните, что в этом имени пользователя является оскорбительным. Не надо просто писать «оно оскорбительно или неподобающе», лучше расскажите, как вы пришли к такому выводу, особенно если оскорбление завуалировано, не на английском языке, является сленгом, или же является исторической или культурной отсылкой.</string>
+  <string name="reportProcessedFasterInEnglish">Ваша жалоба будет рассмотрена быстрее, если она будет написана на английском языке.</string>
   <string name="error.provideOneCheatedGameLink">Пожалуйста, добавьте ссылку хотя бы на одну игру, где по вашему мнению были нарушены правила.</string>
   <string name="by">%s</string>
   <string name="importedByX">Импортировано %s</string>
@@ -653,11 +672,12 @@
   <string name="letOtherPlayersInviteYouToStudy">Разрешить другим игрокам приглашать вас в студию</string>
   <string name="sound">Звук</string>
   <string name="none">Нет</string>
-  <string name="fast">Быстро</string>
+  <string name="fast">Быстрая</string>
   <string name="normal">Нормальная</string>
-  <string name="slow">Медленно</string>
+  <string name="slow">Медленная</string>
   <string name="insideTheBoard">Внутри доски</string>
   <string name="outsideTheBoard">Вне доски</string>
+  <string name="allSquaresOfTheBoard">Все поля на доске</string>
   <string name="onSlowGames">В медленных играх</string>
   <string name="always">Всегда</string>
   <string name="never">Никогда</string>
@@ -768,7 +788,7 @@
   <string name="keyCycleSelectedVariation">Прокручивать выбранный вариант</string>
   <string name="keyShowOrHideComments">показать/скрыть комментарии</string>
   <string name="keyEnterOrExitVariation">ввести/закрыть вариант</string>
-  <string name="keyRequestComputerAnalysis">Запросите компьютерный анализ, Учитесь на своих ошибках</string>
+  <string name="keyRequestComputerAnalysis">Запросите компьютерный анализ, Учитесь над своими ошибками</string>
   <string name="keyNextLearnFromYourMistakes">Далее (Разобрать свои ошибки)</string>
   <string name="keyNextBlunder">Следующий зевок</string>
   <string name="keyNextMistake">Следующая ошибка</string>
@@ -778,6 +798,7 @@
   <string name="toggleVariationArrows">Переключить стрелки вариантов</string>
   <string name="cyclePreviousOrNextVariation">Прокручивать предыдущий/следующий вариант</string>
   <string name="toggleGlyphAnnotations">Переключить значки аннотации</string>
+  <string name="togglePositionAnnotations">Переключить аннотацию позиций</string>
   <string name="variationArrowsInfo">Стрелки вариантов позволяют вам перемещаться без использования списка ходов.</string>
   <string name="playSelectedMove">сыграть выбранный ход</string>
   <string name="newTournament">Новый турнир</string>
@@ -845,6 +866,7 @@
   <string name="onlineAndOfflinePlay">Игра онлайн и офлайн</string>
   <string name="viewTheSolution">Посмотреть решение</string>
   <string name="followAndChallengeFriends">Подписки и игра с друзьями</string>
+  <string name="noChallenges">Нет вызовов.</string>
   <plurals name="availableInNbLanguages">
     <item quantity="one">Доступно на %s языке!</item>
     <item quantity="few">Доступно на %s языках!</item>
@@ -866,9 +888,12 @@
   <string name="transparent">Прозрачная</string>
   <string name="deviceTheme">Системная</string>
   <string name="backgroundImageUrl">URL фонового изображения:</string>
-  <string name="boardGeometry">Вид и размер доски</string>
-  <string name="boardTheme">Оформление доски</string>
-  <string name="boardSize">Размер доски</string>
+  <string name="board">Доска</string>
+  <string name="size">Размер</string>
+  <string name="opacity">Непрозрачность</string>
+  <string name="brightness">Яркость</string>
+  <string name="hue">Насыщенность</string>
+  <string name="boardReset">Сбросить на цвета по умолчанию</string>
   <string name="pieceSet">Оформление фигур</string>
   <string name="embedInYourWebsite">Получить код для вставки на свой сайт</string>
   <string name="usernameAlreadyUsed">Такое имя пользователя уже занято. Пожалуйста, попробуйте другое.</string>
@@ -950,14 +975,13 @@
   <string name="clickHereToReadIt">Нажмите здесь, чтобы прочитать его</string>
   <string name="sorry">Извините :(</string>
   <string name="weHadToTimeYouOutForAWhile">Мы вынуждены прервать вас на время.</string>
-  <string name="timeoutExpires">Вы можете вернуться через %s.</string>
   <string name="why">Почему?</string>
   <string name="pleasantChessExperience">Наша цель — сделать шахматы интересными для всех.</string>
   <string name="goodPractice">Чтобы этого добиться, мы должны сделать так, чтобы все игроки следовали правилам хорошего тона.</string>
   <string name="potentialProblem">Когда мы обнаруживаем потенциальную проблему, мы показываем это сообщение.</string>
   <string name="howToAvoidThis">Как избежать этого?</string>
   <string name="playEveryGame">Доигрывайте все партии, которые начинали.</string>
-  <string name="tryToWin">Пытайтесь выиграть (или хотя бы свести на ничью) каждую свою партию.</string>
+  <string name="tryToWin">Попытайтесь выиграть (или хотя бы свести вничью) каждую свою партию.</string>
   <string name="resignLostGames">Сдавайтесь в безнадёжной позиции (а не ждите, когда время закончится).</string>
   <string name="temporaryInconvenience">Приносим извинения за временные неудобства,</string>
   <string name="wishYouGreatGames">и желаем вам отличной игры на lichess.org.</string>
@@ -1023,8 +1047,6 @@
   <string name="minimumRatedGames">Минимум рейтинговых игр</string>
   <string name="minimumRating">Минимальный рейтинг</string>
   <string name="maximumWeeklyRating">Максимальный еженедельный рейтинг</string>
-  <string name="onlyTitled">Только титулованные игроки</string>
-  <string name="onlyTitledHelp">Требует официального звания для участия в турнире</string>
   <string name="positionInputHelp">Вставьте правильную строку FEN, чтобы каждая игра начиналась с заданной позиции.
 Это работает только для стандартных игр, но не с вариантами.
 Вы можете использовать %s для создания позиции FEN, а затем вставить её здесь.
@@ -1052,9 +1074,7 @@
   <string name="focusChat">Переключиться в окно чата</string>
   <string name="showHelpDialog">Показать справку</string>
   <string name="reopenYourAccount">Переоткройте свой аккаунт</string>
-  <string name="closedAccountChangedMind">Если вы закрыли свой аккаунт, но с тех пор передумали, то у вас есть однократная возможность восстановить его.</string>
-  <string name="onlyWorksOnce">Это сработает только один раз.</string>
-  <string name="cantDoThisTwice">Если вы закроете свой аккаунт ещё раз, вы уже не сможете открыть его.</string>
+  <string name="reopenYourAccountDescription">Если вы закрыли свою учётную запись, но потом передумали, у вас есть шанс отменить своё решение.</string>
   <string name="emailAssociatedToaccount">Адрес электронной почты, привязанный в этому аккаунту</string>
   <string name="sentEmailWithLink">Мы отправили вам письмо со ссылкой.</string>
   <string name="tournamentEntryCode">Код для участия в турнире</string>
@@ -1073,4 +1093,6 @@
   <string name="showMeEverything">Показать всё</string>
   <string name="lichessPatronInfo">Lichess - это благотворительное и полностью бесплатное программное обеспечение с открытым исходным кодом.
 Все эксплуатационные расходы, разработка и контент финансируются исключительно за счет пожертвований пользователей.</string>
+  <string name="nothingToSeeHere">Здесь ничего нет пока.</string>
+  <string name="stats">Статистика</string>
 </resources>

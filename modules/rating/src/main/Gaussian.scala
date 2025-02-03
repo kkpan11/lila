@@ -1,12 +1,11 @@
 package lila.rating
 
 import org.apache.commons.math3.special.Erf.{ erf, erfInv }
-import scala.math.sqrt
 
 /** Represents a Gaussian distribution over a single real variable. */
 final class Gaussian(mu: Double, sigma: Double):
 
-  def draw(): Double = mu + sigma * ornicar.scalalib.ThreadLocalRandom.nextGaussian()
+  def draw(): Double = mu + sigma * scalalib.ThreadLocalRandom.nextGaussian()
 
   /** Computes the inverse cdf of the p-value for this gaussian.
     *

@@ -1,12 +1,8 @@
 /* Common imports for all pages */
-
-@import '../../node_modules/breakpoint-sass/stylesheets/breakpoint';
-
 @import 'abstract/all';
 
 @import 'base/elements';
 @import 'base/form';
-@import 'base/fonts';
 @import 'base/typography';
 @import 'base/data-icon';
 @import 'base/unread';
@@ -17,7 +13,7 @@
 @import 'layout/base';
 @import 'layout/page-menu';
 
-@import 'vendor/chessground/chessground';
+@import 'theme/board/chessground';
 
 @import 'header/header';
 @import '../../cli/css/clinput';
@@ -25,6 +21,7 @@
 @import 'component/board';
 @import 'component/box';
 @import 'component/button';
+@import 'component/complete';
 @import 'component/user-link';
 @import 'component/blind-mode';
 @import 'component/friend-box';
@@ -35,6 +32,5 @@
 @import 'component/loader';
 @import 'component/reconnecting';
 @import 'component/announce';
-@import 'component/agreement';
 @import 'component/dialog';
 @import 'component/help';

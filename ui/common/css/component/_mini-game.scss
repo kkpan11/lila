@@ -20,7 +20,19 @@
   }
 
   &__user {
+    @extend %flex-center-nowrap;
     overflow: hidden;
+  }
+
+  &__flag {
+    width: 1.3em;
+    aspect-ratio: 134/100;
+    vertical-align: middle;
+    opacity: 0.7;
+    margin-inline-end: 1ch;
+    .mini-game:hover & {
+      opacity: 1;
+    }
   }
 
   .name {
@@ -31,23 +43,26 @@
   .rating {
     @extend %roboto;
 
+    margin-inline-start: 1ch;
     font-size: 0.9em;
-    margin-#{$start-direction}: 1ch;
+    body.no-rating & {
+      display: none;
+    }
   }
 
   &__clock {
     @extend %roboto;
 
-    padding-#{$start-direction}: 2ch;
+    padding-inline-start: 1ch;
 
     &.clock--run {
       color: $c-accent;
-      font-weight: bold;
+      font-weight: normal;
     }
   }
 
   &__result {
     font-weight: bold;
-    margin-#{$end-direction}: 1ch;
+    margin: 0 1ch;
   }
 }

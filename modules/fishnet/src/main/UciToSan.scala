@@ -1,12 +1,12 @@
 package lila.fishnet
 
-import chess.format.pgn.SanStr
-import chess.format.Uci
-import chess.{ Ply, MoveOrDrop, Replay, Situation }
 import chess.MoveOrDrop.*
+import chess.format.Uci
+import chess.format.pgn.SanStr
+import chess.{ MoveOrDrop, Ply, Replay, Situation }
 
 import lila.analyse.{ Analysis, Info }
-import lila.base.LilaException
+import lila.core.lilaism.LilaException
 
 // Even though Info.variation is a List[SanStr]
 // When we receive them from Fishnet clients it's actually a list of UCI moves.
@@ -41,7 +41,7 @@ private object UciToSan:
     onlyMeaningfulVariations.foldLeft[WithErrors[List[Info]]]((Nil, Nil)) {
       case ((infos, errs), info) if info.variation.isEmpty => (info :: infos, errs)
       case ((infos, errs), info) =>
-        uciToSan(info.ply, SanStr raw info.variation).fold(
+        uciToSan(info.ply, SanStr.raw(info.variation)).fold(
           err => (info.dropVariation :: infos, LilaException(err) :: errs),
           pgn => (info.copy(variation = pgn) :: infos, errs)
         )

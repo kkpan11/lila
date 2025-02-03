@@ -1,23 +1,13 @@
 package lila.game
 
-import chess.{ Color, Status }
+import chess.{ Color, IntRating }
+import chess.rating.{ IntRatingDiff, RatingProvisional }
 
-case class LightGame(
-    id: GameId,
-    whitePlayer: LightPlayer,
-    blackPlayer: LightPlayer,
-    status: Status,
-    win: Option[Color]
-):
-  def playable                                            = status < Status.Aborted
-  def player(color: Color): LightPlayer                   = color.fold(whitePlayer, blackPlayer)
-  def players                                             = List(whitePlayer, blackPlayer)
-  def playerByUserId(userId: UserId): Option[LightPlayer] = players.find(_.userId contains userId)
-  def finished                                            = status >= Status.Mate
+import lila.core.game.LightPlayer
 
 object LightGame:
 
-  import Game.{ BSONFields as F }
+  import Game.BSONFields as F
 
   def projection =
     lila.db.dsl.$doc(
@@ -25,18 +15,9 @@ object LightGame:
       F.blackPlayer -> true,
       F.playerUids  -> true,
       F.winnerColor -> true,
-      F.status      -> true
+      F.status      -> true,
+      F.variant     -> true
     )
-
-case class LightPlayer(
-    color: Color,
-    aiLevel: Option[Int],
-    userId: Option[UserId] = None,
-    rating: Option[IntRating] = None,
-    ratingDiff: Option[IntRatingDiff] = None,
-    provisional: RatingProvisional = RatingProvisional.No,
-    berserk: Boolean = false
-)
 
 object LightPlayer:
 
@@ -46,7 +27,7 @@ object LightPlayer:
   private[game] type Builder = Color => Option[UserId] => LightPlayer
 
   private def safeRange[A](range: Range)(a: A)(using ir: IntRuntime[A]): Option[A] =
-    range.contains(ir(a)) option a
+    range.contains(ir(a)).option(a)
   private val ratingRange     = safeRange[IntRating](0 to 4000)
   private val ratingDiffRange = safeRange[IntRatingDiff](-1000 to 1000)
 
@@ -57,12 +38,12 @@ object LightPlayer:
   def builderRead(doc: Bdoc): Builder = color =>
     userId =>
       import Player.BSONFields.*
-      LightPlayer(
+      new LightPlayer(
         color = color,
-        aiLevel = doc int aiLevel,
+        aiLevel = doc.int(aiLevel),
         userId = userId,
-        rating = doc.getAsOpt[IntRating](rating) flatMap ratingRange,
-        ratingDiff = doc.getAsOpt[IntRatingDiff](ratingDiff) flatMap ratingDiffRange,
+        rating = doc.getAsOpt[IntRating](rating).flatMap(ratingRange),
+        ratingDiff = doc.getAsOpt[IntRatingDiff](ratingDiff).flatMap(ratingDiffRange),
         provisional = ~doc.getAsOpt[RatingProvisional](provisional),
-        berserk = doc booleanLike berserk getOrElse false
+        berserk = doc.booleanLike(berserk).getOrElse(false)
       )

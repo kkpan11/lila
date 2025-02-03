@@ -1,9 +1,8 @@
 package lila.puzzle
 
+import scalalib.Iso
+
 import lila.db.dsl.{ *, given }
-import lila.user.Me
-import lila.common.Iso
-import lila.rating.Perf
 
 object PuzzlePath:
 
@@ -11,7 +10,7 @@ object PuzzlePath:
 
   case class Id(value: String):
 
-    val parts = value split sep
+    val parts = value.split(sep)
 
     private[puzzle] def tier = PuzzleTier.from(~parts.lift(1))
 
@@ -39,11 +38,11 @@ final private class PuzzlePathApi(colls: PuzzleColls)(using Executor):
       .path:
         _.aggregateOne(): framework =>
           import framework.*
-          val rating     = perf.glicko.intRating + difficulty.ratingDelta
+          val rating     = perf.glicko.intRating.map(_ + difficulty.ratingDelta)
           val ratingFlex = (100 + math.abs(1500 - rating.value) / 4) * compromise.atMost(4)
           Match(
-            select(angle, actualTier, (rating - ratingFlex).value to (rating + ratingFlex).value) ++
-              ((compromise != 5 && previousPaths.nonEmpty) so $doc("_id" $nin previousPaths))
+            select(angle, actualTier, (rating.value - ratingFlex) to (rating.value + ratingFlex)) ++
+              ((compromise != 5 && previousPaths.nonEmpty).so($doc("_id".$nin(previousPaths))))
           ) -> List(
             Sample(1),
             Project($id(true))
@@ -58,11 +57,12 @@ final private class PuzzlePathApi(colls: PuzzleColls)(using Executor):
         case _ if compromise < 5 =>
           nextFor(angle, actualTier, difficulty, previousPaths, compromise + 1)
         case _ => fuccess(none)
-  }.mon(_.puzzle.path.nextFor(angle.key, tier.key, difficulty.key, previousPaths.size, compromise))
+  }.mon:
+    _.puzzle.path.nextFor(angle.categ)
 
   def select(angle: PuzzleAngle, tier: PuzzleTier, rating: Range) = $doc(
-    "min" $lte f"${angle.key}${sep}${tier}${sep}${rating.max}%04d",
-    "max" $gte f"${angle.key}${sep}${tier}${sep}${rating.min}%04d"
+    "min".$lte(f"${angle.key}${sep}${tier}${sep}${rating.max}%04d"),
+    "max".$gte(f"${angle.key}${sep}${tier}${sep}${rating.min}%04d")
   )
 
   def isStale = colls

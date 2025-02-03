@@ -3,14 +3,14 @@ package lila.swiss
 import play.api.i18n.Lang
 import play.api.libs.json.*
 
-import lila.common.LightUser
 import lila.common.Json.given
+import lila.core.LightUser
+import lila.core.socket.SocketVersion
 import lila.db.dsl.{ *, given }
-import lila.quote.Quote.given
-import lila.socket.{ SocketVersion, given }
-import lila.user.{ User, UserRepo, UserPerfsRepo }
 import lila.gathering.Condition.WithVerdicts
 import lila.gathering.GreatPlayer
+import lila.gathering.GatheringJson.*
+import lila.quote.Quote.given
 
 final class SwissJson(
     mongo: SwissMongo,
@@ -18,19 +18,21 @@ final class SwissJson(
     rankingApi: SwissRankingApi,
     boardApi: SwissBoardApi,
     statsApi: SwissStatsApi,
-    userRepo: UserRepo,
-    perfsRepo: UserPerfsRepo,
-    lightUserApi: lila.user.LightUserApi
-)(using Executor):
+    userApi: lila.core.user.UserApi,
+    lightUserApi: lila.core.user.LightUserApi
+)(using Executor, lila.core.i18n.Translator):
 
   import SwissJson.{ *, given }
   import BsonHandlers.given
+  import lila.gathering.ConditionHandlers.JSONHandlers.*
 
-  def api(swiss: Swiss) = statsApi(swiss) map { stats =>
-    swissJsonBase(swiss) ++ Json.obj(
-      "stats" -> stats,
-      "rated" -> swiss.settings.rated
-    )
+  def api(swiss: Swiss, verdicts: WithVerdicts)(using lang: Lang) = statsApi(swiss).map { stats =>
+    swissJsonBase(swiss) ++ Json
+      .obj(
+        "verdicts" -> verdictsFor(verdicts, swiss.perfType),
+        "rated"    -> swiss.settings.rated
+      )
+      .add("stats" -> stats)
   }
 
   def apply(
@@ -44,10 +46,10 @@ final class SwissJson(
   )(using lang: Lang): Fu[JsObject] = {
     for
       myInfo <- me.so { fetchMyInfo(swiss, _) }
-      page = reqPage orElse myInfo.map(_.page) getOrElse 1
+      page = reqPage.orElse(myInfo.map(_.page)).getOrElse(1)
       standing <- standingApi(swiss, page)
       podium   <- podiumJson(swiss)
-      boards   <- boardApi(swiss.id)
+      boards   <- boardApi.get(swiss.id)
       stats    <- statsApi(swiss)
     yield swissJsonBase(swiss) ++ Json
       .obj(
@@ -73,7 +75,7 @@ final class SwissJson(
   }.monSuccess(_.swiss.json)
 
   def fetchMyInfo(swiss: Swiss, me: User): Fu[Option[MyInfo]] =
-    mongo.player.byId[SwissPlayer](SwissPlayer.makeId(swiss.id, me.id).value) flatMapz { player =>
+    mongo.player.byId[SwissPlayer](SwissPlayer.makeId(swiss.id, me.id).value).flatMapz { player =>
       updatePlayerRating(swiss, player, me) >>
         SwissPairing.fields: f =>
           (swiss.nbOngoing > 0)
@@ -86,7 +88,7 @@ final class SwissJson(
                 .one[Bdoc]
                 .dmap { _.flatMap(_.getAsOpt[GameId](f.id)) }
             .flatMap: gameId =>
-              rankingApi(swiss).dmap(_ get player.userId) map2 {
+              rankingApi(swiss).dmap(_.get(player.userId)).map2 {
                 MyInfo(_, gameId, me, player)
               }
     }
@@ -94,7 +96,7 @@ final class SwissJson(
   private def updatePlayerRating(swiss: Swiss, player: SwissPlayer, user: User): Funit =
     swiss.settings.rated.so:
       for
-        perf <- perfsRepo.perfOf(user, swiss.perfType)
+        perf <- userApi.perfOf(user, swiss.perfType)
         changed = perf.intRating != player.rating
         _ <- changed.so:
           SwissPlayer.fields: f =>
@@ -107,31 +109,32 @@ final class SwissJson(
       yield ()
 
   private def podiumJson(swiss: Swiss): Fu[Option[JsArray]] =
-    swiss.isFinished so {
+    swiss.isFinished.so {
       SwissPlayer.fields { f =>
         mongo.player
           .find($doc(f.swissId -> swiss.id))
-          .sort($sort desc f.score)
+          .sort($sort.desc(f.score))
           .cursor[SwissPlayer]()
-          .list(3) flatMap { top3 =>
-          // check that the winner is still correctly denormalized
-          top3.headOption
-            .map(_.userId)
-            .filter(w => swiss.winnerId.forall(w !=))
-            .foreach:
-              mongo.swiss.updateField($id(swiss.id), "winnerId", _).void
+          .list(3)
+          .flatMap { top3 =>
+            // check that the winner is still correctly denormalized
+            top3.headOption
+              .map(_.userId)
+              .filter(w => swiss.winnerId.forall(w !=))
+              .foreach:
+                mongo.swiss.updateField($id(swiss.id), "winnerId", _).void
 
-          userRepo.filterLame(top3.map(_.userId)) map { lame =>
-            JsArray(
-              top3.map: player =>
-                playerJsonBase(
-                  player,
-                  lightUserApi.syncFallback(player.userId),
-                  performance = true
-                ).add("lame", lame(player.userId))
-            ).some
+            userApi.filterLame(top3.map(_.userId)).map { lame =>
+              JsArray(
+                top3.map: player =>
+                  playerJsonBase(
+                    player,
+                    lightUserApi.syncFallback(player.userId),
+                    performance = true
+                  ).add("lame", lame(player.userId))
+              ).some
+            }
           }
-        }
       }
     }
 
@@ -178,6 +181,7 @@ object SwissJson:
       })
       .add("isRecentlyFinished" -> swiss.isRecentlyFinished)
       .add("password" -> swiss.settings.password.isDefined)
+      .add("position" -> swiss.settings.position.map(fullFen => position(fullFen.opening)))
 
   private[swiss] def playerJson(swiss: Swiss, view: SwissPlayer.View): JsObject =
     playerJsonBase(view, performance = false) ++ Json
@@ -226,7 +230,7 @@ object SwissJson:
         "points"   -> p.points,
         "tieBreak" -> p.tieBreak
       )
-      .add("performance" -> (performance so p.performance))
+      .add("performance" -> (performance.so(p.performance)))
       .add("provisional" -> p.provisional)
       .add("absent" -> p.absent)
 

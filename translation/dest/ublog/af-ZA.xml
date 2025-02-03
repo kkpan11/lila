@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="communityBlogs">Gemeenskapsblogs</string>
+  <string name="friendBlogs">Vriendblogs</string>
+  <string name="blogTopics">Blog-onderwerpe</string>
+  <string name="lichessOfficialBlog">Amptelike Lichess-Blog</string>
+  <string name="previousBlogPosts">Vorige blog-plasings</string>
   <string name="xBlog">%s se webjoernaal</string>
   <string name="newPost">Nuwe inskrywing</string>
   <string name="editYourBlogPost">Bewerk jou webjoernaal se inskrywing</string>
@@ -13,6 +18,7 @@
   <string name="createBlogDiscussionHelp">\'n Forumgespreksonderwerp sal geskep word sodat ander kommentaar kan lewer op jou plasing</string>
   <string name="publishOnYourBlog">Publiseer op jou webjoernaal</string>
   <string name="publishHelp">As die gemerk is sal dit op jou webjoernaal verskyn. Indien nie so nie, sal dit privaat wees, in jou konsepte</string>
+  <string name="stickyPostHelp">Indien gekies, sal hierdie plasing eerste gelys word in die onlangse plasings in jou profiel.</string>
   <plurals name="publishedNbBlogPosts">
     <item quantity="one">\'n Joernaal inskrywing was gepubliseerd</item>
     <item quantity="other">%s joernaal inskrywings was gepubliseerd</item>
@@ -36,11 +42,11 @@
   <string name="imageAlt">Beeld se alternatiewe beskrywing</string>
   <string name="imageCredit">Beeld akkreditasie</string>
   <string name="deleteBlog">Vee hierdie plasing volledig uit</string>
-  <string name="deleteImage">Vee die prent uit</string>
   <string name="safeToUseImages">Dit is veilig om prente van die volgende webtuistes te gebruik: </string>
   <string name="selectPostTopics">Kies die onderwerpe van jou plasing</string>
   <string name="useImagesYouMadeYourself">Jy kan ook prente gebruik wat jy self geskep het, foto\'s wat jy geneem het, skermskote van Lichess; enigiets waarop niemand anders kopiereg het nie.</string>
   <string name="safeAndRespectfulContent">Plaas slegs veilige en bedagsame inhoud. Moenie iemand anders se inhoud kopieer nie.</string>
   <string name="inappropriateContentAccountClosed">Enigiets onvanpas kan lei tot die sluiting van jou rekening.</string>
   <string name="blogTips">Ons eenvoudige wenke vir goeie plasings</string>
+  <string name="youBlockedByBlogAuthor">Jy word deur die blog-outeur geblokkeer.</string>
 </resources>

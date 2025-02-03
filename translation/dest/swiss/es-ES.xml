@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="swiss" comment="Used as an adjective.&#10;&#10;Appears on tournament pages information boxes, to explain that the tournament is Swiss format.">Suizo</string>
   <string name="swissTournaments">Torneos suizos</string>
   <plurals name="viewAllXRounds" comment="viewAllXRounds [one] [other]&#10;&#10;%s is the number of rounds in the Swiss tournament.">
     <item quantity="one">Ver la ronda</item>
@@ -26,7 +27,7 @@
     <item quantity="one">%s minuto entre rondas</item>
     <item quantity="other">%s minutos entre rondas</item>
   </plurals>
-  <string name="startingIn" comment="Displayed above a timer">Comienza en</string>
+  <string name="startingIn" comment="Displayed above a timer. Is auto-capitalised.">Comienza en</string>
   <string name="nextRound">Siguiente ronda</string>
   <plurals name="ongoingGames" comment="Displayed next to the ongoing games count">
     <item quantity="one">Partida en curso</item>
@@ -38,6 +39,16 @@
   <string name="roundInterval">Intervalo entre rondas</string>
   <string name="forbiddenPairings">Emparejamientos prohibidos</string>
   <string name="forbiddenPairingsHelp">Nombres de usuario de jugadores que no deben enfrentarse (por ejemplo, hermanos). Dos nombres de usuario por línea, separados por un espacio.</string>
+  <string name="manualPairings">Emparejamientos manuales en la siguiente ronda</string>
+  <string name="manualPairingsHelp">Especifica manualmente todos los emparejamientos de la siguiente ronda. Una pareja de jugadores por línea. Ejemplo:
+JugadorA JugadorB
+JugadorC JugadorD
+Para otorgar una libranza de 1 punto a un jugador en lugar de un emparejamiento, agrega una línea como esta:
+JugadorE 1
+Los jugadores faltantes se considerarán ausentes y obtendrán cero puntos.
+Deja este campo vacío para permitir que Lichess cree emparejamientos automáticamente.</string>
+  <string name="mustHavePlayedTheirLastSwissGame">Debe haber jugado su última partida de torneo suizo</string>
+  <string name="mustHavePlayedTheirLastSwissGameHelp">Sólo permite que los jugadores se unan si han jugado su última partida suiza. Si no se presentaron en un torneo suizo reciente, no podrán entrar en el tuyo. Esto da como resultado una mejor experiencia suiza para los jugadores que realmente se presentan.</string>
   <string name="newSwiss">Nuevo torneo suizo</string>
   <string name="swissVsArenaQ">¿Cuándo usar torneos suizos en lugar de los torneos estándar?</string>
   <string name="swissVsArenaA">En un torneo suizo, todos los participantes juegan el mismo número de partidas, y solo pueden enfrentarse una vez a un mismo jugador.
@@ -68,7 +79,7 @@ Además, se concede un único bye de medio punto cuando un jugador se une a un t
 A continuación, el sistema retirará al jugador del torneo para que no pierda más partidas.
 Podrá volver a unirse al torneo en cualquier momento.</string>
   <string name="protectionAgainstNoShowQ">¿Qué ocurre cuando un jugador no se presenta?</string>
-  <string name="protectionAgainstNoShowA">Los jugadores que se registran en eventos suizos pero que no juegan pueden suponer un problema.
+  <string name="protectionAgainstNoShowA" comment="By &quot;a game&quot; - we mean just one game. Missing even one game will prevent that player from joining a new Swiss event for a certain amount of time.">Los jugadores que se registran en eventos suizos pero que no juegan pueden suponer un problema.
 Para mitigar este inconveniente, Lichess evita que los jugadores que no pudieron jugar una partida se unan a un nuevo evento suizo durante un periodo de tiempo determinado.
 El creador de un evento suizo puede decidir dejar que se unan al evento de todos modos.</string>
   <string name="lateJoinQ">¿Pueden unirse jugadores a un torneo empezado?</string>
@@ -114,4 +125,7 @@ El formato más próximo a un torneo en línea de todos contra todos es un torne
   <string name="predefinedUsers">Permitir unirse únicamente a usuarios predefinidos</string>
   <string name="forbiddedUsers">Si esta lista no está vacía, a los usuarios ausentes de esta lista les estará prohibido unirse. Un nombre de usuario por línea.</string>
   <string name="playYourGames">Juega tus partidas</string>
+  <string name="byes">Libranzas</string>
+  <string name="absences">Ausencias</string>
+  <string name="tieBreak">Desempate</string>
 </resources>

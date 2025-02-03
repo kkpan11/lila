@@ -1,7 +1,6 @@
 package lila.irwin
 
-import lila.game.Pov
-import lila.report.SuspectId
+import lila.core.report.SuspectId
 
 case class IrwinReport(
     _id: UserId,
@@ -14,9 +13,12 @@ case class IrwinReport(
   inline def userId    = _id
   inline def suspectId = SuspectId(userId)
 
-  def note: String = games.sortBy(-_.activation).map { g =>
-    s"#${g.gameId} = ${g.activation}"
-  } mkString ", "
+  def note: String = games
+    .sortBy(-_.activation)
+    .map { g =>
+      s"#${g.gameId} = ${g.activation}"
+    }
+    .mkString(", ")
 
   def add(report: IrwinReport) =
     val newIds = report.games.map(_.gameId).toSet
@@ -50,7 +52,7 @@ object IrwinReport:
 
     def withPovs: List[GameReport.WithPov] =
       report.games.flatMap { gameReport =>
-        povs get gameReport.gameId map { GameReport.WithPov(gameReport, _) }
+        povs.get(gameReport.gameId).map { GameReport.WithPov(gameReport, _) }
       }
 
   case class Dashboard(recent: List[IrwinReport]):

@@ -59,6 +59,8 @@
   <string name="allSyncMembersRemainOnTheSamePosition">Усі синхронізовані учасники залишаються на тій же позиції</string>
   <string name="shareChanges">Поділитися змінами з глядачами та зберегти їх на сервері</string>
   <string name="playing">Активні</string>
+  <string name="showResults">Результати</string>
+  <string name="showEvalBar">Шкала оцінки</string>
   <string name="first">Перша</string>
   <string name="previous">Попередня</string>
   <string name="next">Наступна</string>
@@ -69,7 +71,6 @@
   <string name="downloadAllGames">Завантажити всі партії</string>
   <string name="chapterPgn">PGN розділу</string>
   <string name="copyChapterPgn">Скопіювати PGN</string>
-  <string name="copyChapterPgnDescription">Скопіювати PGN розділу в буфер обміну.</string>
   <string name="downloadGame">Завантажити гру</string>
   <string name="studyUrl">Посилання на дослідження</string>
   <string name="currentChapterUrl">Посилання на цей розділ</string>
@@ -104,7 +105,7 @@
   <string name="startFromInitialPosition">Старт з початкової позиції</string>
   <string name="editor">Редактор</string>
   <string name="startFromCustomPosition">Почати з обраної позиції</string>
-  <string name="loadAGameByUrl">Завантажте гру за URL-адресою</string>
+  <string name="loadAGameByUrl">Завантажте гру за посиланням</string>
   <string name="loadAPositionFromFen">Завантажити позицію з FEN</string>
   <string name="loadAGameFromPgn">Завантажити гру з PGN</string>
   <string name="automatic">Автоматично</string>
@@ -114,7 +115,7 @@
     <item quantity="many">Вставте ваш PGN текст тут, до %s ігор</item>
     <item quantity="other">Вставте ваш PGN текст тут, до %s ігор</item>
   </plurals>
-  <string name="urlOfTheGame">URL-адреса гри</string>
+  <string name="urlOfTheGame">Посилання на гру</string>
   <string name="loadAGameFromXOrY">Завантажити гру з %1$s або %2$s</string>
   <string name="createChapter">Створити розділ</string>
   <string name="createStudy">Створити дослідження</string>
@@ -175,4 +176,5 @@
   <string name="playAgain">Грати знову</string>
   <string name="whatWouldYouPlay">Що б ви грали в цій позиції?</string>
   <string name="youCompletedThisLesson">Вітаємо! Ви завершили цей урок.</string>
+  <string name="perPage">%s на сторінку</string>
 </resources>

@@ -3,6 +3,7 @@
   <string name="donate">Dirua eman</string>
   <string name="donateAsX">Egin dohaintza %s gisa</string>
   <string name="lichessPatron">Lichess babeslea</string>
+  <string name="patronSince" comment="%s is a date">%s-tik babesle</string>
   <string name="freeAccount">Doako kontua</string>
   <string name="becomePatron">Lichess Babesle bihurtu</string>
   <string name="xBecamePatron">%s Lichess Babesle bihurtu da</string>
@@ -79,4 +80,7 @@ Edo %s.</string>
   <string name="nowOneMonth">Orain hilabeterako Lichess Babeslea zara!</string>
   <string name="downgradeNextMonth">Hilabetean EZ dizugu berriz kobratuko eta zure kontua ohiko izatera pasatuko da.</string>
   <string name="changeCurrency">Aldatu moneta</string>
+  <string name="paymentDetails">Ordainketaren xehetasunak</string>
+  <string name="updatePaymentMethod">Eguneratu ordainketa modua</string>
+  <string name="stripeManageSub">Kudeatu zure harpidetza eta deskargatu faktura eta ordainagiriak</string>
 </resources>

@@ -3,7 +3,7 @@
   <string name="advancedPawn">Peón avanzado</string>
   <string name="advancedPawnDescription">Un dos teus peóns infíltrase no campo inimigo, ameazando con coroar.</string>
   <string name="advantage">Vantaxe</string>
-  <string name="advantageDescription" comment="advantageDescription&#10;&#10;'cp' stands for centipawn (1/100th of a pawn). It is used in computer analysis to assess a position.&#10;'eval' is short for evaluation.">Aproveita a oportunidade de obter unha vantaxe decisiva. (200cp ≤ eval ≤ 600cp)</string>
+  <string name="advantageDescription">Aproveita a oportunidade de obter unha vantaxe decisiva. (200cp ≤ eval ≤ 600cp)</string>
   <string name="anastasiaMate">Mate de Anastasia</string>
   <string name="anastasiaMateDescription">Un cabalo e unha torre ou dama únense para atrapar ao rei contrario entre un extremo do taboleiro e unha peza do seu bando.</string>
   <string name="arabianMate">Mate árabe</string>
@@ -23,13 +23,13 @@
   <string name="capturingDefender">Captura ao defensor</string>
   <string name="capturingDefenderDescription">Eliminar unha peza fundamental para a defensa doutra, permitindo capturar a peza, agora indefensa, no seguinte movemento.</string>
   <string name="crushing">Vantaxe decisiva</string>
-  <string name="crushingDescription" comment="crushingDescription&#10;&#10;'cp' stands for centipawn (1/100th of a pawn). It is used in computer analysis to assess a position.&#10;'eval' is short for evaluation.">Detecta a metida de zoca do opoñente para obter unha vantaxe decisiva. (eval ≥ 600cp)</string>
+  <string name="crushingDescription">Detecta a metida de zoca do opoñente para obter unha vantaxe decisiva. (eval ≥ 600cp)</string>
   <string name="doubleBishopMate">Mate de dous alfís</string>
   <string name="doubleBishopMateDescription">Dous alfís atacando en diagonais cruzadas dan mate ao rei obstaculizado polas súas propias pezas.</string>
   <string name="dovetailMate">Mate de Cozio</string>
   <string name="dovetailMateDescription">Unha dama dá mate ao rei adxacente, cuxas únicas dúas casas de escape están obstruídas por pezas do seu bando.</string>
   <string name="equality">Igualdade</string>
-  <string name="equalityDescription" comment="equalityDescription&#10;&#10;'cp' stands for centipawn (1/100th of a pawn). It is used in computer analysis to assess a position.&#10;'eval' is short for evaluation.">Recupérate dunha posición perdedora e asegura un empate ou unha posición equilibrada. (eval ≤ 200cp)</string>
+  <string name="equalityDescription">Recupérate dunha posición perdedora e asegura un empate ou unha posición equilibrada. (eval ≤ 200cp)</string>
   <string name="kingsideAttack">Ataque no flanco de rei</string>
   <string name="kingsideAttackDescription">Ataque ao rei do opoñente, despois que este enrocase en curto.</string>
   <string name="clearance">Despexe</string>
@@ -39,7 +39,7 @@
   <string name="deflection">Desviación</string>
   <string name="deflectionDescription">Un movemento que distrae unha peza rival dunha tarefa que desempeña, como a protección dunha casa chave. Ás veces denomínase \"sobrecarga\".</string>
   <string name="discoveredAttack">Ataque descuberto</string>
-  <string name="discoveredAttackDescription">Apartar unha peza que previamente bloqueaba o ataque doutra peza de longo alcance (por exemplo un cabalo fóra do camiño dunha torre).</string>
+  <string name="discoveredAttackDescription">Apartar unha peza (por exemplo un cabalo) que previamente bloqueaba o ataque doutra peza de longo alcance (por exemplo unha torre).</string>
   <string name="doubleCheck">Xaque dobre</string>
   <string name="doubleCheckDescription">Xaque con dúas pezas á vez, como resultado dun ataque descuberto onde tanto a peza en movemento como a desvelada atacan ao rei do opoñente.</string>
   <string name="endgame">Final</string>
@@ -48,7 +48,7 @@
   <string name="exposedKing">Rei exposto</string>
   <string name="exposedKingDescription">Táctica que involucra a un rei con pouca defensa ó seu redor, a miúdo conducindo a xaque mate.</string>
   <string name="fork">Garfo</string>
-  <string name="forkDescription">Movemento no que a peza movida ataca a dúas pezas opoñentes á vez.</string>
+  <string name="forkDescription">Xogada na que a peza movida ataca dúas pezas adversarias simultaneamente.</string>
   <string name="hangingPiece">Peza colgada</string>
   <string name="hangingPieceDescription">Unha táctica que involucra unha peza do opoñente que non está suficientemente defendida e que por tanto se pode capturar.</string>
   <string name="hookMate">Mate do gancho</string>
@@ -57,6 +57,10 @@
   <string name="interferenceDescription">Colocar unha peza entre dúas do opoñente de modo que unha delas ou ambas as dúas fican indefensas, como pode ser un cabalo nunha casa protexida entre dúas torres.</string>
   <string name="intermezzo">Xogada intermedia</string>
   <string name="intermezzoDescription">En troques de facer a xogada agardada, interpoñer un movemento que xera unha ameaza inmediata que forza unha resposta do opoñente. Tamén se di \"Zwischenzug\" ou \"Intermezzo\".</string>
+  <string name="killBoxMate">Mate da caixa</string>
+  <string name="killBoxMateDescription">Unha torre canda o rei do adversario, defendida por unha dama que tamén bloquea as casas de escape do rei. A torre e a dama apreixan ao rei nun curruncho de 3 por 3.</string>
+  <string name="vukovicMate">Mate de Vuković</string>
+  <string name="vukovicMateDescription">Unha torre e un cabalo xúntanse para darlle mate ao rei. A torre dá o mate apoiada por unha terceira peza e o cabalo é usado para bloquear as casas de escape do rei.</string>
   <string name="knightEndgame">Final de cabalos</string>
   <string name="knightEndgameDescription">Un final no que só hai cabalos e peóns.</string>
   <string name="long">Exercicio longo</string>
@@ -104,7 +108,7 @@
   <string name="short">Exercicio curto</string>
   <string name="shortDescription">Gaña en dúas xogadas.</string>
   <string name="skewer">Espeto</string>
-  <string name="skewerDescription">Manobra de cravada inversa na cal una peza de alto valor é atacada. Ó apartarse, permite capturar ou atacar unha peza de menor valor que se atopa detrás dela.</string>
+  <string name="skewerDescription">Manobra de cravada inversa na cal unha peza de alto valor é atacada. Ó apartarse, permite capturar ou atacar unha peza de menor valor que se atopa detrás dela.</string>
   <string name="smotheredMate">Mate da couce</string>
   <string name="smotheredMateDescription">Un mate de cabalo executado sobre un rei inmobilizado (ou afogado) polas súas propias pezas.</string>
   <string name="superGM">Partidas de súper Grandes Mestres</string>
@@ -119,8 +123,8 @@
   <string name="xRayAttackDescription">Unha peza ataca ou defende un escaque a través dunha peza do opoñente.</string>
   <string name="zugzwang">Zugzwang</string>
   <string name="zugzwangDescription">O rival ten os movementos limitados e calquera xogada que faga empeora a súa posición.</string>
-  <string name="healthyMix">Mestura equilibrada</string>
-  <string name="healthyMixDescription">Un pouco de todo. Non sabes que vai vir, así que prepárate para calquera cousa! Coma nas partidas de verdade.</string>
+  <string name="mix">Mestura equilibrada</string>
+  <string name="mixDescription">Un pouco de todo. Non sabes que vai vir, así que prepárate para calquera cousa! Coma nas partidas de verdade.</string>
   <string name="playerGames">Partidas de xogadores</string>
   <string name="playerGamesDescription">Busca crebacabezas xerados a partir das túas partidas ou das doutros xogadores.</string>
   <string name="puzzleDownloadInformation">Estes problemas son de dominio público e poden ser descargados en %s.</string>

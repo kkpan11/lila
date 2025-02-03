@@ -7,19 +7,20 @@ import chess.{ Centis, Color, Game as ChessGame, Replay, Situation }
 import play.api.libs.json.*
 import play.api.libs.ws.JsonBodyWritables.*
 import play.api.libs.ws.{ StandaloneWSClient, StandaloneWSResponse }
-import scala.util.chaining.*
+import scalalib.Maths
 
-import lila.common.config.BaseUrl
 import lila.common.Json.given
-import lila.common.Maths
+import lila.core.config.BaseUrl
+import lila.core.game.{ Game, Pov }
+import lila.game.GameExt.*
 
 object GifExport:
-  case class UpstreamStatus(code: Int) extends lila.base.LilaException:
+  case class UpstreamStatus(code: Int) extends lila.core.lilaism.LilaException:
     val message = s"gif service status: $code"
 
 final class GifExport(
     ws: StandaloneWSClient,
-    lightUserApi: lila.user.LightUserApi,
+    lightUserApi: lila.core.user.LightUserApi,
     baseUrl: BaseUrl,
     url: String
 )(using Executor):
@@ -28,11 +29,11 @@ final class GifExport(
 
   def fromPov(
       pov: Pov,
-      initialFen: Option[Fen.Epd],
+      initialFen: Option[Fen.Full],
       theme: String,
       piece: String
   ): Fu[Source[ByteString, ?]] =
-    lightUserApi.preloadMany(pov.game.userIds) >>
+    (lightUserApi.preloadMany(pov.game.userIds) >>
       ws.url(s"$url/game.gif")
         .withMethod("POST")
         .addHttpHeaders("Content-Type" -> "application/json")
@@ -52,7 +53,7 @@ final class GifExport(
             "piece"       -> piece
           )
         )
-        .stream() pipe upstreamResponse(s"pov ${pov.game.id}")
+        .stream()).pipe(upstreamResponse(s"pov ${pov.game.id}"))
 
   def gameThumbnail(game: Game, theme: String, piece: String): Fu[Source[ByteString, ?]] =
     lightUserApi.preloadMany(game.userIds) >>
@@ -92,12 +93,13 @@ final class GifExport(
           situation.checkSquare.map { "check" -> _.key }
         ).flatten*
       )
-      .stream() pipe upstreamResponse(description)
+      .stream()
+      .pipe(upstreamResponse(description))
 
   private def upstreamResponse(
       description: String
   )(res: Fu[StandaloneWSResponse]): Fu[Source[ByteString, ?]] =
-    res flatMap {
+    res.flatMap {
       case res if res.status != 200 =>
         logger.warn(s"GifExport $description ${res.status}")
         fufail(GifExport.UpstreamStatus(res.status))
@@ -112,19 +114,19 @@ final class GifExport(
       case Some(median) =>
         val scale = targetMedianTime.centis.toFloat / median.centis.atLeast(1).toFloat
         moveTimes.map { t =>
-          if t * 2 < median then t atMost (targetMedianTime *~ 0.5)
-          else t *~ scale atLeast (targetMedianTime *~ 0.5) atMost targetMaxTime
+          if t * 2 < median then t.atMost(targetMedianTime *~ 0.5)
+          else (t *~ scale).atLeast(targetMedianTime *~ 0.5).atMost(targetMaxTime)
         }
-      case None => moveTimes.map(_ atMost targetMaxTime)
+      case None => moveTimes.map(_.atMost(targetMaxTime))
 
-  private def frames(game: Game, initialFen: Option[Fen.Epd]) =
+  private def frames(game: Game, initialFen: Option[Fen.Full]) =
     Replay.gameMoveWhileValid(
       game.sans,
       initialFen | game.variant.initialFen,
       game.variant
     ) match
       case (init, games, _) =>
-        val steps = (init, None) :: (games map { case (g, Uci.WithSan(uci, _)) =>
+        val steps = (init, None) :: (games.map { case (g, Uci.WithSan(uci, _)) =>
           (g, uci.some)
         })
         framesRec(
@@ -145,7 +147,7 @@ final class GifExport(
   private def frame(situation: Situation, uci: Option[Uci], delay: Option[Centis]) =
     Json
       .obj(
-        "fen"      -> (Fen write situation),
+        "fen"      -> (Fen.write(situation)),
         "lastMove" -> uci.map(_.uci)
       )
       .add("check", situation.checkSquare.map(_.key))

@@ -1,12 +1,14 @@
 package lila.analyse
 
 import reactivemongo.api.bson.{ BSONBoolean, BSONInteger }
+
 import java.time.format.DateTimeFormatter
-import lila.db.dsl.{ given, * }
+
+import lila.db.dsl.{ *, given }
 
 final class RequesterApi(coll: Coll)(using Executor):
 
-  private val formatter = DateTimeFormatter ofPattern "yyyy-MM-dd"
+  private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
   def add(requester: UserId, ownGame: Boolean): Funit =
     coll.update
@@ -25,15 +27,16 @@ final class RequesterApi(coll: Coll)(using Executor):
     coll
       .one(
         $id(userId),
-        $doc {
+        $doc:
           (7 to 0 by -1).toList.map(now.minusDays).map(formatter.print).map(_ -> BSONBoolean(true))
-        }
       )
-      .map { doc =>
-        val daily = doc.flatMap(_ int formatter.print(now))
+      .map: doc =>
+        val daily = doc.flatMap(_.int(formatter.print(now)))
         val weekly = doc.so:
           _.values.foldLeft(0):
             case (acc, BSONInteger(v)) => acc + v
             case (acc, _)              => acc
         (~daily, weekly)
-      }
+
+  lila.common.Bus.sub[lila.core.user.UserDelete]: del =>
+    coll.delete.one($id(del.id)).void

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="arena">สังเวียน</string>
   <string name="arenaTournaments">ทัวร์นาเมนต์สังเวียน</string>
   <string name="isItRated">มันถูกคิดคะแนนหรือไม่?</string>
   <string name="willBeNotified">คุณจะได้รับการแจ้งเตือนเมื่อทัวร์นาเมนต์เริ่มต้น ดังนั้นจึงปลอดภัยหากจะเล่นในแท็บอื่นระหว่างรอ</string>
@@ -41,6 +42,7 @@
   </plurals>
   <string name="newTeamBattle">การสู้แบบทีมใหม่</string>
   <string name="customStartDate">กำหนดเวลาแข่งเอง</string>
+  <string name="customStartDateHelp">ในเขตเวลาท้องถิ่นของคุณ สิ่งนี้จะแทนที่การตั้งค่า \"เวลาก่อนเริ่มทัวร์นาเมนต์\"</string>
   <string name="allowBerserk">อนุญาตให้เบอร์เซิร์ก</string>
   <string name="allowBerserkHelp">ผู้เล่นจะสามารถลดเวลาเล่นของตัวเองครึ่งหนึ่งเพี่อที่จะได้คะแนนเพิ่ม 1 คะแนนถ้าชนะ</string>
   <string name="allowChatHelp">ผู้เล่นจะสามารถพูดคุยในห้องแชตได้</string>
@@ -51,4 +53,27 @@
   <string name="averagePerformance">ประสิทธิภาพโดยเฉลี่ย</string>
   <string name="averageScore">คะแนนเฉลี่ย</string>
   <string name="myTournaments">ทัวร์นาเมนต์ของฉัน</string>
+  <string name="editTournament">แก้ไขทัวร์นาเมนต์</string>
+  <string name="editTeamBattle">แก้ไขการต่อสู้แบบทีม</string>
+  <string name="defender">ผู้ป้องกัน</string>
+  <string name="pickYourTeam">เลือกทีมของคุณ</string>
+  <string name="whichTeamWillYouRepresentInThisBattle">คุณจะเป็นตัวแทนของทีมใดในการต่อสู้ครั้งนี้</string>
+  <string name="youMustJoinOneOfTheseTeamsToParticipate">คุณต้องเข้าร่วมหนึ่งในทีมเหล่านี้เพื่อเข้าร่วม!</string>
+  <string name="created">สร้าง</string>
+  <string name="recentlyPlayed">เล่นล่าสุด</string>
+  <string name="bestResults">ผลลัพธ์ของเกมที่ดีที่สุด</string>
+  <string name="tournamentStats">สถิติของทัวร์นาเมนต์</string>
+  <string name="rankAvgHelp">อันดับเฉลี่ยคือเปอร์เซ็นต์ของอันดับของคุณ ยิ่งต่ำยิ่งดี
+
+ตัวอย่างเช่น การได้อันดับที่ 3 ในการแข่งขันที่มีผู้เล่น 100 คน = 3% อันดับที่ 10 ในการแข่งขันที่มีผู้เล่น 1,000 คน = 1%</string>
+  <string name="medians">ค่ามัธฐาน</string>
+  <string name="allAveragesAreX">ค่าเฉลี่ยทั้งหมดในหน้านี้คือ %s</string>
+  <string name="total">ทั้งหมด</string>
+  <string name="pointsAvg">แต้มเฉลี่ย</string>
+  <string name="pointsSum">ผลรวมแต้ม</string>
+  <string name="rankAvg">อันดับเฉลี่ย</string>
+  <string name="tournamentWinners">ผู้ชนะทัวร์นาเมนต์</string>
+  <string name="tournamentShields">โล่การแข่งขัน</string>
+  <string name="onlyTitled">ผู้เล่นที่มีตำแหน่ง</string>
+  <string name="onlyTitledHelp">ต้องมีตำแหน่งถึงจะเข้าร่วมทัวร์นาเมนต์ได้</string>
 </resources>

@@ -1,34 +1,38 @@
 package lila.explorer
 
-import lila.game.{ Game, GameRepo }
-import lila.importer.{ ImportData, Importer }
-import play.api.libs.ws.DefaultBodyReadables.*
 import chess.format.pgn.PgnStr
+import play.api.libs.ws.DefaultBodyReadables.*
 
 final class ExplorerImporter(
     endpoint: InternalEndpoint,
-    gameRepo: GameRepo,
-    gameImporter: Importer,
+    gameRepo: lila.core.game.GameRepo,
+    gameImporter: lila.game.importer.Importer,
     ws: play.api.libs.ws.StandaloneWSClient
-)(using Executor):
+)(using Executor)
+    extends lila.core.game.Explorer:
 
   private val masterGameEncodingFixedAt = instantOf(2016, 3, 9, 0, 0)
 
   def apply(id: GameId): Fu[Option[Game]] =
-    gameRepo game id flatMap {
+    gameRepo.game(id).flatMap {
       case Some(game) if !game.isPgnImport || game.createdAt.isAfter(masterGameEncodingFixedAt) =>
         fuccess(game.some)
       case _ =>
-        gameRepo.remove(id) >> fetchPgn(id).flatMapz { pgn =>
-          gameImporter(
-            ImportData(pgn, none),
-            forceId = id.some
-          )(using lila.user.User.lichessIdAsMe.some) map some
-        }
+        for
+          _   <- gameRepo.remove(id)
+          pgn <- fetchPgn(id)
+          game <- pgn.so: pgn =>
+            gameImporter
+              .importAsGame(
+                pgn,
+                id.some
+              )(using UserId.lichessAsMe.some)
+              .map(some)
+        yield game
     }
 
   private def fetchPgn(id: GameId): Fu[Option[PgnStr]] =
-    ws.url(s"$endpoint/masters/pgn/$id").get() map {
-      case res if res.status == 200 => PgnStr from res.body[String].some
+    ws.url(s"$endpoint/masters/pgn/$id").get().map {
+      case res if res.status == 200 => PgnStr.from(res.body[String].some)
       case _                        => None
     }

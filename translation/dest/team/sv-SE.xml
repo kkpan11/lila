@@ -11,7 +11,7 @@
   <string name="newTeam">Nytt lag</string>
   <string name="myTeams">Mina lag</string>
   <string name="noTeamFound">Inget lag hittat</string>
-  <string name="joinTeam">Gå med i lag</string>
+  <string name="joinTeam" comment="Appears as a button on team pages, and on pages of tournaments that require you to be a member of that team (e.g. Swiss tournaments).&#10;&#10;Please keep as short as possible.">Gå med i lag</string>
   <string name="onlyLeaderLeavesTeam">Var god lägg till en ny lagledare innan du lämnar eller stäng laget.</string>
   <string name="quitTeam">Lämna lag</string>
   <string name="manuallyReviewAdmissionRequests">Granska antagningsförfrågningar manuellt</string>
@@ -50,9 +50,12 @@ Spelare som inte gillar att ta emot dina meddelanden kan komma att lämna laget.
   <string name="entryCodeDescriptionForLeader">(Valfritt) En inträdeskod som nya medlemmar måste veta för att gå med i detta lag.</string>
   <string name="incorrectEntryCode">Felaktig kod.</string>
   <string name="teamAlreadyExists">Det här lagnamnet finns redan.</string>
-  <string name="upcomingTourns">Kommande turneringar</string>
+  <string name="upcomingTournaments">Kommande turneringar</string>
   <string name="completedTourns">Avslutade turneringar</string>
   <string name="declinedRequests">Avvisa förfrågningar</string>
   <string name="joinLichessVariantTeam">Gå med i det officiella %s -laget för nyheter och evenemang</string>
   <string name="teamPage">Lagsida</string>
+  <string name="thisTeamBattleIsOver">Denna turnering är slut, och lagen kan inte längre uppdateras.</string>
+  <string name="numberOfLeadsPerTeamHelp">Du borde verkligen inte ändra detta värde efter att turneringen har börjat!</string>
+  <string name="innerTeam">Inre lag</string>
 </resources>

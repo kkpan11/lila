@@ -1,12 +1,5 @@
 @import 'extend';
 
-$c-bg-inaccuracy-hover: c-dimmer($c-inaccuracy, 70%);
-$c-bg-mistake-hover: c-dimmer($c-mistake, 70%);
-$c-bg-blunder-hover: c-dimmer($c-blunder, 70%);
-$c-bg-good-hover: c-dimmer($c-good-move, 70%);
-$c-bg-brilliant-hover: c-dimmer($c-brilliant, 70%);
-$c-bg-interesting-hover: c-dimmer($c-interesting, 70%);
-
 .tview2 {
   white-space: normal;
 
@@ -18,47 +11,98 @@ $c-bg-interesting-hover: c-dimmer($c-interesting, 70%);
     @include padding-direction(7px, 3px, 7px, 7px);
   }
 
+  move:not(.empty):hover {
+    &,
+    index,
+    eval {
+      background: $c-primary;
+      color: $c-over;
+    }
+  }
+
   move {
     @extend %move;
 
     @media (hover: none) {
-      user-select: none;
+      @include prevent-select;
     }
 
     &.inaccuracy {
       color: $c-inaccuracy;
+      &.active {
+        background: $m-inaccuracy_bg--mix-25;
+      }
       &:hover {
-        background: $c-bg-inaccuracy-hover;
+        &,
+        index,
+        eval {
+          background: $c-inaccuracy;
+        }
       }
     }
     &.mistake {
       color: $c-mistake;
+      &.active {
+        background: $m-mistake_bg--mix-25;
+      }
       &:hover {
-        background: $c-bg-mistake-hover;
+        &,
+        index,
+        eval {
+          background: $c-mistake;
+        }
       }
     }
     &.blunder {
       color: $c-blunder;
+      &.active {
+        background: $m-blunder_bg--mix-25;
+      }
       &:hover {
-        background: $c-bg-blunder-hover;
+        &,
+        index,
+        eval {
+          background: $c-blunder;
+        }
       }
     }
     &.good {
-      color: $c-good-move;
+      color: $c-good;
+      &.active {
+        background: $m-good_bg--mix-25;
+      }
       &:hover {
-        background: $c-bg-good-hover;
+        &,
+        index,
+        eval {
+          background: $c-good;
+        }
       }
     }
     &.brilliant {
       color: $c-brilliant;
+      &.active {
+        background: $m-brilliant_bg--mix-25;
+      }
       &:hover {
-        background: $c-bg-brilliant-hover;
+        &,
+        index,
+        eval {
+          background: $c-brilliant;
+        }
       }
     }
     &.interesting {
       color: $c-interesting;
+      &.active {
+        background: $m-interesting_bg--mix-25;
+      }
       &:hover {
-        background: $c-bg-interesting-hover;
+        &,
+        index,
+        eval {
+          background: $c-interesting;
+        }
       }
     }
   }
@@ -78,10 +122,6 @@ $c-bg-interesting-hover: c-dimmer($c-interesting, 70%);
     color: $c-primary;
   }
 
-  comment a {
-    vertical-align: top;
-  }
-
   comment.truncated {
     cursor: pointer;
   }
@@ -92,31 +132,38 @@ $c-bg-interesting-hover: c-dimmer($c-interesting, 70%);
 
   move.active {
     font-weight: bold;
-    background: mix($c-primary, $c-bg-box, 25%);
+    background: $m-primary_bg--mix-25;
     color: $c-font-clear;
   }
 
   &-inline move.active,
   line move.active {
     @extend %box-radius;
-    background: mix($c-primary, $c-bg-box, 40%);
+    background: $m-primary_bg--mix-40;
     color: $c-font-clearer;
-    outline: 1px solid mix($c-primary, $c-bg-box, 60%);
+    outline: 1px solid $m-primary_bg--mix-60;
+    &.inaccuracy {
+      outline: 1px solid $m-inaccuracy_bg--mix-60;
+    }
+    &.mistake {
+      outline: 1px solid $m-mistake_bg--mix-60;
+    }
+    &.blunder {
+      outline: 1px solid $m-blunder_bg--mix-60;
+    }
+    &.good {
+      outline: 1px solid $m-good_bg--mix-60;
+    }
+    &.brilliant {
+      outline: 1px solid $m-brilliant_bg--mix-60;
+    }
+    &.interesting {
+      outline: 1px solid $m-interesting_bg--mix-60;
+    }
   }
 
   move.nongame {
     font-style: italic;
-  }
-
-  move:not(.empty):not(.blunder):not(.mistake):not(.inaccuracy):not(.good):not(.brilliant):not(
-      .interesting
-    ):hover {
-    &,
-    index,
-    eval {
-      background: $c-primary;
-      color: $c-primary-over;
-    }
   }
 
   &-inline move:hover {
@@ -135,23 +182,23 @@ $c-bg-interesting-hover: c-dimmer($c-interesting, 70%);
 
   move.context-menu {
     background: $c-accent;
-    color: $c-accent-over;
+    color: $c-over;
 
     index {
-      color: $c-accent-over;
+      color: $c-over;
     }
   }
 
   &-column move index {
-    padding-#{$start-direction}: 5px;
+    padding-inline-start: 5px;
   }
 
   &-column move index:first-child {
-    padding-#{$start-direction}: 0;
+    padding-inline-start: 0;
   }
 
   &-inline move index {
-    padding-#{$end-direction}: 0.2em;
+    padding-inline-end: 0.2em;
     line-height: 111.11%;
   }
 
@@ -168,7 +215,7 @@ $c-bg-interesting-hover: c-dimmer($c-interesting, 70%);
   }
 
   &-column > index + move {
-    border-#{$end-direction}: $c-border;
+    border-inline-end: $c-border;
   }
 
   eval {
@@ -183,13 +230,13 @@ $c-bg-interesting-hover: c-dimmer($c-interesting, 70%);
   glyph {
     @extend %base-font;
 
-    margin-#{$start-direction}: 0.08em;
+    margin-inline-start: 0.08em;
     vertical-align: bottom;
   }
 
   shapes {
     font-size: 0.7em;
-    margin-#{$start-direction}: 0.4em;
+    margin-inline-start: 0.4em;
     text-align: right;
     color: $c-good;
     &::before {
@@ -209,7 +256,7 @@ $c-bg-interesting-hover: c-dimmer($c-interesting, 70%);
     flex: 0 0 13%;
     display: flex;
     justify-content: center;
-    border-#{$end-direction}: $border;
+    border-inline-end: $border;
     background: $c-bg-zebra;
     line-height: 2.07em;
     color: $c-font-dimmer;
@@ -257,16 +304,16 @@ $c-bg-interesting-hover: c-dimmer($c-interesting, 70%);
     vertical-align: -0.3em;
     font-size: 0.9em;
     opacity: 0.8;
-    margin-#{$end-direction}: 0.4em;
+    margin-inline-end: 0.4em;
     max-width: 9em;
   }
 
   &-column comment.white {
-    border-#{$start-direction}: 3px solid;
+    border-inline-start: 3px solid;
   }
 
   &-column comment.black {
-    border-#{$end-direction}: 3px solid;
+    border-inline-end: 3px solid;
     overflow-x: hidden;
   }
 
@@ -306,17 +353,17 @@ $c-bg-interesting-hover: c-dimmer($c-interesting, 70%);
   lines {
     display: block;
     margin-top: 2px;
-    margin-#{$start-direction}: 6px;
+    margin-inline-start: 6px;
     margin-bottom: 0.8em;
-    border-#{$start-direction}: 2px solid $c-border;
+    padding-inline-start: 2px;
   }
 
   > interrupt > lines {
-    margin-#{$start-direction}: 0px;
+    margin-inline-start: 0px;
   }
 
   lines.single {
-    border-#{$start-direction}: none;
+    border-inline-start: none;
   }
 
   lines:last-child {
@@ -325,11 +372,39 @@ $c-bg-interesting-hover: c-dimmer($c-interesting, 70%);
 
   line {
     display: block;
-    padding-#{$start-direction}: 7px;
+    padding-inline-start: 7px;
+    position: relative;
   }
 
   &-column line {
     margin: 2px 0;
+  }
+
+  line > branch {
+    border-inline-start: 2px solid $c-border;
+    margin-inline-start: -9px;
+    position: absolute;
+    width: 8px;
+    height: 100%;
+  }
+
+  line:last-child > branch,
+  line.expand > branch {
+    height: calc(0.8em + 2px);
+  }
+
+  line > branch::before {
+    margin-top: 0.8em;
+    content: ' ';
+    border-top: 2px solid $c-border;
+    position: absolute;
+    width: 7px;
+    height: 6px;
+  }
+
+  &-column line > branch {
+    margin-top: -2px;
+    height: calc(100% + 2px);
   }
 
   lines lines move {
@@ -337,30 +412,19 @@ $c-bg-interesting-hover: c-dimmer($c-interesting, 70%);
   }
 
   lines lines {
-    margin-#{$start-direction}: 1px;
-  }
-
-  lines lines::before {
-    content: ' ';
-    border-top: 2px solid $c-border;
-    position: absolute;
-    margin-#{$start-direction}: -11px;
-    width: 9px;
-    height: 6px;
-  }
-
-  lines line::before {
-    margin-top: 0.65em;
-    margin-#{$start-direction}: -8px;
-    content: ' ';
-    border-top: 2px solid $c-border;
-    position: absolute;
-    width: 8px;
-    height: 6px;
+    margin-inline-start: 1px;
   }
 
   lines lines:last-child {
     margin-bottom: 0;
+  }
+
+  line.expand > a {
+    color: $c-font-dim;
+  }
+
+  line.expand > a:hover {
+    color: $c-font;
   }
 
   inline {
@@ -379,12 +443,12 @@ $c-bg-interesting-hover: c-dimmer($c-interesting, 70%);
 
   inline::before {
     content: '(';
-    margin-#{$start-direction}: 2px;
+    margin-inline-start: 2px;
   }
 
   inline::after {
     content: ')';
-    margin-#{$end-direction}: 2px;
+    margin-inline-end: 2px;
   }
 
   &-inline inline::before,

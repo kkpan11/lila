@@ -1,11 +1,11 @@
-import TournamentController from './ctrl';
+import type TournamentController from './ctrl';
 
 export interface TournamentSocket {
   send: SocketSend;
   receive(type: string, data: any): void;
 }
 
-export default function (send: SocketSend, ctrl: TournamentController) {
+export function makeSocket(send: SocketSend, ctrl: TournamentController) {
   const handlers = {
     reload: ctrl.askReload,
     redirect(fullId: string) {

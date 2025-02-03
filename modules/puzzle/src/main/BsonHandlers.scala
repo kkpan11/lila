@@ -1,22 +1,23 @@
 package lila.puzzle
 
 import chess.format.{ Fen, Uci }
+import chess.rating.glicko.Glicko
 import reactivemongo.api.bson.*
 import scala.util.{ Success, Try }
 
 import lila.db.BSON
 import lila.db.dsl.{ *, given }
-import lila.rating.Glicko
 
 object BsonHandlers:
 
   import Puzzle.BSONFields.*
+  import lila.rating.Glicko.glickoHandler
 
   private[puzzle] given puzzleReader: BSONDocumentReader[Puzzle] with
     def readDocument(r: BSONDocument) = for
       id      <- r.getAsTry[PuzzleId](id)
       gameId  <- r.getAsTry[GameId](gameId)
-      fen     <- r.getAsTry[Fen.Epd](fen)
+      fen     <- r.getAsTry[Fen.Full](fen)
       lineStr <- r.getAsTry[String](line)
       line    <- lineStr.split(' ').toList.flatMap(Uci.Move.apply).toNel.toTry("Empty move list?!")
       glicko  <- r.getAsTry[Glicko](glicko)
@@ -31,12 +32,12 @@ object BsonHandlers:
       glicko = glicko,
       plays = plays,
       vote = vote,
-      themes = themes diff PuzzleTheme.hiddenThemes
+      themes = themes.diff(PuzzleTheme.hiddenThemes)
     )
 
   private[puzzle] given roundIdHandler: BSONHandler[PuzzleRound.Id] = tryHandler[PuzzleRound.Id](
     { case BSONString(v) =>
-      v split PuzzleRound.idSep match
+      v.split(PuzzleRound.idSep) match
         case Array(userId, puzzleId) => Success(PuzzleRound.Id(UserId(userId), PuzzleId(puzzleId)))
         case _                       => handlerBadValue(s"Invalid puzzle round id $v")
     },
@@ -54,7 +55,7 @@ object BsonHandlers:
     rt => BSONString(s"${if rt.vote then "+" else "-"}${rt.theme}")
   )
 
-  private[puzzle] given roundHandler: BSON[PuzzleRound] with
+  given roundHandler: BSON[PuzzleRound] with
     import PuzzleRound.BSONFields.*
     def reads(r: BSON.Reader) = PuzzleRound(
       id = r.get[PuzzleRound.Id](id),

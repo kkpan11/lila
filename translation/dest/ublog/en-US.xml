@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="communityBlogs">Community blogs</string>
+  <string name="friendBlogs">Friends\' blogs</string>
+  <string name="likedBlogs">Liked blog posts</string>
+  <string name="blogTopics">Blog topics</string>
+  <string name="lichessOfficialBlog">Lichess Official Blog</string>
+  <string name="continueReadingPost">Continue reading this post</string>
+  <string name="lichessBlogPostsFromXYear">Lichess blog posts in %s</string>
+  <string name="previousBlogPosts">Previous blog posts</string>
   <string name="xBlog">%s\'s Blog</string>
   <string name="newPost">New post</string>
   <string name="editYourBlogPost">Edit your blog post</string>
@@ -24,7 +32,7 @@
   <string name="xPublishedY">%1$s published %2$s</string>
   <string name="thisPostIsPublished">This post is published</string>
   <string name="thisIsADraft">This is a draft</string>
-  <string name="moreBlogPostsBy">View more blog posts by %s</string>
+  <string name="moreBlogPostsBy">More blog posts by %s</string>
   <string name="noPostsInThisBlogYet">No posts in this blog, yet.</string>
   <string name="noDrafts">No drafts to show.</string>
   <string name="latestBlogPosts">Latest blog posts</string>
@@ -35,8 +43,7 @@
   <string name="uploadAnImageForYourPost">Upload an image for your post</string>
   <string name="imageAlt">Image alternative text</string>
   <string name="imageCredit">Image credit</string>
-  <string name="deleteBlog">Delete this blog post definitively</string>
-  <string name="deleteImage">Delete the image</string>
+  <string name="deleteBlog">Delete this blog post forever</string>
   <string name="safeToUseImages">It is safe to use images from the following websites: </string>
   <string name="selectPostTopics">Select the topics your post is about</string>
   <string name="useImagesYouMadeYourself">You can also use images that you made yourself, pictures you took, screenshots of Lichess... anything that is not copyrighted by someone else.</string>
@@ -44,4 +51,5 @@
   <string name="inappropriateContentAccountClosed">Anything inappropriate could get your account closed.</string>
   <string name="blogTips">Our simple tips to write great blog posts</string>
   <string name="discussThisBlogPostInTheForum">Discuss this blog post in the forum</string>
+  <string name="youBlockedByBlogAuthor">You are blocked by the blog author.</string>
 </resources>

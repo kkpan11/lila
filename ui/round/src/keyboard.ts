@@ -1,13 +1,14 @@
-import RoundController from './ctrl';
-import { VNode } from 'snabbdom';
+import type RoundController from './ctrl';
+import type { VNode } from 'snabbdom';
 import { snabDialog } from 'common/dialog';
+import { pubsub } from 'common/pubsub';
 
-export const prev = (ctrl: RoundController) => ctrl.userJump(ctrl.ply - 1);
+export const prev = (ctrl: RoundController): void => ctrl.userJump(ctrl.ply - 1);
 
-export const next = (ctrl: RoundController) => ctrl.userJump(ctrl.ply + 1);
+export const next = (ctrl: RoundController): void => ctrl.userJump(ctrl.ply + 1);
 
-export const init = (ctrl: RoundController) =>
-  lichess.mousetrap
+export const init = (ctrl: RoundController): LichessMousetrap =>
+  site.mousetrap
     .bind(['left', 'k'], () => {
       prev(ctrl);
       ctrl.redraw();
@@ -25,7 +26,7 @@ export const init = (ctrl: RoundController) =>
       ctrl.redraw();
     })
     .bind('f', ctrl.flipNow)
-    .bind('z', () => lichess.pubsub.emit('zen'))
+    .bind('z', () => pubsub.emit('zen'))
     .bind('?', () => {
       ctrl.keyboardHelp = !ctrl.keyboardHelp;
       ctrl.redraw();
@@ -39,4 +40,5 @@ export const view = (ctrl: RoundController): VNode =>
       ctrl.keyboardHelp = false;
       ctrl.redraw();
     },
+    modal: true,
   });

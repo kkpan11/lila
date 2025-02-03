@@ -5,11 +5,12 @@
   <string name="toInviteSomeoneToPlayGiveThisUrl">Norėdami pakviesti varžovą, pasidalinkite šiuo adresu</string>
   <string name="gameOver">Partija baigta</string>
   <string name="waitingForOpponent">Laukiama varžovo</string>
+  <string name="orLetYourOpponentScanQrCode">Arba leiskite priešininkui nuskenuoti šį QR kodą</string>
   <string name="waiting">Laukiama</string>
   <string name="yourTurn">Jūsų ėjimas</string>
   <string name="aiNameLevelAiLevel">%1$s lygis Nr. %2$s</string>
   <string name="level">Lygis</string>
-  <string name="strength">Stiprumas</string>
+  <string name="strength">Pasipriešinimo stiprumas</string>
   <string name="toggleTheChat">Įjungti / išjungti pokalbį</string>
   <string name="chat">Pokalbis</string>
   <string name="resign">Pasiduoti</string>
@@ -17,14 +18,14 @@
   <string name="stalemate">Patas</string>
   <string name="white">Baltieji</string>
   <string name="black">Juodieji</string>
-  <string name="asWhite">kaip baltieji</string>
-  <string name="asBlack">kaip juodieji</string>
+  <string name="asWhite">už baltuosius</string>
+  <string name="asBlack">už juoduosius</string>
   <string name="randomColor">Atsitiktinė spalva</string>
   <string name="createAGame">Kurti žaidimą</string>
   <string name="whiteIsVictorious">Baltieji laimėjo</string>
   <string name="blackIsVictorious">Juodieji laimėjo</string>
-  <string name="youPlayTheWhitePieces">Žaidžiate baltomis figūromis</string>
-  <string name="youPlayTheBlackPieces">Žaidžiate juodomis figūromis</string>
+  <string name="youPlayTheWhitePieces">Jūs žaidžiate baltosiomis figūromis</string>
+  <string name="youPlayTheBlackPieces">Jūs žaidžiate juodosiomis figūromis</string>
   <string name="itsYourTurn">Jūsų ėjimas!</string>
   <string name="cheatDetected">Aptiktas sukčiavimas</string>
   <string name="kingInTheCenter">Karalius centre</string>
@@ -37,7 +38,7 @@
   <string name="whitePlays">Baltųjų ėjimas</string>
   <string name="blackPlays">Juodųjų ėjimas</string>
   <plurals name="opponentLeftCounter">
-    <item quantity="one">Jūsų varžovas paliko partiją. Galėsite prisiimti pergalę už %s sekundės.</item>
+    <item quantity="one">Jūsų varžovas paliko partiją. Galite reikalauti pergalės už %s sekundės.</item>
     <item quantity="few">Jūsų varžovas paliko partiją. Galėsite prisiimti pergalę už %s sekundžių.</item>
     <item quantity="many">Jūsų varžovas paliko partiją. Galėsite prisiimti pergalę už %s sekundžių.</item>
     <item quantity="other">Jūsų varžovas paliko partiją. Galėsite prisiimti pergalę už %s sekundžių.</item>
@@ -71,6 +72,8 @@
   <string name="promoteVariation">Paaukštinimo varijacija</string>
   <string name="makeMainLine">Padaryti pagrindine linija</string>
   <string name="deleteFromHere">Ištrinti nuo čia</string>
+  <string name="collapseVariations">Slėpti variantus</string>
+  <string name="expandVariations">Plėtoti variantus</string>
   <string name="forceVariation">Rodyti kaip variaciją</string>
   <string name="copyVariationPgn">Kopijuoti variacijos PGN</string>
   <string name="move">Ėjimas</string>
@@ -117,7 +120,6 @@
   <string name="replayMode">Peržiūros režimas</string>
   <string name="realtimeReplay">Realiu laiku</string>
   <string name="byCPL">Pagal įvertį</string>
-  <string name="openStudy">Atverti studiją</string>
   <string name="enable">Įjungti</string>
   <string name="bestMoveArrow">Geriausio ėjimo rodyklė</string>
   <string name="showVariationArrows">Rodyti variacijų rodykles</string>
@@ -127,7 +129,6 @@
   <string name="memory">Atmintinė</string>
   <string name="infiniteAnalysis">Neribota analizė</string>
   <string name="removesTheDepthLimit">Panaikina gylio limitą ir neleidžia kompiuteriui atvėsti</string>
-  <string name="engineManager">Variklių valdymas</string>
   <string name="blunder">Šiurkšti klaida</string>
   <string name="mistake">Klaida</string>
   <string name="inaccuracy">Netikslumas</string>
@@ -137,17 +138,35 @@
     <item quantity="many">%s šiurkščios klaidos</item>
     <item quantity="other">%s šiurkščių klaidų</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="one">%s Šiurkšti klaida</item>
+    <item quantity="few">%s Šiurkščios klaidos</item>
+    <item quantity="many">%s Šiurkščių klaidų</item>
+    <item quantity="other">%s Šiurkščių klaidų</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="one">%s klaida</item>
     <item quantity="few">%s klaidos</item>
     <item quantity="many">%s klaidos</item>
     <item quantity="other">%s klaidų</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="one">%s Klaida</item>
+    <item quantity="few">%s Klaidos</item>
+    <item quantity="many">%s Klaidų</item>
+    <item quantity="other">%s Klaidų</item>
+  </plurals>
   <plurals name="nbInaccuracies">
     <item quantity="one">%s netikslumas</item>
     <item quantity="few">%s netikslumai</item>
     <item quantity="many">%s netikslumo</item>
     <item quantity="other">%s netikslumų</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
+    <item quantity="one">%s Netikslumas</item>
+    <item quantity="few">%s Netikslumai</item>
+    <item quantity="many">%s Netikslumo</item>
+    <item quantity="other">%s Netikslumų</item>
   </plurals>
   <string name="moveTimes">Ėjimų trukmė</string>
   <string name="flipBoard">Apsukti lentą</string>
@@ -195,6 +214,7 @@
   <string name="latestForumPosts">Naujausi diskusijų pranešimai</string>
   <string name="players">Žaidėjai</string>
   <string name="friends">Draugai</string>
+  <string name="otherPlayers">kiti žaidėjai</string>
   <string name="discussions">Diskusijos</string>
   <string name="today">Šiandien</string>
   <string name="yesterday">Vakar</string>
@@ -286,6 +306,7 @@
     <item quantity="many">%s partijų su jumis</item>
     <item quantity="other">%s partijų su jumis</item>
   </plurals>
+  <string name="ok">OK</string>
   <string name="cancel">Atšaukti</string>
   <string name="whiteTimeOut">Baigėsi laikas baltiesiems</string>
   <string name="blackTimeOut">Baigėsi laikas juodiesiems</string>
@@ -302,10 +323,10 @@
   <string name="playingRightNow">Vyksta šiuo metu</string>
   <string name="eventInProgress">Vyksta šiuo metu</string>
   <string name="finished">Baigėsi</string>
-  <string name="finishesX">baigiasi %s</string>
   <string name="abortGame">Nutraukti partiją</string>
   <string name="gameAborted">Partija nutraukta</string>
   <string name="standard">Standartinis</string>
+  <string name="customPosition">Pasirinkta pozicija</string>
   <string name="unlimited">Neribota</string>
   <string name="mode">Tipas</string>
   <string name="casual">Nevertinamas</string>
@@ -462,6 +483,7 @@
   <string name="importGameExplanation">Įkeldami partijos PGN gausite naršomą peržiūrą,
 kompiuterinę analizę, partijos pokalbį bei URL dalinimuisi.</string>
   <string name="importGameCaveat">Variacijos bus ištrintos. Norėdami jas pasilikti importuokite PGN per studiją.</string>
+  <string name="importGameDataPrivacyWarning">Šis PGN failas yra prieinamas visiems. Jei norite įkelti partiją privačiai, naudokite studijas.</string>
   <plurals name="nbImportedGames">
     <item quantity="one">%s importuotas žaidimas</item>
     <item quantity="few">%s importuoti žaidimai</item>
@@ -476,6 +498,7 @@ kompiuterinę analizę, partijos pokalbį bei URL dalinimuisi.</string>
   <string name="blackCheckmatesInOneMove">Juodųjų šachas ir matas vienu ėjimu</string>
   <string name="retry">Kartoti</string>
   <string name="reconnecting">Jungiamasi</string>
+  <string name="noNetwork">Neprisijungta</string>
   <plurals name="nbFriendsOnline">
     <item quantity="one">%s prisijungęs draugas</item>
     <item quantity="few">%s prisijungę draugai</item>
@@ -491,7 +514,6 @@ kompiuterinę analizę, partijos pokalbį bei URL dalinimuisi.</string>
   <string name="block">Blokuoti</string>
   <string name="blocked">Užblokuotas</string>
   <string name="unblock">Atblokuoti</string>
-  <string name="followsYou">Seka jus</string>
   <string name="xStartedFollowingY">%1$s pradėjo sekti %2$s</string>
   <plurals name="nbFollowers">
     <item quantity="one">%s sekėjas</item>
@@ -529,9 +551,6 @@ kompiuterinę analizę, partijos pokalbį bei URL dalinimuisi.</string>
   <string name="safeTournamentName">Pasirinkite labai saugų turnyro pavadinimą.</string>
   <string name="inappropriateNameWarning">Kas nors bent kiek netinkamo gali lemti jūsų paskyros uždarymą.</string>
   <string name="emptyTournamentName">Palikus tuščią, turnyras bus pavadintas pagal atsitiktinį didmeistrį.</string>
-  <string name="recommendNotTouching">Rekomenduojame šitų neliesti.</string>
-  <string name="fewerPlayers">Jeigu pridėsite dalyvavimo sąlygų, jūsų turnyre bus mažiau žaidėjų.</string>
-  <string name="showAdvancedSettings">Rodyti papildomas nuostatas</string>
   <string name="makePrivateTournament">Padaryti turnyrą privačiu, ir apriboti patekimą su slaptažodžiu</string>
   <string name="join">Prisijungti</string>
   <string name="withdraw">Pasitraukti</string>
@@ -552,6 +571,7 @@ kompiuterinę analizę, partijos pokalbį bei URL dalinimuisi.</string>
   <string name="movesPlayed">Atlikta ėjimų</string>
   <string name="whiteWins">Baltųjų pergalės</string>
   <string name="blackWins">Juodųjų pergalės</string>
+  <string name="drawRate">Lygiųjų dažnumas</string>
   <string name="draws">Lygiosios</string>
   <string name="nextXTournament">Kitas %s turnyras:</string>
   <string name="averageOpponent">Vidutinis varžovas</string>
@@ -570,8 +590,10 @@ kompiuterinę analizę, partijos pokalbį bei URL dalinimuisi.</string>
   <string name="ifNoneLeaveEmpty">Jei neturite, palikite tuščią</string>
   <string name="profile">Profilis</string>
   <string name="editProfile">Redaguoti profilį</string>
-  <string name="firstName">Vardas</string>
-  <string name="lastName">Pavardė</string>
+  <string name="realName">Tikrasis vardas</string>
+  <string name="setFlair">Pasirinkite savo atskiriamąjį ženklą - avatarą</string>
+  <string name="flair">Skiriamasis ženklas</string>
+  <string name="youCanHideFlair">Tai nustatymas, leidžiantis atjungti visų žaidėjų skiriamuosius ženklus.</string>
   <string name="biography">Aprašymas</string>
   <string name="countryRegion" comment="flag&#10;Appears when you edit your profile. Lets a player add a country/flag (not all flags are for countries) to their profile">Šalis ar regionas</string>
   <string name="thankYou">Ačiū!</string>
@@ -594,13 +616,15 @@ kompiuterinę analizę, partijos pokalbį bei URL dalinimuisi.</string>
   <string name="automaticallyProceedToNextGameAfterMoving">Po ėjimo automatiškai pereiti prie kitos partijos</string>
   <string name="autoSwitch">Automatinis perjungimas</string>
   <string name="puzzles">Užduotys</string>
-  <string name="tournamentWinners">Turnyrų nugalėtojai</string>
+  <string name="onlineBots">Online robotai</string>
   <string name="name">Pavadinimas</string>
   <string name="description">Aprašymas</string>
   <string name="descPrivate">Privatus aprašymas</string>
   <string name="descPrivateHelp">Tekstas, kurį gali matyti tik komandos nariai. Jei nustatytas, komandos nariams pakeičia viešą aprašymą.</string>
   <string name="no">Ne</string>
   <string name="yes">Taip</string>
+  <string name="website">Tinklapis</string>
+  <string name="mobile">Mobilus</string>
   <string name="help">Pagalba:</string>
   <string name="createANewTopic">Sukurti naują temą</string>
   <string name="topics">Temos</string>
@@ -617,11 +641,11 @@ kompiuterinę analizę, partijos pokalbį bei URL dalinimuisi.</string>
   <string name="reason">Priežastis</string>
   <string name="whatIsIheMatter">Kas nutiko?</string>
   <string name="cheat">Sukčiaviavo</string>
-  <string name="insult">Ižeidė</string>
   <string name="troll">„Troll\'ino“</string>
-  <string name="ratingManipulation">Reitingo manipuliacija</string>
   <string name="other">Kita</string>
-  <string name="reportDescriptionHelp">Įdėkite nuorodą į partiją(-as) ir paaiškinkite, kas netinkamo yra šio vartotojo elgsenoje. Paminėkite, kaip priėjote prie tokios išvados. Jūsų pranešimas bus apdorotas greičiau, jei bus pateiktas anglų kalba.</string>
+  <string name="reportCheatBoostHelp">Įdėkite nuorodą į partiją(-as) ir paaiškinkite, kas netinkamo yra šio vartotojo elgsenoje. Paminėkite, kaip priėjote prie tokios išvados. Jūsų pranešimas bus apdorotas greičiau, jei bus pateiktas anglų kalba.</string>
+  <string name="reportUsernameHelp">Paaiškinkite, kuo šis vartotojo vardas yra įžeidžiantis. Nesakykite tiesiog „tai įžeidžia/netinkama“, bet papasakokite, kaip priėjote prie šios išvados, ypač jei įžeidimas yra užmaskuotas, ne anglų kalba, yra slengas arba yra istorinė / kultūrinė nuoroda.</string>
+  <string name="reportProcessedFasterInEnglish">Jūsų pranešimas bus apdorotas greičiau, jei jis bus parašytas anglų kalba.</string>
   <string name="error.provideOneCheatedGameLink">Pateikite bent vieną nuorodą į partiją, kurioje buvo sukčiauta.</string>
   <string name="by">nuo %s</string>
   <string name="importedByX">Importavo %s</string>
@@ -654,6 +678,7 @@ kompiuterinę analizę, partijos pokalbį bei URL dalinimuisi.</string>
   <string name="slow">Lėta</string>
   <string name="insideTheBoard">Ant lentos</string>
   <string name="outsideTheBoard">Šalia lentos</string>
+  <string name="allSquaresOfTheBoard">Visi lentos laukeliai</string>
   <string name="onSlowGames">Lėtose partijose</string>
   <string name="always">Visada</string>
   <string name="never">Niekada</string>
@@ -761,6 +786,7 @@ kompiuterinę analizę, partijos pokalbį bei URL dalinimuisi.</string>
   <string name="keyboardShortcuts">Spartieji klavišai</string>
   <string name="keyMoveBackwardOrForward">judėti pirmyn/atgal</string>
   <string name="keyGoToStartOrEnd">eiti į pradžią/pabaigą</string>
+  <string name="keyCycleSelectedVariation">Praeiti pasirinktą variantą</string>
   <string name="keyShowOrHideComments">rodyti/slėpti komentarus</string>
   <string name="keyEnterOrExitVariation">įeiti/išeiti iš variacijos</string>
   <string name="keyRequestComputerAnalysis">Paprašyti kompiuterio analizės, pasimokykite iš savo klaidų</string>
@@ -768,9 +794,17 @@ kompiuterinę analizę, partijos pokalbį bei URL dalinimuisi.</string>
   <string name="keyNextBlunder">Kita šiurkšti klaida</string>
   <string name="keyNextMistake">Kita klaida</string>
   <string name="keyNextInaccuracy">Kitas netiklsumas</string>
+  <string name="keyPreviousBranch">Praeita atšaka</string>
+  <string name="keyNextBranch">Sekanti atšaka</string>
+  <string name="toggleVariationArrows">Rodyti variacijų rodykles</string>
+  <string name="cyclePreviousOrNextVariation">Eiti į ankstesnį/sekantį variantą</string>
+  <string name="toggleGlyphAnnotations">Įjungti ėjimų komentarus</string>
+  <string name="togglePositionAnnotations">Įjungti pozicijos komentarus</string>
+  <string name="variationArrowsInfo">Variacijų rodyklės leidžia jums naviguoti nenaudojant ėjimų sarašo.</string>
+  <string name="playSelectedMove">padaryti pasirinktą ėjimą</string>
   <string name="newTournament">Naujas turnyras</string>
   <string name="tournamentHomeTitle">Šachmatų turnyras su įvairiomis laiko kontrolėmis ir variantais</string>
-  <string name="tournamentHomeDescription">Žaiskite aukšto tempo šachmatų turnyruose! Prisijunkite prie oficialaus suplanuoto turnyro arba sukurkite savo.</string>
+  <string name="tournamentHomeDescription">Žaiskite aukšto tempo šachmatų turnyruose! Prisijunkite prie oficialaus suplanuoto turnyro arba sukurkite savo. Kulka, žaibas, klasikiniai, Chess960, King of the Hill, Threecheck ir daugiau parinkčių, skirtų begalinėms šachmatų pramogoms.</string>
   <string name="tournamentNotFound">Turnyras nerastas</string>
   <string name="tournamentDoesNotExist">Turnyras neegzistuoja.</string>
   <string name="tournamentMayHaveBeenCanceled">Jis galėjo būti atšauktas, jeigu iki jo pradžios išėjo visi žaidėjai.</string>
@@ -812,6 +846,7 @@ kompiuterinę analizę, partijos pokalbį bei URL dalinimuisi.</string>
   <string name="withFriends">Su draugais</string>
   <string name="withEverybody">Su visais</string>
   <string name="kidMode">Vaiko veiksena</string>
+  <string name="kidModeIsEnabled">Vaiko funkcija įjungta.</string>
   <string name="kidModeExplanation">Tai yra dėl saugumo. Vaiko veiksenoje išjungiamas visas bendravimas svetainėje. Įjunkite tai savo vaikams bei moksleiviams, norėdami juos apsaugoti nuo kitų interneto naudotojų.</string>
   <string name="inKidModeTheLichessLogoGetsIconX">Vaiko veiksenoje „lichess“ logotipas gauna %s piktogramą tam, kad žinotumėte, jog jūsų vaikai yra saugūs.</string>
   <string name="askYourChessTeacherAboutLiftingKidMode">Jūsų paskyra yra valdoma. Norėdami pašalinti vaiko režimą kreipkitės į savo šachmatų mokytoją.</string>
@@ -827,7 +862,7 @@ kompiuterinę analizę, partijos pokalbį bei URL dalinimuisi.</string>
   <string name="zeroAdvertisement">Jokių reklamų</string>
   <string name="fullFeatured">Visiškai parengta</string>
   <string name="phoneAndTablet">Telefonui ir planšetei</string>
-  <string name="bulletBlitzClassical">Žaibo, blic, klasikiniai</string>
+  <string name="bulletBlitzClassical">Kulka, Žaibas, klasikiniai</string>
   <string name="correspondenceChess">Korespondenciniai</string>
   <string name="onlineAndOfflinePlay">Žaidimas su ir be interneto</string>
   <string name="viewTheSolution">Parodyti sprendimą</string>
@@ -853,9 +888,12 @@ kompiuterinę analizę, partijos pokalbį bei URL dalinimuisi.</string>
   <string name="transparent">Permatomas</string>
   <string name="deviceTheme">Įrenginio tema</string>
   <string name="backgroundImageUrl">Fono paveikslo URL:</string>
-  <string name="boardGeometry">Lentos geometrija</string>
-  <string name="boardTheme">Lentos stilius</string>
-  <string name="boardSize">Lentos dydis</string>
+  <string name="board">Lenta</string>
+  <string name="size">Dydis</string>
+  <string name="opacity">Skaidrumas</string>
+  <string name="brightness">Ryškumas</string>
+  <string name="hue">Atspalvis</string>
+  <string name="boardReset">Atstatyti spalvas į pradines</string>
   <string name="pieceSet">Figūrų rinkinys</string>
   <string name="embedInYourWebsite">Įterpto jūsų svetainėje</string>
   <string name="usernameAlreadyUsed">Šis vartotojo vardas jau naudojamas, pabandykite kitą.</string>
@@ -933,9 +971,10 @@ kompiuterinę analizę, partijos pokalbį bei URL dalinimuisi.</string>
     <item quantity="many">ir sutaupykite %s išankstinio ėjimo linijų</item>
     <item quantity="other">ir sutaupykite %s išankstinio ėjimo linijų</item>
   </plurals>
+  <string name="showUnreadLichessMessage">Jūs gavote privačią žinutę iš Lichess.</string>
+  <string name="clickHereToReadIt">Spustelėkite čia, kad peržiūrėtumėte</string>
   <string name="sorry">Atsiprašome :(</string>
   <string name="weHadToTimeYouOutForAWhile">Turėjome jus laikinai apriboti.</string>
-  <string name="timeoutExpires">Apribojimas baigiasi %s.</string>
   <string name="why">Kodėl?</string>
   <string name="pleasantChessExperience">Mes stengiamės suteikti galimybę visiems patirti šachmatų malonumą.</string>
   <string name="goodPractice">Dėl to turime užtikrinti, kad visi žaidėjai laikytųsi gerųjų praktikų.</string>
@@ -955,12 +994,13 @@ kompiuterinę analizę, partijos pokalbį bei URL dalinimuisi.</string>
   <string name="agreementPolicy">Pasižadu laikytis visų „Lichess“ nuostatų.</string>
   <string name="searchOrStartNewDiscussion">Ieškokite, arba pradėkite naują diskusiją</string>
   <string name="edit">Keisti</string>
-  <string name="blitz" comment="Probably best left untranslated. Leave it as 'Blitz' unless your language has a better word for it.">Blitz</string>
+  <string name="bullet" comment="Probably best left untranslated. Leave it as 'Bullet' unless your language has a better word for it.">Kulka</string>
+  <string name="blitz" comment="Probably best left untranslated. Leave it as 'Blitz' unless your language has a better word for it.">Žaibas</string>
   <string name="rapid">Greitieji</string>
   <string name="classical">Klasikiniai</string>
   <string name="ultraBulletDesc">Be proto greitos partijos: mažiau nei 30 sekundžių</string>
   <string name="bulletDesc">Labai greitos partijos: mažiau nei 3 minutės</string>
-  <string name="blitzDesc">Blic partijos: nuo 3 iki 8 minučių</string>
+  <string name="blitzDesc">Žaibo partijos: nuo 3 iki 8 minučių</string>
   <string name="rapidDesc">Greitosios partijos: nuo 8 iki 25 minučių</string>
   <string name="classicalDesc">Klasikinės partijos: 25 minutės ir daugiau</string>
   <string name="correspondenceDesc">Korespondencinės partijos: viena ar kelios dienos ėjimui</string>
@@ -1007,8 +1047,6 @@ ir daro įtaką žaidėjų reitingams</string>
   <string name="minimumRatedGames">Mažiausiai įvertintos partijos</string>
   <string name="minimumRating">Minimalus reitingas</string>
   <string name="maximumWeeklyRating">Maksimalus savaitinis reitingas</string>
-  <string name="onlyTitled">Tik tituluoti žaidėjai</string>
-  <string name="onlyTitledHelp">Jungiantis prie turnyro reikalauti oficialaus titulo</string>
   <string name="positionInputHelp">Norėdami pradėti žaidimą nuo specifinės pozicijos, įklijuokite teisingą FEN.
 Veikia tik standartiniams žaidimams, ne variantams.
 Norėdami sugeneruoti FEN poziciją galite naudotis %s, tada ją įklijuokite čia.
@@ -1036,9 +1074,6 @@ Palikite tuščią norėdami pradėti žaidimą nuo įprastos pradinės pozicijo
   <string name="focusChat">Perjungti į pokalbį</string>
   <string name="showHelpDialog">Rodyti šį pagalbos dialogą</string>
   <string name="reopenYourAccount">Atidaryti uždarytą paskyrą</string>
-  <string name="closedAccountChangedMind">Jei uždarėte savo paskyrą, tačiau apsigalvojote, turite vieną šansą ją atgauti.</string>
-  <string name="onlyWorksOnce">Tai suveiks tik kartą.</string>
-  <string name="cantDoThisTwice">Jei uždarysite savo paskyrą antrą kartą nebebus jokio būdo ją atkurti.</string>
   <string name="emailAssociatedToaccount">Elektroninio pašto adresas susietas su paskyra</string>
   <string name="sentEmailWithLink">Меs jums išsiuntėme laišką su nuoroda.</string>
   <string name="tournamentEntryCode">Įėjimo į turnyrą kodas</string>
@@ -1053,6 +1088,10 @@ Palikite tuščią norėdami pradėti žaidimą nuo įprastos pradinės pozicijo
   <string name="switchSides">Pakeisti puses</string>
   <string name="closingAccountWithdrawAppeal">paskyras</string>
   <string name="ourEventTips">Mūsų patarimai organizuojant renginius</string>
+  <string name="instructions">Instrukcijos</string>
+  <string name="showMeEverything">Rodyti viską</string>
   <string name="lichessPatronInfo">Lichess yra labdara ir pilnai atviro kodo/libre projektas.
 Visos veikimo išlaidos, programavimas ir turinys yra padengti išskirtinai tik vartotojų parama.</string>
+  <string name="nothingToSeeHere">Nieko naujo.</string>
+  <string name="stats">Statistika</string>
 </resources>

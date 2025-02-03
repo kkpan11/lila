@@ -6,7 +6,7 @@
   <string name="progressX">Vordering: %s</string>
   <string name="resetMyProgress">Herstel my vordering</string>
   <string name="youWillLoseAllYourProgress">Jy sal al jou vordering verloor!</string>
-  <string name="play">speel!</string>
+  <string name="play" comment="play&#10;&#10;A small ribbon that appears on your current chapter in the Chess Basics course. Please keep this string short.">speel!</string>
   <string name="chessPieces">Skaakstukke</string>
   <string name="theRook">Die toring</string>
   <string name="itMovesInStraightLines">Hy beweeg in reguit lyne</string>
@@ -212,7 +212,7 @@ in twee skuiwe!</string>
   <string name="getAFreeLichessAccount">Kry ’n gratis Lichess-rekening</string>
   <string name="practice">Oefen</string>
   <string name="learnCommonChessPositions">Leer algemene skaakposisies</string>
-  <string name="puzzles">Kopkrappers</string>
+  <string name="puzzles">Raaisels</string>
   <string name="exerciseYourTacticalSkills">Oefen jou taktiese vermoëns</string>
   <string name="videos">Video’s</string>
   <string name="watchInstructiveChessVideos">Kyk opleidingsvideo’s vir skaak</string>

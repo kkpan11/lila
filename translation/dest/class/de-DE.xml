@@ -6,7 +6,7 @@
   <string name="quicklyGenerateSafeUsernames">Erstelle schnell sichere Benutzernamen und Passwörter für deine Schüler</string>
   <string name="trackStudentProgress">Verfolge den Fortschritt deiner Schüler in Spielen und Puzzles</string>
   <string name="messageAllStudents">Benachrichtige alle Schüler über neues Lehrmaterial</string>
-  <string name="freeForAllForever">100% kostenlos für alle, für immer, ohne Werbung oder Tracker</string>
+  <string name="freeForAllForever" comment="The automated QA checker treats &quot;100%&quot; as if it is a variable, and will give a warning if you change it.&#10;It is not a variable.&#10;&#10;You can still save your translation writing it as &quot;%100&quot; for example, in case this is more valid in your language.">100% kostenlos für alle, für immer, ohne Werbung oder Tracker</string>
   <string name="applyToBeLichessTeacher">Bewirb dich als Lichess-Lehrer</string>
   <string name="noClassesYet">Bisher keine Klassen.</string>
   <string name="teachersX">Lehrer: %s</string>
@@ -57,6 +57,8 @@ Hier ist der Link zum Zugriff auf die Klasse.</string>
     <item quantity="one">Eine ausstehende Einladung</item>
     <item quantity="other">%s ausstehende Einladungen</item>
   </plurals>
+  <string name="pending">Ausstehend</string>
+  <string name="declined">Abgelehnt</string>
   <string name="onlyVisibleToTeachers">Nur für die Klassenlehrer sichtbar</string>
   <string name="lastActiveDate">Aktiv</string>
   <string name="managed">Verwaltet</string>
@@ -113,4 +115,6 @@ Hier ist der Link zum Zugriff auf die Klasse.</string>
   <string name="anInvitationHasBeenSentToX">Eine Einladung wurde an %s gesendet</string>
   <string name="xAlreadyHasAPendingInvitation">%s hat bereits eine ausstehende Einladung</string>
   <string name="xIsAKidAccountWarning">%1$s ist ein Kinderkonto und kann deine Nachricht nicht erhalten. Du musst ihm die Einladungs-URL manuell geben: %2$s</string>
+  <string name="moveToClass">Zu %s verschieben</string>
+  <string name="moveToAnotherClass">In eine andere Klasse verschieben</string>
 </resources>

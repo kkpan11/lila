@@ -3,6 +3,7 @@
   <string name="donate">Дарете</string>
   <string name="donateAsX">Дарете като %s</string>
   <string name="lichessPatron">Lichess Дарител</string>
+  <string name="patronSince" comment="%s is a date">Спонсор от %s</string>
   <string name="freeAccount">Безплатна регистрация</string>
   <string name="becomePatron">Станете дарител на Lichess</string>
   <string name="xBecamePatron">%s стана дарител на Lichess</string>
@@ -64,7 +65,7 @@
   <string name="giftPatronWings">Подари \"крила\" на Дарител на друг играч</string>
   <string name="update">Актуализиране</string>
   <string name="changeMonthlyAmount">Промяна на ежемесечната сума (%s)</string>
-  <string name="cancelSupport">преустановете поддръжката си</string>
+  <string name="cancelSupport">Преустановете подкрепата си</string>
   <string name="xOrY">%1$s или %2$s</string>
   <string name="decideHowMuch">Изберете колко ценен е Lichess за Вас:</string>
   <string name="stopPayments">Оттеглете кредитната си карта и спрете плащанията:</string>
@@ -80,4 +81,7 @@
   <string name="nowOneMonth">Вече сте Lichess Patron за месец!</string>
   <string name="downgradeNextMonth">След един месец НЯМА да бъдете таксувани отново и акаунтът ви в Lichess ще се върне към обикновен акаунт.</string>
   <string name="changeCurrency">Промяна на валута</string>
+  <string name="paymentDetails">Детайли за плащане</string>
+  <string name="updatePaymentMethod">Актуализиране на метода на плащане</string>
+  <string name="stripeManageSub">Управление на абонамента и изтегляне на касови бележки</string>
 </resources>

@@ -1,36 +1,42 @@
 package lila.oauth
 
 import reactivemongo.api.bson.*
+
 import lila.db.dsl.*
+import io.mola.galimatias.URL
 
 final class AuthorizationApi(val coll: Coll)(using Executor):
   import AuthorizationApi.{ BSONFields as F, PendingAuthorization, PendingAuthorizationBSONHandler }
 
   def create(request: AuthorizationRequest.Authorized): Fu[Protocol.AuthorizationCode] =
     val code = Protocol.AuthorizationCode.random()
-    coll.insert.one(
-      PendingAuthorizationBSONHandler write PendingAuthorization(
-        code.hashed,
-        request.clientId,
-        request.user,
-        request.redirectUri,
-        request.challenge,
-        request.scopes,
-        nowInstant.plusSeconds(120)
+    coll.insert
+      .one(
+        PendingAuthorizationBSONHandler.write:
+          PendingAuthorization(
+            code.hashed,
+            request.clientId,
+            request.user,
+            request.redirectUri,
+            request.challenge,
+            request.scopes,
+            nowInstant.plusSeconds(120)
+          )
       )
-    ) inject code
+      .inject(code)
 
   def consume(
       request: AccessTokenRequest.Prepared
   ): Fu[Either[Protocol.Error, AccessTokenRequest.Granted]] =
-    coll.findAndModify($doc(F.hashedCode -> request.code.hashed), coll.removeModifier) map { doc =>
+    coll.findAndModify($doc(F.hashedCode -> request.code.hashed), coll.removeModifier).map { doc =>
       for
         pending <- doc
           .result[PendingAuthorization]
           .toRight(Protocol.Error.AuthorizationCodeInvalid)
           .ensure(Protocol.Error.AuthorizationCodeExpired)(_.expires.isAfter(nowInstant))
-          .ensure(Protocol.Error.MismatchingRedirectUri)(_.redirectUri.matches(request.redirectUri))
-          .ensure(Protocol.Error.MismatchingClient)(_.clientId == request.clientId)
+          .ensure(Protocol.Error.MismatchingRedirectUri(request.redirectUri.value)):
+            _.redirectUri.matches(request.redirectUri)
+          .ensure(Protocol.Error.MismatchingClient(request.clientId))(_.clientId == request.clientId)
         _ <- pending.challenge match
           case Left(hashedClientSecret) =>
             request.clientSecret
@@ -40,7 +46,7 @@ final class AuthorizationApi(val coll: Coll)(using Executor):
             request.codeVerifier
               .toRight(LegacyClientApi.CodeVerifierIgnored)
               .ensure(Protocol.Error.MismatchingCodeVerifier)(_.matches(codeChallenge))
-      yield AccessTokenRequest.Granted(pending.userId, pending.scopes into TokenScopes, pending.redirectUri)
+      yield AccessTokenRequest.Granted(pending.userId, pending.scopes.into(TokenScopes), pending.redirectUri)
     }
 
 private object AuthorizationApi:
@@ -66,7 +72,7 @@ private object AuthorizationApi:
 
   import lila.db.BSON
   import lila.db.dsl.{ *, given }
-  import AuthorizationApi.{ BSONFields as F }
+  import AuthorizationApi.BSONFields as F
 
   given PendingAuthorizationBSONHandler: BSON[PendingAuthorization] = new:
     def reads(r: BSON.Reader): PendingAuthorization =
@@ -74,7 +80,7 @@ private object AuthorizationApi:
         hashedCode = r.str(F.hashedCode),
         clientId = Protocol.ClientId(r.str(F.clientId)),
         userId = r.get[UserId](F.userId),
-        redirectUri = Protocol.RedirectUri.unchecked(r.str(F.redirectUri)),
+        redirectUri = Protocol.RedirectUri(r.get[URL](F.redirectUri)),
         challenge = r.strO(F.hashedClientSecret) match
           case Some(hashedClientSecret) => Left(LegacyClientApi.HashedClientSecret(hashedClientSecret))
           case None                     => Right(Protocol.CodeChallenge(r.str(F.codeChallenge)))

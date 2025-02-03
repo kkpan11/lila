@@ -1,9 +1,10 @@
 import * as control from './control';
-import { Controller, KeyboardController } from './interfaces';
+import type PuzzleCtrl from './ctrl';
 import { snabDialog } from 'common/dialog';
+import { pubsub } from 'common/pubsub';
 
-export default (ctrl: KeyboardController) =>
-  lichess.mousetrap
+export default (ctrl: PuzzleCtrl) =>
+  site.mousetrap
     .bind(['left', 'k'], () => {
       control.prev(ctrl);
       ctrl.redraw();
@@ -23,19 +24,20 @@ export default (ctrl: KeyboardController) =>
     .bind('l', ctrl.toggleCeval)
     .bind('x', ctrl.toggleThreatMode)
     .bind('space', () => {
-      if (ctrl.vm.mode === 'view') {
-        if (ctrl.getCeval().enabled()) ctrl.playBestMove();
+      if (ctrl.mode === 'view') {
+        if (ctrl.ceval.enabled()) ctrl.playBestMove();
         else ctrl.toggleCeval();
       }
     })
-    .bind('z', () => lichess.pubsub.emit('zen'))
+    .bind('z', () => pubsub.emit('zen'))
     .bind('?', () => ctrl.keyboardHelp(!ctrl.keyboardHelp()))
     .bind('f', ctrl.flip)
     .bind('n', ctrl.nextPuzzle);
 
-export const view = (ctrl: Controller) =>
+export const view = (ctrl: PuzzleCtrl) =>
   snabDialog({
     class: 'help',
     htmlUrl: '/training/help',
     onClose: () => ctrl.keyboardHelp(false),
+    modal: true,
   });

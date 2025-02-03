@@ -96,7 +96,6 @@
   <string name="replayMode">Фæлхатын кæсын</string>
   <string name="realtimeReplay">Партийы хуызæн</string>
   <string name="byCPL">Рæдыдтытæй</string>
-  <string name="openStudy">Байгом кæнын студийы</string>
   <string name="enable">Ссудзын</string>
   <string name="bestMoveArrow">Æвдисын иуыл хуыздæр цыдтæ фатæгтæй</string>
   <string name="evaluationGauge">Аргъы шкала</string>
@@ -112,13 +111,25 @@
     <item quantity="one">%s хæлиудзыхдзинад</item>
     <item quantity="other">%s хæлиудзыхдзинæдты</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="one">%s Хæлиудзыхдзинад</item>
+    <item quantity="other">%s Хæлиудзыхдзинæдты</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="one">%s рæдыд</item>
     <item quantity="other">%s рæдыдтыты</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="one">%s Рæдыд</item>
+    <item quantity="other">%s Рæдыдтыты</item>
+  </plurals>
   <plurals name="nbInaccuracies">
     <item quantity="one">%s æнæдырысдзинад</item>
     <item quantity="other">%s æнæдырысдзинæдты</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
+    <item quantity="one">%s Æнæдырысдзинад</item>
+    <item quantity="other">%s Æнæдырысдзинæдты</item>
   </plurals>
   <string name="moveTimes">Рæстæг цыдæн</string>
   <string name="flipBoard">Фæйнæг разилын</string>
@@ -215,7 +226,6 @@
   <string name="playingRightNow">Хъазт цæуы</string>
   <string name="eventInProgress">Ныртæккæ цæуы</string>
   <string name="finished">Фæудгонд</string>
-  <string name="finishesX">фæуы %s</string>
   <string name="abortGame">Хъазт аивын</string>
   <string name="gameAborted">Хъазт аивд у</string>
   <string name="standard">Классикон шахмæттæ</string>
@@ -361,7 +371,6 @@
   <string name="block">Блокадæ бакæнын</string>
   <string name="blocked">Блокадæгондтæ</string>
   <string name="unblock">Блокадæ айсын</string>
-  <string name="followsYou">Дæумæ хъус дары</string>
   <string name="xStartedFollowingY">%1$s %2$s-мæ райдыдта хъус дарын</string>
   <plurals name="nbFollowers">
     <item quantity="one">%s хъусдарæг</item>
@@ -393,9 +402,6 @@
   <string name="safeTournamentName">Равзар æдас ном турнирæн.</string>
   <string name="inappropriateNameWarning">Турниры ном куы зæрдæхсайгæ уа, уæд блокадæ дын акæндзысты.</string>
   <string name="emptyTournamentName">Ныууадз афтидæй, цæмæй турнир уыд сæмбæлгæ гроссмейстеры номæн.</string>
-  <string name="recommendNotTouching">Фæлтау сæ ма æвнал.</string>
-  <string name="fewerPlayers">Хайады домæнтæ куы раттдзынæ, уæд дæ ерысы къаддæр адæм хъаздзысты.</string>
-  <string name="showAdvancedSettings">Равдисын баххæстæг настройкæтæ</string>
   <string name="makePrivateTournament">Турнир æхгæдæй скæнын æмæ бацæуæн арæн скæнын паролæй</string>
   <string name="join">Хайад исын</string>
   <string name="withdraw">Ныууадзын</string>
@@ -430,8 +436,6 @@
   <string name="ifNoneLeaveEmpty">Кæд нæй, ныууадз афтидæй</string>
   <string name="profile">Профиль</string>
   <string name="editProfile">Профиль æндæр кæнын</string>
-  <string name="firstName">Ном</string>
-  <string name="lastName">Мыггаг</string>
   <string name="biography">Махи тыххæй</string>
   <string name="thankYou">Бузныг!</string>
   <string name="socialMediaLinks">Социалон хызтæм дæнцæгтæ</string>
@@ -448,7 +452,6 @@
   <string name="automaticallyProceedToNextGameAfterMoving">Цыды фæстæ хæдархайгæ ивын иннæ хъазтмæ</string>
   <string name="autoSwitch">Хæдархайгæ ивд</string>
   <string name="puzzles">Этюдтæ</string>
-  <string name="tournamentWinners">Турнирты уæлахиздзаутæ</string>
   <string name="name">Ном</string>
   <string name="description">Радзырд</string>
   <string name="descPrivate">Хицæн радзырд</string>
@@ -471,11 +474,8 @@
   <string name="reason">Аххос</string>
   <string name="whatIsIheMatter">Цы хабар у?</string>
   <string name="cheat">Фæлитой митæ</string>
-  <string name="insult">Бафхæрд</string>
   <string name="troll">Троллинг</string>
-  <string name="ratingManipulation">Рейтингимæ махинацитæ</string>
   <string name="other">Æндæр</string>
-  <string name="reportDescriptionHelp">Бавæр дæнцæгтæ ахæм хъæзтытæм, кæм, дæм кæсы, уыдысты уагты халынтæ, æмæ бамбарын кæ, цы хабар у. Комкоммæ зæгъын \"уый сайы\" æнæфаг у, радзур нын, ахæм хатдзæгмæ куыд æрцыдтæ. Мах тагъддæр кусдзыстæм, англисагау кæд фысдзынæ.</string>
   <string name="error.provideOneCheatedGameLink">Табуафси, бафтау æммыст иу дæнцæг ахæм хъазтмæ, кæм, дæм кæсы, уыдысты уагты халынтæ.</string>
   <string name="by">%s</string>
   <string name="thisTopicIsNowClosed">Ацы тæрхон æхгæд у.</string>
@@ -555,9 +555,6 @@
   <string name="cumulative">Æдæппæт</string>
   <string name="glicko2Rating">Glicko-2 рейтинг</string>
   <string name="background">Бындурон хуыз</string>
-  <string name="boardGeometry">Фæйнæджы хуыз æмæ бæрц</string>
-  <string name="boardTheme">Фæйнæджы бакаст</string>
-  <string name="boardSize">Фæйнæджы бæрц</string>
   <string name="perfRatingX">Рейтинг: %s</string>
   <string name="xMentionedYouInY">%1$s дæ ской кодта «%2$s»-ы.</string>
   <string name="refundXpointsTimeControlY">Раздæхт: %1$s %2$s рейтинг очкоты.</string>

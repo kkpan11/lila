@@ -19,7 +19,7 @@
   <string name="findTheBestMoveForWhite">מצא/י את המהלך הטוב ביותר ללבן.</string>
   <string name="findTheBestMoveForBlack">מצא/י את המהלך הטוב ביותר לשחור.</string>
   <string name="toGetPersonalizedPuzzles">לקבלת חידות מותאמות אישית:</string>
-  <string name="puzzleId" comment="%s is the ID of the puzzle, something like #a1b2c3.">חידה %s</string>
+  <string name="puzzleId">חידה %s</string>
   <string name="puzzleOfTheDay">החידה היומית</string>
   <string name="dailyPuzzle">החידה היומית</string>
   <string name="clickToSolve">לחץ/י כדי לפתור</string>
@@ -31,13 +31,13 @@
   <string name="byOpenings">לפי פתיחות</string>
   <string name="puzzlesByOpenings">חידות לפי פתיחות</string>
   <string name="openingsYouPlayedTheMost">הפתיחות הנפוצות שלך במשחקים מדורגים</string>
-  <string name="useFindInPage" comment="useFindInPage&#10;&#10;Appears on https://lichess.org/training/openings&#10;Encourages players to use the built-in browser feature (Ctrl+F on most desktop computers) to find the opening they want to practice.">השתמשו ב״חיפוש בעמוד״ בדפדפן כדי למצוא את הפתיחה המועדפת עליכם!</string>
-  <string name="useCtrlF">השתמשו ב-ctrl+F כדי למצוא את הפתיחה המועדפת עליכם!</string>
+  <string name="useFindInPage" comment="useFindInPage&#10;&#10;Appears on https://lichess.org/training/openings for mobile and tablet users&#10;Encourages players to use the built-in browser feature (Ctrl+F on most desktop computers) to find the opening they want to practise.">השתמשו ב״חיפוש בעמוד״ בדפדפן כדי למצוא את הפתיחה המועדפת עליכם!</string>
+  <string name="useCtrlF" comment="Appears on https://lichess.org/training/openings for desktop and laptop users.&#10;Encourages players to use the built-in browser feature (Ctrl+F on most desktop computers) to find the opening they want to practise.">השתמשו ב־ctrl+F כדי למצוא את הפתיחה המועדפת עליכם!</string>
   <string name="notTheMove">זה לא המהלך!</string>
   <string name="trySomethingElse">נסו משהו אחר.</string>
-  <string name="ratingX" comment="Appears on pages of individual puzzles.&#10;&#10;%s is either:&#10;1. The word 'hidden', if you have not completed the puzzle yet.&#10;2. The rating of the puzzle, if you have completed it or seen the solution.">דירוג: %s</string>
-  <string name="hidden" comment="Puzzle rating: hidden&#10;&#10;Appears while solving puzzles. Lichess only displays the rating of the puzzle after you have solved it or asked to see the solution.">מוסתר</string>
-  <plurals name="playedXTimes" comment="Appears on pages of individual puzzles.&#10;%s is the number of times the puzzle has been played.">
+  <string name="ratingX">דירוג: %s</string>
+  <string name="hidden">מוסתר</string>
+  <plurals name="playedXTimes">
     <item quantity="one">שוחק פעם %s</item>
     <item quantity="two">שוחק %s פעמים</item>
     <item quantity="many">שוחק %s פעמים</item>
@@ -72,7 +72,7 @@
   <string name="strengths">חוזקות</string>
   <string name="history">חידות קודמות</string>
   <string name="solved">פתרת</string>
-  <string name="failed">שגית</string>
+  <string name="failed" comment="In the list of previously attempted puzzles, a tag indicating that the puzzle has been failed.&#10;&#10;The text will be automatically capitalised. If you have different ways to translate it, we suggest keeping it short.&#10;&#10;NOTE: This string previously said 'failed', but was changed to 'incorrect' to be more encouraging (https://github.com/lichess-org/lila/issues/11068)">שגית</string>
   <string name="streakDescription">פתרו חידות ברמת קושי עולה וצברו רצף של ניצחונות. אין שעון, אז קחו את הזמן. מהלך שגוי אחד, והמשחק נגמר! אבל את/ה יכול/ה לדלג על מהלך אחד בכל הפעלה.</string>
   <string name="yourStreakX">הרצף שלך: %s</string>
   <string name="streakSkipExplanation">דלג/י על מהלך זה כדי לשמור על הרצף שלך! ניתן לדלג רק פעם אחת בכל הפעלה.</string>

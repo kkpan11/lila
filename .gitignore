@@ -1,43 +1,37 @@
-.sbtopts
-.jvmopts
-.bsp
-.bloop/
-.metals/
-.pnpm-store/
-project/.bloop/
-conf/application.conf
-conf/version.conf
-
-logs
-project/metals.sbt
-project/project
-project/target
-public/compiled
-public/npm
-public/lifat
-public/css/
-target
+/.sbtopts
+/.jvmopts
+/.bsp/
+/.bloop/
+/.metals/
+/.pnpm-store/
+/project/.bloop/
+/conf/application.conf
+/conf/version.conf
+/translation/js
+logs/
+/project/metals.sbt
+/project/project/
+/project/target/
+/public/compiled/
+/public/hashed/
+/public/npm/
+/public/lifat
+/public/css/
+/public/json/
+target/
 data/
 dist/
 node_modules/
-local/
-ui/common/**/*.js
-ui/common/**/*.d.ts
-ui/chess/**/*.js
-ui/chess/**/*.d.ts
-ui/game/**/*.js
-ui/game/**/*.d.ts
-ui/nvui/**/*.js
-ui/nvui/**/*.d.ts
-ui/puz/**/*.js
-ui/puz/**/*.d.ts
-ui/voice/@build/crowdv
-ui/*/npm-debug.log
+ui/common/css/theme/gen/*.scss
+ui/.build/build
+ui/voice/crowdv
 ui/*/tsconfig.tsbuildinfo
 hs_*.log
 dependency-graph.png
+dump.rdb
 
 RUNNING_PID
+instance.lock
 .DS_Store
 
 # Eclipse auto-generated files
@@ -48,9 +42,15 @@ RUNNING_PID
 # VSCode auto-generated files
 .vscode/
 
+# VSCode workspaces
+*.code-workspace
+
 # IntelliJ auto-generated files
 .idea
 
 # Docker-compose / docker sbt
 /docker-compose.yml
 /?
+
+# eslint cache
+/ui/.eslintcache

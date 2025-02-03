@@ -19,6 +19,7 @@ package lila.db
 import alleycats.Zero
 import reactivemongo.api.*
 import reactivemongo.api.bson.*
+
 import scala.collection.Factory
 
 trait dsl:
@@ -40,9 +41,8 @@ trait dsl:
   type Bdoc = BSONDocument
   type Barr = BSONArray
 
-  def bsonWriteObjTry[A](a: A)(using writer: BSONDocumentWriter[A]) = writer writeTry a
-  def bsonWriteTry[A](a: A)(using writer: BSONWriter[A])            = writer writeTry a
-  def bsonWriteOpt[A](a: A)(using writer: BSONWriter[A])            = writer writeOpt a
+  def bsonWriteObjTry[A](a: A)(using writer: BSONDocumentWriter[A]) = writer.writeTry(a)
+  def bsonWriteOpt[A](a: A)(using writer: BSONWriter[A])            = writer.writeOpt(a)
   def bsonWriteDoc[A](a: A)(using writer: BSONDocumentWriter[A])    = writer.writeOpt(a) | $empty
 
   // **********************************************************************************************//
@@ -105,8 +105,16 @@ trait dsl:
     "$unset" -> fields.nonEmpty.so($doc(fields.map(k => (k, BSONString("")))))
   def $unset(field: String, fields: String*): Bdoc = $doc:
     "$unset" -> $doc((Seq(field) ++ fields).map(k => (k, BSONString(""))))
+
+  def $unsetCompute[A](prev: A, next: A, fields: (String, A => Option[?])*): Bdoc =
+    $unset:
+      fields.flatMap: (key, accessor) =>
+        (accessor(prev).isDefined && accessor(next).isEmpty).option(key)
+
   def $setBoolOrUnset(field: String, value: Boolean): Bdoc =
     if value then $set(field -> true) else $unset(field)
+  def $setsAndUnsets(items: (String, Option[BSONValue])*): Bdoc =
+    $set(items.collect { case (k, Some(v)) => k -> v }*) ++ $unset(items.collect { case (k, None) => k })
   def $min(item: ElementProducer): Bdoc                         = $doc("$min" -> $doc(item))
   def $max(item: ElementProducer): Bdoc                         = $doc("$max" -> $doc(item))
   def $divide[A: BSONWriter, B: BSONWriter](a: A, b: B): Bdoc   = $doc("$divide" -> $arr(a, b))
@@ -122,9 +130,6 @@ trait dsl:
   def $ne[T: BSONWriter](value: T)    = $doc("$ne" -> value)
   def $nin[T: BSONWriter](values: T*) = $doc("$nin" -> values)
   def $exists(value: Boolean)         = $doc("$exists" -> value)
-
-  trait CurrentDateValueProducer[T]:
-    def produce: BSONValue
 
   // End of Top Level Field Update Operators
   // **********************************************************************************************//
@@ -259,6 +264,12 @@ trait dsl:
 
     def $size(s: Int): SimpleExpression[Bdoc] = SimpleExpression(field, $doc("$size" -> s))
 
+  def dateBetween(field: String, since: Option[Instant], until: Option[Instant]): Bdoc = (since, until) match
+    case (Some(since), None)        => field.$gte(since)
+    case (None, Some(until))        => field.$lt(until)
+    case (Some(since), Some(until)) => field.$gte(since).$lt(until)
+    case _                          => $empty
+
   object $sort:
 
     def asc(field: String)  = $doc(field -> 1)
@@ -296,12 +307,30 @@ trait dsl:
           "pipeline" -> pipe
         )
       )
-    def pipeline(from: String, as: String, local: String, foreign: String, pipe: List[Bdoc]): Bdoc =
+    // mongodb 4
+    def pipelineBC(from: String, as: String, local: String, foreign: String, pipe: List[Bdoc]): Bdoc =
       pipelineFull(
         from,
         as,
         $doc("local" -> s"$$$local"),
         $doc("$match" -> $expr($doc("$eq" -> $arr(s"$$$foreign", "$$local")))) :: pipe
+      )
+    def pipelineBC(from: Coll, as: String, local: String, foreign: String, pipe: List[Bdoc]): Bdoc =
+      pipelineBC(from.name, as, local, foreign, pipe)
+    def pipelineBC(from: AsyncColl, as: String, local: String, foreign: String, pipe: List[Bdoc]): Bdoc =
+      pipelineBC(from.name.value, as, local, foreign, pipe)
+
+    // mongodb 5+ Correlated Subqueries Using Concise Syntax
+    // https://www.mongodb.com/docs/manual/reference/operator/aggregation/lookup/#correlated-subqueries-using-concise-syntax
+    def pipeline(from: String, as: String, local: String, foreign: String, pipe: List[Bdoc]): Bdoc =
+      $doc(
+        "$lookup" -> $doc(
+          "from"         -> from,
+          "as"           -> as,
+          "localField"   -> local,
+          "foreignField" -> foreign,
+          "pipeline"     -> pipe
+        )
       )
     def pipeline(from: Coll, as: String, local: String, foreign: String, pipe: List[Bdoc]): Bdoc =
       pipeline(from.name, as, local, foreign, pipe)
@@ -319,6 +348,10 @@ trait dsl:
   given toBSONDocument[V](using BSONWriter[V]): Conversion[Expression[V], Bdoc] =
     expression => $doc(expression.field -> expression.value)
 
+  object toBSONValueOption:
+    given [V](using w: BSONWriter[V]): Conversion[Option[V], Option[BSONValue]] =
+      _.flatMap(w.writeOpt)
+
 object dsl extends dsl with Handlers:
 
   extension [A](c: Cursor[A])(using Executor)
@@ -334,19 +367,19 @@ object dsl extends dsl with Handlers:
     def uno: Fu[Option[A]] =
       c.collect[Iterable](1, Cursor.ContOnError[Iterable[A]]()).map(_.headOption)
 
-      // extension [A](cursor: Cursor.WithOps[A])(using Executor)
+    // extension [A](cursor: Cursor.WithOps[A])(using Executor)
 
-      //   def gather[M[_]](upTo: Int)(using Factory[A, M[A]]): Fu[M[A]] =
-      //     cursor.collect[M](upTo, Cursor.ContOnError[M[A]]())
+    //   def gather[M[_]](upTo: Int)(using Factory[A, M[A]]): Fu[M[A]] =
+    //     cursor.collect[M](upTo, Cursor.ContOnError[M[A]]())
 
-      //   def list(): Fu[List[A]] =
-      //     gather[List](Int.MaxValue)
+    //   def list(): Fu[List[A]] =
+    //     gather[List](Int.MaxValue)
 
-      //   def list(limit: Int): Fu[List[A]] =
-      //     gather[List](limit)
+    //   def list(limit: Int): Fu[List[A]] =
+    //     gather[List](limit)
 
-      //   def list(limit: Option[Int]): Fu[List[A]] =
-      //     gather[List](limit | Int.MaxValue)
+    //   def list(limit: Option[Int]): Fu[List[A]] =
+    //     gather[List](limit | Int.MaxValue)
 
     def vector(limit: Int): Fu[Vector[A]] = gather[Vector](limit)
 
@@ -354,13 +387,13 @@ object dsl extends dsl with Handlers:
 
   extension (coll: Coll)(using Executor)
 
-    def secondaryPreferred = coll withReadPreference ReadPref.sec
-    def secondary          = coll withReadPreference ReadPref.secOnly
+    def secondaryPreferred = coll.withReadPreference(ReadPref.sec)
+    def secondary          = coll.withReadPreference(ReadPref.secOnly)
 
     // #TODO FIXME
     // should be secondaryPreferred
     // https://github.com/ReactiveMongo/ReactiveMongo/issues/1185
-    def tempPrimary = coll withReadPreference ReadPref.pri
+    def tempPrimary = coll.withReadPreference(ReadPref.pri)
 
     def ext = this
 
@@ -386,7 +419,7 @@ object dsl extends dsl with Handlers:
           // because of reactivemongo given tuple2Writer
           // so we need to check if the ID writes to an array,
           // then the second value is probably a projection.
-          summon[BSONWriter[I]].writeOpt(id) so {
+          summon[BSONWriter[I]].writeOpt(id).so {
             case BSONArray(Seq(id, proj: Bdoc)) => byIdProj[D](id, proj)
             case id                             => one[D]($id(id))
         }
@@ -398,7 +431,15 @@ object dsl extends dsl with Handlers:
         ids: Iterable[I],
         readPref: ReadPref = _.pri
     ): Fu[List[D]] =
-      ids.nonEmpty so list[D]($inIds(ids), readPref)
+      ids.nonEmpty.so(list[D]($inIds(ids), readPref))
+
+    def byIdsProj[D: BSONDocumentReader, I: BSONWriter](
+        ids: Iterable[I],
+        projection: Bdoc,
+        readPref: ReadPref = _.pri
+    ): Fu[List[D]] =
+      ids.nonEmpty.so:
+        coll.find($inIds(ids), projection.some).cursor[D](readPref).listAll()
 
     def byStringIds[D: BSONDocumentReader](
         ids: Iterable[String],
@@ -406,11 +447,11 @@ object dsl extends dsl with Handlers:
     ): Fu[List[D]] =
       byIds[D, String](ids, readPref)
 
-    def countSel(selector: coll.pack.Document): Fu[Int] =
+    def countSel(selector: coll.pack.Document, limit: Option[Int] = none[Int]): Fu[Int] =
       coll
         .count(
           selector = selector.some,
-          limit = None,
+          limit = limit,
           skip = 0,
           hint = None,
           readConcern = ReadConcern.Local
@@ -427,7 +468,7 @@ object dsl extends dsl with Handlers:
           readConcern = ReadConcern.Local
         )
 
-    def exists(selector: Bdoc): Fu[Boolean] = countSel(selector).dmap(0 !=)
+    def exists(selector: Bdoc): Fu[Boolean] = countSel(selector, 1.some).dmap(0 !=)
 
     def idsMap[D: BSONDocumentReader, I: BSONWriter](
         ids: Iterable[I],
@@ -435,7 +476,7 @@ object dsl extends dsl with Handlers:
         readPref: ReadPref = _.pri
     )(docId: D => I): Fu[Map[I, D]] = ids.nonEmpty.so:
       projection
-        .fold(coll find $inIds(ids)): proj =>
+        .fold(coll.find($inIds(ids))): proj =>
           coll.find($inIds(ids), proj.some)
         .cursor[D](readPref)
         .collect[List](Int.MaxValue)
@@ -463,7 +504,7 @@ object dsl extends dsl with Handlers:
         .cursor[Bdoc]()
         .list(Int.MaxValue)
         .dmap:
-          _ flatMap { _.getAsOpt[V](field) }
+          _.flatMap { _.getAsOpt[V](field) }
 
     def primitive[V: BSONReader](selector: Bdoc, sort: Bdoc, field: String): Fu[List[V]] =
       coll
@@ -472,23 +513,25 @@ object dsl extends dsl with Handlers:
         .cursor[Bdoc]()
         .list(Int.MaxValue)
         .dmap:
-          _ flatMap { _.getAsOpt[V](field) }
+          _.flatMap { _.getAsOpt[V](field) }
 
     def primitive[V: BSONReader](selector: Bdoc, sort: Bdoc, nb: Int, field: String): Fu[List[V]] =
-      (nb > 0) so coll
-        .find(selector, $doc(field -> true).some)
-        .sort(sort)
-        .cursor[Bdoc]()
-        .list(nb)
-        .dmap:
-          _ flatMap { _.getAsOpt[V](field) }
+      (nb > 0).so(
+        coll
+          .find(selector, $doc(field -> true).some)
+          .sort(sort)
+          .cursor[Bdoc]()
+          .list(nb)
+          .dmap:
+            _.flatMap { _.getAsOpt[V](field) }
+      )
 
     def primitiveOne[V: BSONReader](selector: Bdoc, field: String): Fu[Option[V]] =
       coll
         .find(selector, $doc(field -> true).some)
         .one[Bdoc]
         .dmap:
-          _ flatMap { _.getAsOpt[V](field) }
+          _.flatMap { _.getAsOpt[V](field) }
 
     def primitiveOne[V: BSONReader](selector: Bdoc, sort: Bdoc, field: String): Fu[Option[V]] =
       coll
@@ -496,7 +539,7 @@ object dsl extends dsl with Handlers:
         .sort(sort)
         .one[Bdoc]
         .dmap:
-          _ flatMap { _.getAsOpt[V](field) }
+          _.flatMap { _.getAsOpt[V](field) }
 
     def primitiveMap[I: BSONReader: BSONWriter, V](
         ids: Iterable[I],
@@ -512,7 +555,7 @@ object dsl extends dsl with Handlers:
             obj
               .getAsOpt[I]("_id")
               .flatMap: id =>
-                fieldExtractor(obj) map { id -> _ }
+                fieldExtractor(obj).map { id -> _ }
           .toMap
 
     def updateField[V: BSONWriter](selector: Bdoc, field: String, value: V) =
@@ -555,8 +598,8 @@ object dsl extends dsl with Handlers:
           allowDiskUse = allowDiskUse,
           readPreference = readPref
         ): agg =>
-          val nonEmpty = f(agg)
-          nonEmpty._1 +: nonEmpty._2
+          val (head, tail) = f(agg)
+          head :: tail
         .collect[List](maxDocs = maxDocs)
 
     def aggregateOne(
@@ -625,7 +668,7 @@ object dsl extends dsl with Handlers:
           arrayFilters = Seq.empty
         )
         .map:
-          _.value flatMap summon[BSONDocumentReader[D]].readOpt
+          _.value.flatMap(summon[BSONDocumentReader[D]].readOpt)
 
     def findAndRemove[D: BSONDocumentReader](
         selector: coll.pack.Document,
@@ -644,4 +687,4 @@ object dsl extends dsl with Handlers:
           arrayFilters = Seq.empty
         )
         .map:
-          _.value flatMap summon[BSONDocumentReader[D]].readOpt
+          _.value.flatMap(summon[BSONDocumentReader[D]].readOpt)

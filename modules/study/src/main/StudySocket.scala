@@ -1,44 +1,41 @@
 package lila.study
 
-import actorApi.Who
 import chess.Centis
-import chess.format.pgn.{ Glyph, Glyphs }
 import chess.format.UciPath
+import chess.format.pgn.{ Glyph, Glyphs }
 import play.api.libs.json.*
 
 import lila.common.Bus
 import lila.common.Json.{ *, given }
 import lila.room.RoomSocket.{ Protocol as RP, * }
-import lila.socket.RemoteSocket.{ Protocol as P, * }
-import lila.socket.Socket.{ makeMessage, Sri }
-import lila.socket.{ AnaAny, AnaDests, AnaDrop, AnaMove }
-import lila.tree.Node.{ defaultNodeJsonWriter, Comment, Gamebook, Shape, Shapes }
+import lila.core.socket.{ protocol as P, * }
 import lila.tree.Branch
-import lila.user.MyId
+import lila.tree.Node.{ Comment, Gamebook, Shape, Shapes }
+import lila.tree.Node.minimalNodeJsonWriter
 
 final private class StudySocket(
     api: StudyApi,
     jsonView: JsonView,
-    remoteSocketApi: lila.socket.RemoteSocket,
-    chatApi: lila.chat.ChatApi
-)(using Executor, Scheduler, lila.user.FlairApi.Getter):
+    socketKit: SocketKit,
+    socketRequest: SocketRequester,
+    chatApi: lila.core.chat.ChatApi
+)(using Executor, Scheduler, lila.core.user.FlairGet, lila.core.config.RateLimit):
 
   import StudySocket.{ *, given }
 
   lazy val rooms = makeRoomMap(send)
 
-  subscribeChat(rooms, _.Study)
+  subscribeChat(rooms, _.study)
 
   def isPresent(studyId: StudyId, userId: UserId): Fu[Boolean] =
-    lila.socket.SocketRequest[Boolean](
-      id => send(Protocol.Out.getIsPresent(id, studyId, userId)),
+    socketRequest[Boolean](
+      id => send.exec(Protocol.Out.getIsPresent(id, studyId, userId)),
       _ == "true"
     )
 
   def onServerEval(studyId: StudyId, eval: ServerEval.Progress): Unit =
     import eval.*
-    import lila.game.JsonView.given
-    send(
+    send.exec(
       RP.Out.tellRoom(
         studyId,
         makeMessage(
@@ -46,14 +43,14 @@ final private class StudySocket(
           Json.obj(
             "analysis" -> analysis,
             "ch"       -> chapterId,
-            "tree"     -> defaultNodeJsonWriter.writes(tree),
+            "tree"     -> lila.tree.Node.defaultNodeJsonWriter.writes(tree),
             "division" -> division
           )
         )
       )
     )
 
-  private lazy val studyHandler: Handler =
+  private lazy val studyHandler: SocketHandler =
     case RP.In.ChatSay(roomId, userId, msg) => api.talk(userId, roomId, msg)
     case RP.In.TellRoomSri(studyId, P.In.TellSri(sri, user, tpe, o)) =>
       import Protocol.In.{ *, given }
@@ -76,13 +73,13 @@ final private class StudySocket(
           AnaMove
             .parse(o)
             .foreach: move =>
-              applyWho(moveOrDrop(studyId, move, MoveOpts parse o))
+              applyWho(moveOrDrop(studyId, move, MoveOpts.parse(o))(using _))
 
         case "anaDrop" =>
           AnaDrop
             .parse(o)
             .foreach: drop =>
-              applyWho(moveOrDrop(studyId, drop, MoveOpts parse o))
+              applyWho(moveOrDrop(studyId, drop, MoveOpts.parse(o))(using _))
 
         case "deleteNode" =>
           reading[AtPosition](o): position =>
@@ -97,7 +94,7 @@ final private class StudySocket(
             (o \ "d" \ "toMainline")
               .asOpt[Boolean]
               .foreach: toMainline =>
-                applyWho(api.promote(studyId, position.ref, toMainline))
+                applyWho(api.promote(studyId, position.ref, toMainline)(using _))
 
         case "forceVariation" =>
           reading[AtPosition](o): position =>
@@ -115,7 +112,7 @@ final private class StudySocket(
             .foreach: username =>
               applyWho: w =>
                 api.kick(studyId, username.id, w.myId)
-                Bus.publish(actorApi.Kick(studyId, username.id, w.myId), "kickStudy")
+                Bus.publish(Kick(studyId, username.id, w.myId), "kickStudy")
 
         case "leave" =>
           who.foreach: w =>
@@ -126,7 +123,7 @@ final private class StudySocket(
             (o \ "d" \ "shapes")
               .asOpt[List[Shape]]
               .foreach: shapes =>
-                applyWho(api.setShapes(studyId, position.ref, Shapes(shapes take 32)))
+                applyWho(api.setShapes(studyId, position.ref, Shapes(shapes.take(32))))
 
         case "addChapter" =>
           reading[ChapterMaker.Data](o): data =>
@@ -178,7 +175,7 @@ final private class StudySocket(
               applyWho(api.editStudy(studyId, data))
 
         case "setTag" =>
-          reading[actorApi.SetTag](o): setTag =>
+          reading[SetTag](o): setTag =>
             applyWho(api.setTag(studyId, setTag))
 
         case "setComment" =>
@@ -186,7 +183,7 @@ final private class StudySocket(
             (o \ "d" \ "text")
               .asOpt[String]
               .foreach: text =>
-                applyWho(api.setComment(studyId, position.ref, Comment sanitize text))
+                applyWho(api.setComment(studyId, position.ref, Comment.sanitize(text)))
 
         case "deleteComment" =>
           reading[AtPosition](o): position =>
@@ -217,7 +214,7 @@ final private class StudySocket(
               applyWho(api.setTopics(studyId, topics))
 
         case "explorerGame" =>
-          reading[actorApi.ExplorerGame](o): data =>
+          reading[ExplorerGame](o): data =>
             applyWho(api.explorerGame(studyId, data))
 
         case "requestAnalysis" =>
@@ -229,62 +226,53 @@ final private class StudySocket(
           for
             w        <- who
             username <- o.get[UserStr]("d")
-          yield InviteLimitPerUser.zero(w.u, cost = 1):
-            api.invite(
-              w.u,
-              studyId,
-              username,
-              isPresent = userId => isPresent(studyId, userId),
-              onError = err => send(P.Out.tellSri(w.sri, makeMessage("error", err)))
-            )
+          yield api
+            .invite(w.u, studyId, username, isPresent(studyId, _))
+            .recover:
+              case err: Exception => send.exec(P.Out.tellSri(w.sri, makeMessage("error", err.getMessage)))
 
         case "relaySync" =>
           applyWho: w =>
-            Bus.publish(actorApi.RelayToggle(studyId, ~(o \ "d").asOpt[Boolean], w), "relayToggle")
+            Bus.publish(RelayToggle(studyId, ~(o \ "d").asOpt[Boolean], w), "relayToggle")
 
         case t => logger.warn(s"Unhandled study socket message: $t")
 
-  private lazy val rHandler: Handler = roomHandler(
+  private lazy val rHandler: SocketHandler = roomHandler(
     rooms,
     chatApi,
     logger,
     _ => _ => none, // the "talk" event is handled by the study API
     localTimeout = Some { (roomId, modId, suspectId) =>
-      api.isContributor(roomId, modId) >>& !api.isMember(roomId, suspectId) >>&
-        !Bus.ask("isOfficialRelay") { actorApi.IsOfficialRelay(roomId, _) }
+      api.isContributor(roomId, modId) >>& api.isMember(roomId, suspectId).not >>&
+        Bus.ask("isOfficialRelay") { IsOfficialRelay(roomId, _) }.not
     },
-    chatBusChan = _.Study
+    chatBusChan = _.study
   )
 
-  private def moveOrDrop(studyId: StudyId, m: AnaAny, opts: MoveOpts)(who: Who) =
+  private def moveOrDrop(studyId: StudyId, m: AnaAny, opts: MoveOpts)(using Who) =
     m.branch.foreach: branch =>
       if branch.ply < Node.MAX_PLIES then
         m.chapterId
           .ifTrue(opts.write)
           .foreach: chapterId =>
-            api.addNode(
-              studyId,
-              Position.Ref(chapterId, m.path),
-              branch withClock opts.clock,
-              opts
-            )(who)
+            api.addNode(AddNode(studyId, Position.Ref(chapterId, m.path), branch, opts))
 
-  private lazy val send: String => Unit = remoteSocketApi.makeSender("study-out").apply
+  private lazy val send = socketKit.send("study-out")
 
-  remoteSocketApi.subscribe("study-in", RP.In.reader)(
-    studyHandler orElse rHandler orElse remoteSocketApi.baseHandler
-  ) andDo send(P.Out.boot)
+  socketKit
+    .subscribe("study-in", RP.In.reader)(studyHandler.orElse(rHandler).orElse(socketKit.baseHandler))
+    .andDo(send.exec(P.Out.boot))
 
   // send API
 
   import JsonView.given
   import jsonView.given
-  import lila.tree.Node.{ defaultNodeJsonWriter, given }
+  import lila.tree.Node.given
   private type SendToStudy = StudyId => Unit
   private def version[A: Writes](tpe: String, data: A): SendToStudy =
-    studyId => rooms.tell(studyId into RoomId, NotifyVersion(tpe, data))
+    studyId => rooms.tell(studyId.into(RoomId), NotifyVersion(tpe, data))
   private def notifySri[A: Writes](sri: Sri, tpe: String, data: A): SendToStudy =
-    _ => send(P.Out.tellSri(sri, makeMessage(tpe, data)))
+    _ => send.exec(P.Out.tellSri(sri, makeMessage(tpe, data)))
 
   def setPath(pos: Position.Ref, who: Who) = version("path", Json.obj("p" -> pos, "w" -> who))
   def addNode(
@@ -296,18 +284,21 @@ final private class StudySocket(
       who: Who
   ) =
     val dests = AnaDests(variant, node.fen, pos.path.toString, pos.chapterId.some)
+    val relayPathDedup = relay
+      .map(_.path)
+      .map: path =>
+        if path == pos.path.+(node.id) then "!"
+        else path.toString
     version(
       "addNode",
       Json
         .obj(
-          "n" -> defaultNodeJsonWriter.writes(TreeBuilder.toBranch(node, variant)),
+          "n" -> minimalNodeJsonWriter.writes(node),
           "p" -> pos,
-          "w" -> who,
-          "d" -> dests.dests,
-          "o" -> dests.opening,
           "s" -> sticky
         )
-        .add("relay", relay)
+        .add("w", Option.when(relay.isEmpty)(who))
+        .add("relayPath", relayPathDedup)
     )
   def deleteNode(pos: Position.Ref, who: Who) = version("deleteNode", Json.obj("p" -> pos, "w" -> who))
   def promote(pos: Position.Ref, toMainline: Boolean, who: Who) =
@@ -331,7 +322,7 @@ final private class StudySocket(
       )
     )
   def reloadMembers(members: StudyMembers, sendTo: Iterable[UserId])(studyId: StudyId) =
-    send(RP.Out.tellRoomUsers(studyId, sendTo, makeMessage("members", members)))
+    send.exec(RP.Out.tellRoomUsers(studyId, sendTo, makeMessage("members", members)))
 
   def setComment(pos: Position.Ref, comment: Comment, who: Who) =
     version(
@@ -360,14 +351,19 @@ final private class StudySocket(
         "w" -> who
       )
     )
-  def setClock(pos: Position.Ref, clock: Option[Centis], who: Who) =
+  def setClock(pos: Position.Ref, clock: Option[Centis], relayDenorm: Option[Chapter.BothClocks]) =
     version(
       "clock",
-      Json.obj(
-        "p" -> pos,
-        "c" -> clock,
-        "w" -> who
-      )
+      Json
+        .obj(
+          "p" -> pos,
+          "c" -> clock
+        )
+        .add(
+          "relayClocks",
+          relayDenorm.map: clocks =>
+            Json.arr(clocks.white, clocks.black)
+        )
     )
   def forceVariation(pos: Position.Ref, force: Boolean, who: Who) =
     version(
@@ -378,7 +374,7 @@ final private class StudySocket(
         "w"     -> who
       )
     )
-  private[study] def reloadChapters(chapters: List[Chapter.Metadata]) = version("chapters", chapters)
+  private[study] def reloadChapters(previews: ChapterPreview.AsJsons) = version("chapters", previews)
   def reloadAll                                                       = version("reload", JsNull)
   def changeChapter(pos: Position.Ref, who: Who) = version("changeChapter", Json.obj("p" -> pos, "w" -> who))
   def updateChapter(chapterId: StudyChapterId, who: Who) =
@@ -426,18 +422,12 @@ final private class StudySocket(
     notifySri(sri, "reload", Json.obj("chapterId" -> chapterId))
   def validationError(error: String, sri: Sri) = notifySri(sri, "validationError", Json.obj("error" -> error))
 
-  private val InviteLimitPerUser = lila.memo.RateLimit[UserId](
-    credits = 50,
-    duration = 24 hour,
-    key = "study_invite.user"
-  )
-
-  api registerSocket this
+  api.registerSocket(this)
 
 object StudySocket:
 
-  given Conversion[RoomId, StudyId] = _ into StudyId
-  given Conversion[StudyId, RoomId] = _ into RoomId
+  given Conversion[RoomId, StudyId] = _.into(StudyId)
+  given Conversion[StudyId, RoomId] = _.into(RoomId)
 
   object Protocol:
 
@@ -445,14 +435,15 @@ object StudySocket:
       import play.api.libs.functional.syntax.*
 
       def reading[A](o: JsValue)(f: A => Unit)(using reader: Reads[A]): Unit =
-        o obj "d" flatMap { d =>
-          reader.reads(d).asOpt
-        } foreach f
+        o.obj("d")
+          .flatMap: d =>
+            reader.reads(d).asOpt
+          .foreach(f)
 
       case class AtPosition(path: UciPath, chapterId: StudyChapterId):
         def ref = Position.Ref(chapterId, path)
       given Reads[AtPosition] =
-        ((__ \ "path").read[UciPath] and (__ \ "ch").read[StudyChapterId])(AtPosition.apply)
+        ((__ \ "path").read[UciPath].and((__ \ "ch").read[StudyChapterId]))(AtPosition.apply)
       case class SetRole(userId: UserId, role: String)
       given Reads[SetRole]                  = Json.reads
       given Reads[ChapterMaker.Mode]        = optRead(ChapterMaker.Mode.apply)
@@ -464,9 +455,9 @@ object StudySocket:
       given Reads[ChapterMaker.EditData]      = Json.reads
       given Reads[ChapterMaker.DescData]      = Json.reads
       given studyDataReads: Reads[Study.Data] = Json.reads
-      given Reads[actorApi.SetTag]            = Json.reads
+      given Reads[SetTag]                     = Json.reads
       given Reads[Gamebook]                   = Json.reads
-      given Reads[actorApi.ExplorerGame]      = Json.reads
+      given Reads[ExplorerGame]               = Json.reads
 
     object Out:
       def getIsPresent(reqId: Int, studyId: StudyId, userId: UserId) =

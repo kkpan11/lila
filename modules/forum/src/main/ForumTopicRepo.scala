@@ -1,8 +1,9 @@
 package lila.forum
 
-import Filter.*
+import lila.core.forum.ForumTopicMini
 import lila.db.dsl.{ *, given }
-import lila.user.User
+
+import Filter.*
 
 final private class ForumTopicRepo(val coll: Coll, filter: Filter = Safe)(using
     Executor
@@ -23,10 +24,13 @@ final private class ForumTopicRepo(val coll: Coll, filter: Filter = Safe)(using
     case SafeAnd(u) => $or(noTroll, $doc("userId" -> u))
     case Unsafe     => $empty
 
-  private lazy val notStickyQuery = $doc("sticky" $ne true)
+  private lazy val notStickyQuery = $doc("sticky".$ne(true))
   private lazy val stickyQuery    = $doc("sticky" -> true)
 
   def byId(id: ForumTopicId): Fu[Option[ForumTopic]] = coll.byId[ForumTopic](id)
+
+  def byIds(ids: Seq[ForumTopicId]): Fu[List[ForumTopicMini]] =
+    coll.byStringIds[ForumTopicMini](ForumTopicId.raw(ids))
 
   def close(id: ForumTopicId, value: Boolean): Funit =
     coll.updateField($id(id), "closed", value).void
@@ -55,10 +59,10 @@ final private class ForumTopicRepo(val coll: Coll, filter: Filter = Safe)(using
   def nextSlug(categ: ForumCateg, name: String, it: Int = 1): Fu[String] =
     val slug = ForumTopic.nameToId(name) + ~(it != 1).option("-" + it)
     // also take troll topic into accounts
-    unsafe.byTree(categ.id, slug) flatMap { found =>
+    unsafe.byTree(categ.id, slug).flatMap { found =>
       if found.isDefined then nextSlug(categ, name, it + 1)
       else fuccess(slug)
     }
 
-  def byCategQuery(categ: ForumCateg)          = $doc("categId" -> categ.slug) ++ trollFilter
+  def byCategQuery(categ: ForumCateg)          = $doc("categId" -> categ.id) ++ trollFilter
   def byCategNotStickyQuery(categ: ForumCateg) = byCategQuery(categ) ++ notStickyQuery

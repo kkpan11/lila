@@ -1,19 +1,19 @@
-import { h, VNode } from 'snabbdom';
+import type { VNode } from 'snabbdom';
 import * as licon from 'common/licon';
 import { numberFormat } from 'common/number';
-import { perf } from 'game/perf';
-import { bind, dataIcon, MaybeVNode, MaybeVNodes } from 'common/snabbdom';
+import perfIcons from 'common/perfIcons';
+import { bind, dataIcon, type MaybeVNode, type LooseVNodes, looseH as h } from 'common/snabbdom';
 import { view as renderConfig } from './explorerConfig';
 import { moveArrowAttributes, ucfirst } from './explorerUtil';
-import AnalyseCtrl from '../ctrl';
+import type AnalyseCtrl from '../ctrl';
 import {
   isOpening,
   isTablebase,
-  TablebaseCategory,
-  OpeningData,
-  OpeningMoveStats,
-  OpeningGame,
-  ExplorerDb,
+  type TablebaseCategory,
+  type OpeningData,
+  type OpeningMoveStats,
+  type OpeningGame,
+  type ExplorerDb,
 } from './interfaces';
 import ExplorerCtrl, { MAX_DEPTH } from './explorerCtrl';
 import { showTablebase } from './tablebaseView';
@@ -24,9 +24,7 @@ function resultBar(move: OpeningMoveStats): VNode {
     const percent = (move[key] * 100) / sum;
     return h(
       'span.' + key,
-      {
-        attrs: { style: 'width: ' + Math.round((move[key] * 1000) / sum) / 10 + '%' },
-      },
+      { attrs: { style: 'width: ' + Math.round((move[key] * 1000) / sum) / 10 + '%' } },
       percent > 12 ? Math.round(percent) + (percent > 20 ? '%' : '') : '',
     );
   };
@@ -35,7 +33,6 @@ function resultBar(move: OpeningMoveStats): VNode {
 
 function showMoveTable(ctrl: AnalyseCtrl, data: OpeningData): VNode | null {
   if (!data.moves.length) return null;
-  const trans = ctrl.trans.noarg;
   const sumTotal = data.white + data.black + data.draws;
   const movesWithCurrent =
     data.moves.length > 1
@@ -54,9 +51,9 @@ function showMoveTable(ctrl: AnalyseCtrl, data: OpeningData): VNode | null {
   return h('table.moves', [
     h('thead', [
       h('tr', [
-        h('th', trans('move')),
-        h('th', { attrs: { colspan: 2 } }, trans('games')),
-        h('th', trans('whiteDrawBlack')),
+        h('th', i18n.site.move),
+        h('th', { attrs: { colspan: 2 } }, i18n.site.games),
+        h('th', i18n.site.whiteDrawBlack),
       ]),
     ]),
     h(
@@ -64,27 +61,22 @@ function showMoveTable(ctrl: AnalyseCtrl, data: OpeningData): VNode | null {
       moveArrowAttributes(ctrl, { fen: data.fen, onClick: (_, uci) => uci && ctrl.explorerMove(uci) }),
       movesWithCurrent.map(move => {
         const total = move.white + move.draws + move.black;
-        return h(
-          `tr${move.uci ? '' : '.sum'}`,
-          {
-            key: move.uci,
-            attrs: {
-              'data-uci': move.uci,
-            },
-          },
-          [
-            h('td', move.san[0] === 'P' ? move.san.slice(1) : move.san),
-            h('td', ((total / sumTotal) * 100).toFixed(0) + '%'),
-            h('td', numberFormat(total)),
-            h('td', { attrs: { title: moveTooltip(ctrl, move) } }, resultBar(move)),
-          ],
-        );
+        return h(`tr${move.uci ? '' : '.sum'}`, { key: move.uci, attrs: { 'data-uci': move.uci } }, [
+          h(
+            'td',
+            { attrs: { title: move.opening ? `${move.opening.eco}: ${move.opening.name}` : '' } },
+            move.san,
+          ),
+          h('td', ((total / sumTotal) * 100).toFixed(0) + '%'),
+          h('td', numberFormat(total)),
+          h('td', { attrs: { title: moveStatsTooltip(ctrl, move) } }, resultBar(move)),
+        ]);
       }),
     ),
   ]);
 }
 
-function moveTooltip(ctrl: AnalyseCtrl, move: OpeningMoveStats): string {
+function moveStatsTooltip(ctrl: AnalyseCtrl, move: OpeningMoveStats): string {
   if (!move.uci) return 'Total';
   if (move.game) {
     const g = move.game;
@@ -94,7 +86,7 @@ function moveTooltip(ctrl: AnalyseCtrl, move: OpeningMoveStats): string {
       : `${g.white.name} ${result} ${g.black.name}`;
   }
   if (ctrl.explorer.opts.showRatings) {
-    if (move.averageRating) return ctrl.trans('averageRatingX', move.averageRating);
+    if (move.averageRating) return i18n.site.averageRatingX(move.averageRating);
     if (move.averageOpponentRating)
       return `Performance rating: ${move.performance}, average opponent: ${move.averageOpponentRating}`;
   }
@@ -105,13 +97,13 @@ const showResult = (winner?: Color): VNode =>
   winner === 'white'
     ? h('result.white', '1-0')
     : winner === 'black'
-    ? h('result.black', '0-1')
-    : h('result.draws', '½-½');
+      ? h('result.black', '0-1')
+      : h('result.draws', '½-½');
 
-function showGameTable(ctrl: AnalyseCtrl, fen: Fen, title: string, games: OpeningGame[]): VNode | null {
+function showGameTable(ctrl: AnalyseCtrl, fen: FEN, title: string, games: OpeningGame[]): VNode | null {
   if (!ctrl.explorer.withGames || !games.length) return null;
   const openedId = ctrl.explorer.gameMenu(),
-    isMasters = ctrl.explorer.db() == 'masters';
+    isMasters = ctrl.explorer.db() === 'masters';
   return h('table.games', [
     h('thead', [h('tr', [h('th.title', { attrs: { colspan: isMasters ? 4 : 5 } }, title)])]),
     h(
@@ -131,39 +123,25 @@ function showGameTable(ctrl: AnalyseCtrl, fen: Fen, title: string, games: Openin
       games.map(game => {
         return openedId === game.id
           ? gameActions(ctrl, game)
-          : h(
-              'tr',
-              {
-                key: game.id,
-                attrs: { 'data-id': game.id, 'data-uci': game.uci || '' },
-              },
-              [
-                ctrl.explorer.opts.showRatings
-                  ? h(
-                      'td',
-                      [game.white, game.black].map(p => h('span', '' + p.rating)),
-                    )
-                  : null,
+          : h('tr', { key: game.id, attrs: { 'data-id': game.id, 'data-uci': game.uci || '' } }, [
+              ctrl.explorer.opts.showRatings &&
                 h(
                   'td',
-                  [game.white, game.black].map(p => h('span', p.name)),
+                  [game.white, game.black].map(p => h('span', '' + p.rating)),
                 ),
-                h('td', showResult(game.winner)),
-                h('td', game.month || game.year),
-                isMasters
-                  ? undefined
-                  : h(
-                      'td',
-                      game.speed &&
-                        h('i', {
-                          attrs: {
-                            title: ucfirst(game.speed),
-                            ...dataIcon(perf.icons[game.speed]),
-                          },
-                        }),
-                    ),
-              ],
-            );
+              h(
+                'td',
+                [game.white, game.black].map(p => h('span', p.name)),
+              ),
+              h('td', showResult(game.winner)),
+              h('td', game.month || game.year),
+              !isMasters &&
+                h(
+                  'td',
+                  game.speed &&
+                    h('i', { attrs: { title: ucfirst(game.speed), ...dataIcon(perfIcons[game.speed]) } }),
+                ),
+            ]);
       }),
     ),
   ]);
@@ -174,7 +152,7 @@ function openGame(ctrl: AnalyseCtrl, gameId: string) {
     fenParam = ctrl.node.ply > 0 ? '?fen=' + ctrl.node.fen : '';
   let url = '/' + gameId + '/' + orientation + fenParam;
   if (ctrl.explorer.db() === 'masters') url = '/import/master' + url;
-  window.open(url, '_blank', 'noopener');
+  window.open(url, '_blank');
 }
 
 function gameActions(ctrl: AnalyseCtrl, game: OpeningGame): VNode {
@@ -183,74 +161,45 @@ function gameActions(ctrl: AnalyseCtrl, game: OpeningGame): VNode {
     ctrl.explorer.gameMenu(null);
     ctrl.redraw();
   };
-  return h(
-    'tr',
-    {
-      key: game.id + '-m',
-    },
-    [
+  return h('tr', { key: game.id + '-m' }, [
+    h('td.game_menu', { attrs: { colspan: ctrl.explorer.db() === 'masters' ? 4 : 5 } }, [
       h(
-        'td.game_menu',
-        {
-          attrs: { colspan: ctrl.explorer.db() == 'masters' ? 4 : 5 },
-        },
-        [
-          h(
-            'div.game_title',
-            `${game.white.name} - ${game.black.name}, ${showResult(game.winner).text}, ${game.year}`,
-          ),
-          h('div.menu', [
-            h(
-              'a.text',
-              {
-                attrs: dataIcon(licon.Eye),
-                hook: bind('click', _ => openGame(ctrl, game.id)),
-              },
-              'View',
-            ),
-            ...(ctrl.study
-              ? [
-                  h(
-                    'a.text',
-                    {
-                      attrs: dataIcon(licon.BubbleSpeech),
-                      hook: bind('click', _ => send(false), ctrl.redraw),
-                    },
-                    'Cite',
-                  ),
-                  h(
-                    'a.text',
-                    {
-                      attrs: dataIcon(licon.PlusButton),
-                      hook: bind('click', _ => send(true), ctrl.redraw),
-                    },
-                    'Insert',
-                  ),
-                ]
-              : []),
-            h(
-              'a.text',
-              {
-                attrs: dataIcon(licon.X),
-                hook: bind('click', _ => ctrl.explorer.gameMenu(null), ctrl.redraw),
-              },
-              'Close',
-            ),
-          ]),
-        ],
+        'div.game_title',
+        `${game.white.name} - ${game.black.name}, ${showResult(game.winner).text}, ${game.year}`,
       ),
-    ],
-  );
+      h('div.menu', [
+        h(
+          'a.text',
+          { attrs: dataIcon(licon.Eye), hook: bind('click', _ => openGame(ctrl, game.id)) },
+          'View',
+        ),
+        ctrl.study &&
+          h(
+            'a.text',
+            { attrs: dataIcon(licon.BubbleSpeech), hook: bind('click', _ => send(false), ctrl.redraw) },
+            'Cite',
+          ),
+        ctrl.study &&
+          h(
+            'a.text',
+            { attrs: dataIcon(licon.PlusButton), hook: bind('click', _ => send(true), ctrl.redraw) },
+            'Insert',
+          ),
+        h(
+          'a.text',
+          { attrs: dataIcon(licon.X), hook: bind('click', _ => ctrl.explorer.gameMenu(null), ctrl.redraw) },
+          'Close',
+        ),
+      ]),
+    ]),
+  ]);
 }
 
 const closeButton = (ctrl: AnalyseCtrl): VNode =>
   h(
     'button.button.button-empty.text',
-    {
-      attrs: dataIcon(licon.X),
-      hook: bind('click', ctrl.toggleExplorer, ctrl.redraw),
-    },
-    ctrl.trans.noarg('close'),
+    { attrs: dataIcon(licon.X), hook: bind('click', ctrl.toggleExplorer, ctrl.redraw) },
+    i18n.site.close,
   );
 
 const showEmpty = (ctrl: AnalyseCtrl, data?: OpeningData): VNode =>
@@ -260,24 +209,19 @@ const showEmpty = (ctrl: AnalyseCtrl, data?: OpeningData): VNode =>
     h('div.message', [
       h(
         'strong',
-        ctrl.trans.noarg(ctrl.explorer.root.node.ply >= MAX_DEPTH ? 'maxDepthReached' : 'noGameFound'),
+        ctrl.explorer.root.node.ply >= MAX_DEPTH ? i18n.site.maxDepthReached : i18n.site.noGameFound,
       ),
       data?.queuePosition
         ? h('p.explanation', `Indexing ${data.queuePosition} other players first ...`)
-        : !ctrl.explorer.config.fullHouse()
-        ? h('p.explanation', ctrl.trans.noarg('maybeIncludeMoreGamesFromThePreferencesMenu'))
-        : null,
+        : !ctrl.explorer.config.fullHouse() &&
+          h('p.explanation', i18n.site.maybeIncludeMoreGamesFromThePreferencesMenu),
     ]),
   ]);
 
 const showGameEnd = (ctrl: AnalyseCtrl, title: string): VNode =>
   h('div.data.empty', [
-    h('div.title', ctrl.trans.noarg('gameOver')),
-    h('div.message', [
-      h('i', { attrs: dataIcon(licon.InfoCircle) }),
-      h('h3', ctrl.trans.noarg(title)),
-      closeButton(ctrl),
-    ]),
+    h('div.title', i18n.site.gameOver),
+    h('div.message', [h('i', { attrs: dataIcon(licon.InfoCircle) }), h('h3', title), closeButton(ctrl)]),
   ]);
 
 const openingTitle = (ctrl: AnalyseCtrl, data?: OpeningData) => {
@@ -285,23 +229,10 @@ const openingTitle = (ctrl: AnalyseCtrl, data?: OpeningData) => {
   const title = opening ? `${opening.eco} ${opening.name}` : '';
   return h(
     'div.title',
-    {
-      attrs: opening ? { title } : {},
-    },
+    { attrs: opening ? { title } : {} },
     opening
-      ? [
-          h(
-            'a',
-            {
-              attrs: {
-                href: `/opening/${opening.name}`,
-                target: '_blank',
-              },
-            },
-            title,
-          ),
-        ]
-      : [showTitle(ctrl, ctrl.data.game.variant)],
+      ? [h('a', { attrs: { href: `/opening/${opening.name}`, target: '_blank' } }, title)]
+      : [showTitle(ctrl.data.game.variant)],
   );
 };
 
@@ -311,12 +242,11 @@ export const clearLastShow = () => {
 };
 
 function show(ctrl: AnalyseCtrl): MaybeVNode {
-  const trans = ctrl.trans.noarg,
-    data = ctrl.explorer.current();
+  const data = ctrl.explorer.current();
   if (data && isOpening(data)) {
     const moveTable = showMoveTable(ctrl, data),
-      recentTable = showGameTable(ctrl, data.fen, trans('recentGames'), data.recentGames || []),
-      topTable = showGameTable(ctrl, data.fen, trans('topGames'), data.topGames || []);
+      recentTable = showGameTable(ctrl, data.fen, i18n.site.recentGames, data.recentGames || []),
+      topTable = showGameTable(ctrl, data.fen, i18n.site.topGames, data.topGames || []);
     if (moveTable || recentTable || topTable)
       lastShow = h('div.data', [
         explorerTitle(ctrl.explorer),
@@ -331,23 +261,23 @@ function show(ctrl: AnalyseCtrl): MaybeVNode {
       showTablebase(
         ctrl,
         data.fen,
-        trans(title),
-        tooltip && trans(tooltip),
-        data.moves.filter(m => m.category == category),
+        title,
+        tooltip,
+        data.moves.filter(m => m.category === category),
       );
     if (data.moves.length)
       lastShow = h('div.data', [
-        ...row('loss', 'winning'),
-        ...row('unknown', 'unknown'),
-        ...row('maybe-loss', 'winOr50MovesByPriorMistake', 'unknownDueToRounding'),
-        ...row('blessed-loss', 'winPreventedBy50MoveRule'),
-        ...row('draw', 'drawn'),
-        ...row('cursed-win', 'lossSavedBy50MoveRule'),
-        ...row('maybe-win', 'lossOr50MovesByPriorMistake', 'unknownDueToRounding'),
-        ...row('win', 'losing'),
+        ...row('loss', i18n.site.winning),
+        ...row('unknown', i18n.site.unknown),
+        ...row('maybe-loss', i18n.site.winOr50MovesByPriorMistake, i18n.site.unknownDueToRounding),
+        ...row('blessed-loss', i18n.site.winPreventedBy50MoveRule),
+        ...row('draw', i18n.site.drawn),
+        ...row('cursed-win', i18n.site.lossSavedBy50MoveRule),
+        ...row('maybe-win', i18n.site.lossOr50MovesByPriorMistake, i18n.site.unknownDueToRounding),
+        ...row('win', i18n.site.losing),
       ]);
-    else if (data.checkmate) lastShow = showGameEnd(ctrl, 'checkmate');
-    else if (data.stalemate) lastShow = showGameEnd(ctrl, 'stalemate');
+    else if (data.checkmate) lastShow = showGameEnd(ctrl, i18n.site.checkmate);
+    else if (data.stalemate) lastShow = showGameEnd(ctrl, i18n.site.stalemate);
     else if (data.variant_win || data.variant_loss) lastShow = showGameEnd(ctrl, 'variantEnding');
     else lastShow = showEmpty(ctrl);
   }
@@ -375,7 +305,7 @@ const explorerTitle = (explorer: ExplorerCtrl) => {
           'click',
           () => {
             explorer.config.selectPlayer(playerName || 'me');
-            if (explorer.db() != 'player') {
+            if (explorer.db() !== 'player') {
               explorer.config.data.db('player');
               explorer.config.data.open(true);
             }
@@ -383,58 +313,55 @@ const explorerTitle = (explorer: ExplorerCtrl) => {
           explorer.reload,
         ),
       },
-      explorer.root.trans('player'),
+      i18n.site.player,
     );
-  const active = (nodes: MaybeVNodes, title: string) =>
+  const active = (nodes: LooseVNodes, title: string) =>
     h(
       'span.active.text.' + db,
       {
         attrs: { title, ...dataIcon(licon.Book) },
-        hook: db == 'player' ? bind('click', explorer.config.toggleColor, explorer.reload) : undefined,
+        hook: db === 'player' ? bind('click', explorer.config.toggleColor, explorer.reload) : undefined,
       },
       nodes,
     );
   const playerName = explorer.config.data.playerName.value();
-  const masterDbExplanation = explorer.root.trans('masterDbExplanation', 2200, '1952', '2022-10'),
-    lichessDbExplanation = explorer.root.trans('lichessDbExplanation');
+  const masterDbExplanation = i18n.site.masterDbExplanation(2200, '1952', '2024-08'),
+    lichessDbExplanation = i18n.site.lichessDbExplanation;
   const data = explorer.current();
   const queuePosition = data && isOpening(data) && data.queuePosition;
   return h('div.explorer-title', [
-    db == 'masters'
+    db === 'masters'
       ? active([h('strong', 'Masters'), ' database'], masterDbExplanation)
-      : explorer.config.allDbs.includes('masters')
-      ? otherLink('Masters', masterDbExplanation)
-      : undefined,
-    db == 'lichess'
+      : explorer.config.allDbs.includes('masters') && otherLink('Masters', masterDbExplanation),
+    db === 'lichess'
       ? active([h('strong', 'Lichess'), ' database'], lichessDbExplanation)
       : otherLink('Lichess', lichessDbExplanation),
-    db == 'player'
+    db === 'player'
       ? playerName
         ? active(
             [
               h(`strong${playerName.length > 14 ? '.long' : ''}`, playerName),
-              ' ' + explorer.root.trans(explorer.config.data.color() == 'white' ? 'asWhite' : 'asBlack'),
-              explorer.isIndexing() && !explorer.config.data.open()
-                ? h('i.ddloader', {
-                    attrs: {
-                      title: queuePosition
-                        ? `Indexing ${queuePosition} other players first ...`
-                        : 'Indexing ...',
-                    },
-                  })
-                : undefined,
+              ` ${i18n.site[explorer.config.data.color() === 'white' ? 'asWhite' : 'asBlack']}`,
+              explorer.isIndexing() &&
+                !explorer.config.data.open() &&
+                h('i.ddloader', {
+                  attrs: {
+                    title: queuePosition
+                      ? `Indexing ${queuePosition} other players first ...`
+                      : 'Indexing ...',
+                  },
+                }),
             ],
-            explorer.root.trans('switchSides'),
+            i18n.site.switchSides,
           )
         : active([h('strong', 'Player'), ' database'], '')
       : playerLink(),
   ]);
 };
 
-function showTitle(ctrl: AnalyseCtrl, variant: Variant) {
-  if (variant.key === 'standard' || variant.key === 'fromPosition')
-    return ctrl.trans.noarg('openingExplorer');
-  return ctrl.trans('xOpeningExplorer', variant.name);
+function showTitle(variant: Variant) {
+  if (variant.key === 'standard' || variant.key === 'fromPosition') return i18n.site.openingExplorer;
+  return i18n.site.xOpeningExplorer(variant.name);
 }
 
 function showConfig(ctrl: AnalyseCtrl): VNode {
@@ -443,7 +370,7 @@ function showConfig(ctrl: AnalyseCtrl): VNode {
 
 function showFailing(ctrl: AnalyseCtrl) {
   return h('div.data.empty', [
-    h('div.title', showTitle(ctrl, ctrl.data.game.variant)),
+    h('div.title', showTitle(ctrl.data.game.variant)),
     h('div.failing.message', [
       h('h3', 'Oops, sorry!'),
       h('p.explanation', ctrl.explorer.failing()?.toString()),
@@ -452,7 +379,7 @@ function showFailing(ctrl: AnalyseCtrl) {
   ]);
 }
 
-let lastFen: Fen = '';
+let lastFen: FEN = '';
 
 export default function (ctrl: AnalyseCtrl): VNode | undefined {
   const explorer = ctrl.explorer;
@@ -465,10 +392,7 @@ export default function (ctrl: AnalyseCtrl): VNode | undefined {
   return h(
     `section.explorer-box.sub-box${configOpened ? '.explorer__config' : ''}`,
     {
-      class: {
-        loading,
-        reduced: !configOpened && (!!explorer.failing() || explorer.movesAway() > 2),
-      },
+      class: { loading, reduced: !configOpened && (!!explorer.failing() || explorer.movesAway() > 2) },
       hook: {
         insert: vnode => ((vnode.elm as HTMLElement).scrollTop = 0),
         postpatch(_, vnode) {

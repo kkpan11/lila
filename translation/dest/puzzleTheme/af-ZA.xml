@@ -3,7 +3,7 @@
   <string name="advancedPawn">Gevorderde pion</string>
   <string name="advancedPawnDescription">\'n Pion wat bevorder of dreig om te bevorder, is die sleutel tot die taktiek.</string>
   <string name="advantage">Voordeel</string>
-  <string name="advantageDescription" comment="advantageDescription&#10;&#10;'cp' stands for centipawn (1/100th of a pawn). It is used in computer analysis to assess a position.&#10;'eval' is short for evaluation.">Gryp u kans aan om \'n deurslaggewende voordeel te behaal. (200cp ≤ eval ≤ 600cp)</string>
+  <string name="advantageDescription">Gryp u kans aan om \'n deurslaggewende voordeel te behaal. (200cp ≤ eval ≤ 600cp)</string>
   <string name="anastasiaMate">Anastasia se mat</string>
   <string name="anastasiaMateDescription">\'n Ruiter en \'n toring of \'n dame span saam om die opposisie koning tussen die kant van die bord en \'n vriendelike stuk vas te vang.</string>
   <string name="arabianMate">Arebierse mat</string>
@@ -23,13 +23,13 @@
   <string name="capturingDefender">Vang die verdediger vas</string>
   <string name="capturingDefenderDescription">Verwyder \'n stuk wat van kritieke belang is vir die verdediging van \'n ander stuk, sodat die nou onverdedigde stuk op \'n volgende skuif vasgevang kan word.</string>
   <string name="crushing">Verpletter</string>
-  <string name="crushingDescription" comment="crushingDescription&#10;&#10;'cp' stands for centipawn (1/100th of a pawn). It is used in computer analysis to assess a position.&#10;'eval' is short for evaluation.">Let op die flater van die teenstander om \'n verpletterende voordeel te behaal. (eval ≥ 600cp)</string>
+  <string name="crushingDescription">Let op die flater van die teenstander om \'n verpletterende voordeel te behaal. (eval ≥ 600cp)</string>
   <string name="doubleBishopMate">Dubbel loper mat</string>
   <string name="doubleBishopMateDescription">Twee aanvallende lopers op aaneengrensende diagonale mat \'n koning wat deur sy eie stukke vasgekeer is.</string>
   <string name="dovetailMate">Duifstert mat</string>
   <string name="dovetailMateDescription">\'n Dame mat \'n aangrensende koning, wie se twee onsnapping\'s blokkies deur sy eie stukke geblok is.</string>
   <string name="equality">Gelykheid</string>
-  <string name="equalityDescription" comment="equalityDescription&#10;&#10;'cp' stands for centipawn (1/100th of a pawn). It is used in computer analysis to assess a position.&#10;'eval' is short for evaluation.">Kom terug uit \'n verloorposisie en verseker \'n gelykopuitslag of \'n gebalanseerde posisie. (eval ≤ 200cp)</string>
+  <string name="equalityDescription">Kom terug uit \'n verloorposisie en verseker \'n gelykopuitslag of \'n gebalanseerde posisie. (eval ≤ 200cp)</string>
   <string name="kingsideAttack">Kingside aanval</string>
   <string name="kingsideAttackDescription">\'N Aanval van die koning van die teenstander, nadat hulle aan die koningskant gegooi het.</string>
   <string name="clearance">Opruiming</string>
@@ -57,14 +57,16 @@
   <string name="interferenceDescription">Om \'n stuk tussen twee teenstanderstukke te skuif om een ​​of albei teenstanderstukke onverdedig te laat, soos \'n ridder op \'n verdedigde vierkant tussen twee toring.</string>
   <string name="intermezzo">Intermezzo</string>
   <string name="intermezzoDescription">In plaas daarvan om die verwagte skuif te speel, moet u eers \'n ander stap inbring wat \'n onmiddellike bedreiging inhou wat die opponent moet beantwoord. Ook bekend as \"Zwischenzug\" of \"Tussenin\".</string>
+  <string name="vukovicMate">Vucovic-mat</string>
+  <string name="vukovicMateDescription">\'n Toring en \'n ruiter werk saam om die koning te mat. Die toring verkry die mat gesteun deur \'n derde stuk, en die ruiter blok die koning se ontsnappingsblokkies.</string>
   <string name="knightEndgame">Ridder eindspel</string>
   <string name="knightEndgameDescription">\'N Eindspel met net ridders en pionne.</string>
   <string name="long">Lang legkaart</string>
   <string name="longDescription">Drie skofte om te wen.</string>
   <string name="master">Meester spelle</string>
-  <string name="masterDescription">Kopkrappers uit spelle van getitelde spelers.</string>
+  <string name="masterDescription">Raaisels uit spelle van getitelde spelers.</string>
   <string name="masterVsMaster">Meester vs Meester spelle</string>
-  <string name="masterVsMasterDescription">Kopkrappers uit spelle tussen twee getitelde spelers.</string>
+  <string name="masterVsMasterDescription">Raaisels uit spelle tussen twee getitelde spelers.</string>
   <string name="mate">Mat</string>
   <string name="mateDescription">Wen die spel met styl.</string>
   <string name="mateIn1">Mat in 1</string>
@@ -108,7 +110,7 @@
   <string name="smotheredMate">Versmoorde mat</string>
   <string name="smotheredMateDescription">\'N Skaakmat wat deur \'n ridder afgelewer word waarin die gepaste koning nie kan beweeg nie omdat dit deur sy eie stukke omring (of versmoor word).</string>
   <string name="superGM">Super GM spelle</string>
-  <string name="superGMDescription">Kopkrappers uit spelle tussen die beste spelers in die wêreld.</string>
+  <string name="superGMDescription">Raaisels uit spelle tussen die beste spelers in die wêreld.</string>
   <string name="trappedPiece">Vasgevang stuk</string>
   <string name="trappedPieceDescription">\'N Stuk kan nie vang om te ontsnap nie, aangesien dit beperkte bewegings het.</string>
   <string name="underPromotion">Onderbevordering</string>
@@ -119,9 +121,9 @@
   <string name="xRayAttackDescription">\'N Stuk val of verdedig \'n vierkant deur \'n vyandige stuk.</string>
   <string name="zugzwang">Zugzwang</string>
   <string name="zugzwangDescription">Die opponent is beperk in die bewegings wat hulle kan maak, en alle bewegings vererger hul posisie.</string>
-  <string name="healthyMix">Gesonde mengsel</string>
-  <string name="healthyMixDescription">\'N Bietjie van alles. Jy weet nie wat om te verwag nie, dus bly jy gereed vir enigiets! Net soos in regte speletjies.</string>
+  <string name="mix">Gesonde mengsel</string>
+  <string name="mixDescription">\'N Bietjie van alles. Jy weet nie wat om te verwag nie, dus bly jy gereed vir enigiets! Net soos in regte speletjies.</string>
   <string name="playerGames">Speler se spelle</string>
-  <string name="playerGamesDescription">Beloer kopkrappers wat ontstaan van jou spelle, of van ander se spelle af.</string>
+  <string name="playerGamesDescription">Beloer raaisels wat ontstaan van jou spelle, of van ander se spelle af.</string>
   <string name="puzzleDownloadInformation">Die raaisels is in openbare domain en kan afgelaai word vanaf %s.</string>
 </resources>

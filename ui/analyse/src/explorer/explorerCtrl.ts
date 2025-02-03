@@ -1,28 +1,21 @@
-import { Prop, prop, defined } from 'common';
+import { type Prop, prop, defined } from 'common';
 import { storedBooleanProp } from 'common/storage';
 import { defer } from 'common/defer';
-import { fenColor } from 'common/mini-board';
-import debounce from 'common/debounce';
-import { sync, Sync } from 'common/promise';
+import { fenColor } from 'common/miniBoard';
+import { debounce } from 'common/timing';
+import { sync, type Sync } from 'common/promise';
 import { opposite } from 'chessground/util';
 import * as xhr from './explorerXhr';
 import { winnerOf } from './explorerUtil';
-import * as gameUtil from 'game';
-import AnalyseCtrl from '../ctrl';
-import {
-  Hovering,
-  ExplorerData,
-  ExplorerDb,
-  OpeningData,
-  SimpleTablebaseHit,
-  ExplorerOpts,
-} from './interfaces';
+import { replayable } from 'game';
+import type AnalyseCtrl from '../ctrl';
+import type { Hovering, ExplorerData, OpeningData, SimpleTablebaseHit, ExplorerOpts } from './interfaces';
 import { ExplorerConfigCtrl } from './explorerConfig';
 import { clearLastShow } from './explorerView';
 
 export const MAX_DEPTH = 50;
 
-function pieceCount(fen: Fen) {
+function pieceCount(fen: FEN) {
   const parts = fen.split(/\s/);
   return parts[0].split(/[nbrqkp]/i).length - 1;
 }
@@ -41,7 +34,7 @@ function tablebasePieces(variant: VariantKey) {
   }
 }
 
-export const tablebaseGuaranteed = (variant: VariantKey, fen: Fen) =>
+export const tablebaseGuaranteed = (variant: VariantKey, fen: FEN) =>
   pieceCount(fen) <= tablebasePieces(variant);
 
 export default class ExplorerCtrl {
@@ -67,7 +60,7 @@ export default class ExplorerCtrl {
   ) {
     this.allowed = prop(previous ? previous.allowed() : true);
     this.enabled = storedBooleanProp('analyse.explorer.enabled', false);
-    this.withGames = root.synthetic || gameUtil.replayable(root.data) || !!root.data.opponent.ai;
+    this.withGames = root.synthetic || replayable(root.data) || !!root.data.opponent.ai;
     this.effectiveVariant =
       root.data.game.variant.key === 'fromPosition' ? 'standard' : root.data.game.variant.key;
     this.config = new ExplorerConfigCtrl(root, this.effectiveVariant, this.reload, previous?.config);
@@ -77,12 +70,12 @@ export default class ExplorerCtrl {
 
   private checkHash = (e?: HashChangeEvent) => {
     const parts = location.hash.split('/');
-    if (parts[0] == '#explorer' || parts[0] == '#opening') {
+    if (parts[0] === '#explorer' || parts[0] === '#opening') {
       this.enabled(true);
-      if (parts[1] == 'lichess' || parts[1] === 'masters') this.config.data.db(parts[1]);
+      if (parts[1] === 'lichess' || parts[1] === 'masters') this.config.data.db(parts[1]);
       else if (parts[1]?.match(/[A-Za-z0-9_-]{2,30}/)) {
         this.config.selectPlayer(parts[1]);
-        this.config.data.color(parts[2] == 'black' ? 'black' : 'white');
+        this.config.data.color(parts[2] === 'black' ? 'black' : 'white');
       }
       if (e) this.reload();
     }
@@ -130,7 +123,7 @@ export default class ExplorerCtrl {
             .opening(
               {
                 ...this.baseXhrOpening(),
-                db: this.db() as ExplorerDb,
+                db: this.db(),
                 variant: this.effectiveVariant,
                 rootFen: this.root.nodeList[0].fen,
                 play: this.root.nodeList.slice(1).map(s => s.uci!),
@@ -160,7 +153,7 @@ export default class ExplorerCtrl {
     opening: this.root.data.game.opening,
   };
 
-  private tablebaseRelevant = (variant: VariantKey, fen: Fen) =>
+  private tablebaseRelevant = (variant: VariantKey, fen: FEN) =>
     pieceCount(fen) - 1 <= tablebasePieces(variant) && this.root.ceval.possible;
 
   setNode = () => {
@@ -196,19 +189,19 @@ export default class ExplorerCtrl {
       this.root.autoScroll();
     }
   };
-  setHovering = (fen: Fen, uci: Uci | null) => {
+  setHovering = (fen: FEN, uci: Uci | null) => {
     this.root.fork.hover(uci);
     this.hovering(uci ? { fen, uci } : null);
     this.root.setAutoShapes();
   };
   onFlip = () => {
-    if (this.db() == 'player') {
+    if (this.db() === 'player') {
       this.cache = {};
       this.setNode();
     }
   };
   isIndexing = () => !!this.lastStream && !defined(this.lastStream.sync);
-  fetchMasterOpening = async (fen: Fen): Promise<OpeningData> => {
+  fetchMasterOpening = async (fen: FEN): Promise<OpeningData> => {
     const deferred = defer<OpeningData>();
     await xhr.opening(
       {
@@ -222,14 +215,14 @@ export default class ExplorerCtrl {
     );
     return await deferred.promise;
   };
-  fetchTablebaseHit = async (fen: Fen): Promise<SimpleTablebaseHit> => {
+  fetchTablebaseHit = async (fen: FEN): Promise<SimpleTablebaseHit> => {
     const res = await xhr.tablebase(this.opts.tablebaseEndpoint, this.effectiveVariant, fen);
     const move = res.moves[0];
-    if (move && move.dtz == null) throw 'unknown tablebase position';
+    if (move && move.dtz === null) throw 'unknown tablebase position';
     return {
       fen,
       best: move && move.uci,
-      winner: res.checkmate ? opposite(fenColor(fen)) : res.stalemate ? undefined : winnerOf(fen, move!),
+      winner: res.checkmate ? opposite(fenColor(fen)) : res.stalemate ? undefined : winnerOf(fen, move),
     };
   };
 }

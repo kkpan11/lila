@@ -8,20 +8,20 @@ final private class SwissScoring(mongo: SwissMongo)(using Scheduler, Executor):
 
   import BsonHandlers.given
 
-  def apply(id: SwissId): Fu[Option[SwissScoring.Result]] = sequencer(id).monSuccess(_.swiss.scoringGet)
+  def compute(id: SwissId): Fu[Option[SwissScoring.Result]] = sequencer(id).monSuccess(_.swiss.scoringGet)
 
-  private val sequencer = lila.hub.AskPipelines[SwissId, Option[SwissScoring.Result]](
+  private val sequencer = scalalib.actor.AskPipelines[SwissId, Option[SwissScoring.Result]](
     compute = recompute,
-    expiration = 1 minute,
-    timeout = 10 seconds,
+    expiration = 1.minute,
+    timeout = 10.seconds,
     name = "swiss.scoring"
   )
 
   private def recompute(id: SwissId): Fu[Option[SwissScoring.Result]] =
-    mongo.swiss.byId[Swiss](id) flatMap {
+    mongo.swiss.byId[Swiss](id).flatMap {
       _.so { swiss =>
         for
-          (prevPlayers, pairings) <- fetchPlayers(swiss) zip fetchPairings(swiss)
+          (prevPlayers, pairings) <- fetchPlayers(swiss).zip(fetchPairings(swiss))
           pairingMap = SwissPairing.toMap(pairings)
           sheets     = SwissSheet.many(swiss, prevPlayers, pairingMap)
           withSheets = prevPlayers.zip(sheets).map(SwissSheet.OfPlayer.withSheetPoints)
@@ -29,8 +29,7 @@ final private class SwissScoring(mongo: SwissMongo)(using Scheduler, Executor):
           _ <- SwissPlayer.fields: f =>
             prevPlayers
               .zip(players)
-              .withFilter: (a, b) =>
-                a != b
+              .withFilter(_ != _)
               .map: (_, player) =>
                 mongo.player.update
                   .one(
@@ -42,9 +41,7 @@ final private class SwissScoring(mongo: SwissMongo)(using Scheduler, Executor):
                       f.score       -> player.score
                     )
                   )
-                  .void
-              .parallel
-              .void
+              .parallelVoid
         yield SwissScoring
           .Result(
             swiss,
@@ -60,13 +57,14 @@ final private class SwissScoring(mongo: SwissMongo)(using Scheduler, Executor):
     SwissPlayer.fields: f =>
       mongo.player
         .find($doc(f.swissId -> swiss.id))
-        .sort($sort asc f.score)
+        .sort($sort.asc(f.score))
         .cursor[SwissPlayer]()
         .listAll()
 
   private def fetchPairings(swiss: Swiss) =
-    !swiss.isCreated so SwissPairing.fields: f =>
-      mongo.pairing.list[SwissPairing]($doc(f.swissId -> swiss.id))
+    (!swiss.isCreated).so:
+      SwissPairing.fields: f =>
+        mongo.pairing.list[SwissPairing]($doc(f.swissId -> swiss.id))
 
 private object SwissScoring:
 
@@ -75,7 +73,16 @@ private object SwissScoring:
       leaderboard: List[(SwissPlayer, SwissSheet)],
       playerMap: SwissPlayer.PlayerMap,
       pairings: SwissPairing.PairingMap
-  )
+  ):
+    def countOngoingPairings: Int = leaderboard
+      .collect:
+        case (player, _) if player.present => player.userId
+      .flatMap(pairings.get)
+      .flatMap(_.get(swiss.round))
+      .filter(_.isOngoing)
+      .map(_.gameId)
+      .distinct
+      .size
 
   def computePlayers(
       rounds: SwissRoundNumber,
@@ -97,10 +104,10 @@ private object SwissScoring:
               }
         val (tieBreak, perfSum) = pairingsAndByes.foldLeft(0f -> 0f):
           case ((tieBreak, perfSum), (round, Some(pairing: SwissPairing))) =>
-            val opponent       = playerMap.get(pairing opponentOf player.userId)
+            val opponent       = playerMap.get(pairing.opponentOf(player.userId))
             val opponentPoints = opponent.so(_.points.value)
             val result         = pairing.resultFor(player.userId)
-            val newTieBreak    = tieBreak + result.fold(opponentPoints / 2)(_ so opponentPoints)
+            val newTieBreak    = tieBreak + result.fold(opponentPoints / 2)(_.so(opponentPoints))
             val newPerf = perfSum + opponent.so(_.rating.value) + result.so:
               if _ then 500 else -500
             newTieBreak -> newPerf
@@ -123,6 +130,6 @@ private object SwissScoring:
         player
           .copy(
             tieBreak = Swiss.TieBreak(tieBreak),
-            performance = playerPairings.nonEmpty option Swiss.Performance(perfSum / playerPairings.size)
+            performance = playerPairings.nonEmpty.option(Swiss.Performance(perfSum / playerPairings.size))
           )
           .recomputeScore

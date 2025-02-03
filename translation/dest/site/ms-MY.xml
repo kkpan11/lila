@@ -5,6 +5,7 @@
   <string name="toInviteSomeoneToPlayGiveThisUrl">Untuk menjemput seseorang bermain, berikan pautan ini</string>
   <string name="gameOver">Permainan Tamat</string>
   <string name="waitingForOpponent">Menunggu untuk lawan</string>
+  <string name="orLetYourOpponentScanQrCode">Atau biarkan lawan anda mengimbas kod QR</string>
   <string name="waiting">Menunggu</string>
   <string name="yourTurn">Giliran anda</string>
   <string name="aiNameLevelAiLevel">%1$s tahap %2$s</string>
@@ -96,6 +97,7 @@
   <string name="openingExplorer">Membuka explorer</string>
   <string name="openingEndgameExplorer">Penjelajah pembukaan/akhir permainan</string>
   <string name="xOpeningExplorer">%s membuka explorer</string>
+  <string name="playFirstOpeningEndgameExplorerMove">Main pembukaan pertama/permainantamat-penjelajah gerakan</string>
   <string name="winPreventedBy50MoveRule">Kemenangan yang dihalan oleh peraturan 50-pergerakan</string>
   <string name="lossSavedBy50MoveRule">Kekalahan diselamatkan oleh peraturan 50-pergerakan</string>
   <string name="winOr50MovesByPriorMistake">Menang atau 50 gerakan dengan kesilapan sebelumnya</string>
@@ -108,9 +110,9 @@
   <string name="replayMode">Mode ulang tayang</string>
   <string name="realtimeReplay">Masa sebenar</string>
   <string name="byCPL">Oleh CPL</string>
-  <string name="openStudy">Open study</string>
   <string name="enable">Membolehkan</string>
   <string name="bestMoveArrow">Anak panah gerak terbaik</string>
+  <string name="showVariationArrows">Tunjuk anak panah variasi</string>
   <string name="evaluationGauge">Tolok penialian</string>
   <string name="multipleLines">Multiple lines</string>
   <string name="cpus">CPU</string>
@@ -123,11 +125,20 @@
   <plurals name="nbBlunders">
     <item quantity="other">%s kesilapan</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="other">%s Kesilapan</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="other">%s kesilapan</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="other">%s Kesilapan</item>
+  </plurals>
   <plurals name="nbInaccuracies">
     <item quantity="other">%s ketidaktepatan</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
+    <item quantity="other">%s Ketidaktepatan</item>
   </plurals>
   <string name="moveTimes">Masa gerakan</string>
   <string name="flipBoard">Flip board</string>
@@ -249,7 +260,6 @@
   <string name="playingRightNow">Sedang bermain sekarang</string>
   <string name="eventInProgress">Sedang bermain sekarang</string>
   <string name="finished">Tamat</string>
-  <string name="finishesX">tamat dalam %s</string>
   <string name="abortGame">Batalkan permainan</string>
   <string name="gameAborted">Permainan dibatalkan</string>
   <string name="standard">Standard</string>
@@ -389,7 +399,6 @@ analisis komputer, perbualan dalam permainan dan URL kongsi bersama.</string>
   <string name="block">Menghalang</string>
   <string name="blocked">Dihalang</string>
   <string name="unblock">Nyah-halang</string>
-  <string name="followsYou">Mengikuti anda</string>
   <string name="xStartedFollowingY">%1$s mula mengikuti %2$s</string>
   <plurals name="nbFollowers">
     <item quantity="other">%s pengikut</item>
@@ -418,9 +427,6 @@ analisis komputer, perbualan dalam permainan dan URL kongsi bersama.</string>
   <string name="safeTournamentName">Pilih nama yang selamat untuk pertandingan ini.</string>
   <string name="inappropriateNameWarning">Sebarang perkara yang tidak senonoh boleh menyebabkan akaun anda ditutup.</string>
   <string name="emptyTournamentName">Biarkan kosong untuk menamakan pertandingan kepada pemain catur terkenal.</string>
-  <string name="recommendNotTouching">Kami menasihat agar tidak menukar tetapan ini.</string>
-  <string name="fewerPlayers">Jika anda tetapkan keperluan kemasukan, pertandingan anda akan ada lebih sedikit pemain.</string>
-  <string name="showAdvancedSettings">Tunjukkan tetapan lanjutan</string>
   <string name="makePrivateTournament">Buat pertandingan privasi peribadi and kurangkan akses dengan kata kunci</string>
   <string name="join">Serta</string>
   <string name="withdraw">Tarik diri</string>
@@ -459,8 +465,6 @@ analisis komputer, perbualan dalam permainan dan URL kongsi bersama.</string>
   <string name="ifNoneLeaveEmpty">Jika tiada, biar kosong</string>
   <string name="profile">Profil</string>
   <string name="editProfile">Sunting profile</string>
-  <string name="firstName">Nama yang diberi</string>
-  <string name="lastName">Nama keluarga</string>
   <string name="biography">Biografi</string>
   <string name="thankYou">Terima kasih!</string>
   <string name="socialMediaLinks">Pautan media sosial</string>
@@ -475,7 +479,6 @@ analisis komputer, perbualan dalam permainan dan URL kongsi bersama.</string>
   <string name="automaticallyProceedToNextGameAfterMoving">Digerakan ke permainan seterusnya secara automatik selepas gerakan</string>
   <string name="autoSwitch">Tukar secara automatik</string>
   <string name="puzzles">Teka-teki</string>
-  <string name="tournamentWinners">Pemenang pertandingan</string>
   <string name="name">Nama</string>
   <string name="description">Huraian</string>
   <string name="no">Tidak</string>
@@ -496,11 +499,8 @@ analisis komputer, perbualan dalam permainan dan URL kongsi bersama.</string>
   <string name="reason">Sebab</string>
   <string name="whatIsIheMatter">Apa masalahnya?</string>
   <string name="cheat">Penipuan</string>
-  <string name="insult">Unsur ejekan</string>
   <string name="troll">Unsur jenaka</string>
-  <string name="ratingManipulation">Manipulasi Taraf</string>
   <string name="other">Lain-lain</string>
-  <string name="reportDescriptionHelp">Laporkan link kepada permainan dan terangkan apa yang dilakukan oleh pengguna yang tidak betul. Jangan hanya beritahu \"mereka menipu\" tapi terangkan juga bagaimana anda dapatkan konklusi ini. Laporan anda akan diproses lebih cepat jika ditulis dalam English.</string>
   <string name="error.provideOneCheatedGameLink">Tolong berikan sekurangnya satu link kepada game yang dicurigai ditipu.</string>
   <string name="by">oleh %s</string>
   <string name="importedByX">Diimport oleh %s</string>
@@ -650,9 +650,6 @@ analisis komputer, perbualan dalam permainan dan URL kongsi bersama.</string>
   <string name="dark">Gelap</string>
   <string name="transparent">Lutsinar</string>
   <string name="backgroundImageUrl">URL Imej latar belakang:</string>
-  <string name="boardGeometry">Geometri papan catur</string>
-  <string name="boardTheme">Tema papan catur</string>
-  <string name="boardSize">Saiz papan catur</string>
   <string name="pieceSet">Set bidak</string>
   <string name="embedInYourWebsite">Papar dalam laman web anda</string>
   <string name="usernameAlreadyUsed">Nama pengguna ini sudah digunakan. Sila pilih nama pengguna yang lain dan cuba lagi.</string>
@@ -719,7 +716,6 @@ analisis komputer, perbualan dalam permainan dan URL kongsi bersama.</string>
   </plurals>
   <string name="sorry">Maaf :(</string>
   <string name="weHadToTimeYouOutForAWhile">Kami terpaksa memberikan time out buat sementara.</string>
-  <string name="timeoutExpires">Timeout berakhir %s.</string>
   <string name="why">Kenapa?</string>
   <string name="pleasantChessExperience">Matlamat kami adalah untuk memberikan pengalaman catur yang baik untuk semua.</string>
   <string name="goodPractice">Dengan itu, kami perlu memastikan semua pemain mengikuti amalan yang baik.</string>

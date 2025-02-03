@@ -1,29 +1,30 @@
 .button {
-  @extend %roboto-fat, %button-shadow, %box-radius;
+  @extend %roboto, %button-shadow, %box-radius;
 
+  @include prevent-select;
+  @include transition;
+
+  font-weight: 500;
   background: $c-primary;
   text-transform: uppercase;
   padding: 0.8em 1em;
   border: none;
   cursor: pointer;
   text-align: center;
-  user-select: none;
   white-space: nowrap;
   display: inline-block;
-
-  @include transition;
 
   &,
   &:visited,
   &:focus {
-    color: $c-primary-over;
+    color: $c-over;
   }
 
   &:not(.disabled):hover {
     @extend %button-raised-shadow;
 
-    color: $c-primary-over;
-    background: lighten($c-primary, 7);
+    color: $c-over;
+    background: $m-primary--lighten-7;
   }
 
   &:not(.disabled):focus-visible {
@@ -47,7 +48,7 @@
     background: $c-secondary;
 
     &:not(.disabled):hover {
-      background: lighten($c-secondary, 4);
+      background: $m-secondary--lighten-4;
     }
   }
 
@@ -55,7 +56,7 @@
     background: $c-error;
 
     &:not(.disabled):hover {
-      background: lighten($c-error, 11);
+      background: $m-bad--lighten-11;
     }
   }
 
@@ -103,6 +104,21 @@
     &.button-green:hover {
       color: $c-secondary;
     }
+
+    &.button-brag,
+    &.button-brag:hover {
+      color: $c-brag;
+    }
+
+    &.button-dim,
+    &.button-dim:hover {
+      color: $c-font-dim;
+    }
+
+    &.button-clas,
+    &.button-clas:hover {
+      color: $c-clas;
+    }
   }
 
   &.button-metal {
@@ -115,6 +131,14 @@
 
     &:not(.disabled):hover {
       @extend %metal-hover;
+    }
+  }
+
+  &.button-inverse {
+    @extend %metal-inverse;
+
+    &:not(.disabled):hover {
+      @extend %metal-inverse-hover;
     }
   }
 

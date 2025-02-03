@@ -2,7 +2,6 @@ package lila.tournament
 
 import reactivemongo.api.bson.*
 
-import chess.Color
 import lila.db.dsl.*
 
 final class TournamentStatsApi(
@@ -12,16 +11,14 @@ final class TournamentStatsApi(
 )(using Executor):
 
   def apply(tournament: Tournament): Fu[Option[TournamentStats]] =
-    tournament.isFinished soFu cache.get(tournament.id)
+    tournament.isFinished.soFu(cache.get(tournament.id))
 
   private given BSONDocumentHandler[TournamentStats] = Macros.handler
 
-  private val cache = mongoCache[TourId, TournamentStats](64, "tournament:stats", 60 days, _.value) {
-    loader =>
-      _.expireAfterAccess(10 minutes)
-        .maximumSize(256)
-        .buildAsyncFuture(loader(fetch))
-  }
+  private val cache = mongoCache[TourId, TournamentStats](64, "tournament:stats", 60.days, _.value): loader =>
+    _.expireAfterAccess(10.minutes)
+      .maximumSize(256)
+      .buildAsyncFuture(loader(fetch))
 
   private def fetch(tournamentId: TourId): Fu[TournamentStats] =
     for

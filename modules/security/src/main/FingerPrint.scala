@@ -1,11 +1,12 @@
 package lila.security
 
+import lila.core.security.FingerHash
+
 opaque type FingerPrint = String
 object FingerPrint extends OpaqueString[FingerPrint]:
-  extension (a: FingerPrint) def hash: Option[FingerHash] = FingerHash from a
+  extension (a: FingerPrint) def hash: Option[FingerHash] = FingerHash.from(a)
 
-opaque type FingerHash = String
-object FingerHash extends OpaqueString[FingerHash]:
+object FingerHash:
 
   val length = 8
 
@@ -13,11 +14,11 @@ object FingerHash extends OpaqueString[FingerHash]:
     try
       import java.util.Base64
       import org.apache.commons.codec.binary.Hex
-      FingerHash {
-        Base64.getEncoder encodeToString {
-          Hex decodeHex normalize(print).toArray
-        } take length
-      } some
+      lila.core.security.FingerHash {
+        Base64.getEncoder
+          .encodeToString(Hex.decodeHex(normalize(print).toArray))
+          .take(length)
+      }.some
     catch case _: Exception => none
 
   private def normalize(fp: FingerPrint): String =

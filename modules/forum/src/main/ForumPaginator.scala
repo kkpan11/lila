@@ -1,9 +1,10 @@
 package lila.forum
 
-import lila.common.paginator.*
-import lila.db.dsl.{ *, given }
+import scalalib.paginator.*
+
+import lila.core.config.NetDomain
+import lila.db.dsl.*
 import lila.db.paginator.Adapter
-import lila.user.{ User, Me }
 
 final class ForumPaginator(
     topicRepo: ForumTopicRepo,
@@ -14,19 +15,32 @@ final class ForumPaginator(
 
   import BSONHandlers.given
 
-  def topicPosts(topic: ForumTopic, page: Int)(using me: Option[Me])(using
-      netDomain: lila.common.config.NetDomain
+  def recent(categ: ForumCateg, page: Int): Fu[Paginator[ForumPost]] =
+    Paginator(
+      Adapter[ForumPost](
+        collection = postRepo.coll,
+        selector = postRepo.selectCateg(categ.id),
+        projection = none,
+        sort = $sort.createdDesc
+      ).withLotsOfResults,
+      currentPage = page,
+      maxPerPage = MaxPerPage(30)
+    )
+
+  def topicPosts(topic: ForumTopic, page: Int)(using
+      me: Option[Me],
+      netDomain: NetDomain
   ): Fu[Paginator[ForumPost.WithFrag]] =
     Paginator(
       Adapter[ForumPost](
         collection = postRepo.coll,
-        selector = postRepo.forUser(me) selectTopic topic.id,
+        selector = postRepo.forUser(me).selectTopic(topic.id),
         projection = none,
-        sort = postRepo.sortQuery
-      ),
+        sort = $sort.createdAsc
+      ).mapFutureList(textExpand.manyPosts),
       currentPage = page,
       maxPerPage = config.postMaxPerPage
-    ).flatMap(_ mapFutureList textExpand.manyPosts)
+    )
 
   def categTopics(
       categ: ForumCateg,
@@ -38,7 +52,7 @@ final class ForumPaginator(
       adapter = new AdapterLike[TopicView]:
 
         def nbResults: Fu[Int] =
-          if categ.isTeam then topicRepo.coll countSel selector
+          if categ.isTeam then topicRepo.coll.countSel(selector)
           else fuccess(1000)
 
         def slice(offset: Int, length: Int): Fu[Seq[TopicView]] =
@@ -62,7 +76,7 @@ final class ForumPaginator(
                 doc   <- docs
                 topic <- doc.asOpt[ForumTopic]
                 post = doc.getAsOpt[List[ForumPost]]("post").flatMap(_.headOption)
-              yield TopicView(categ, topic, post, topic lastPage config.postMaxPerPage, me)
+              yield TopicView(categ, topic, post, topic.lastPage(config.postMaxPerPage), me)
 
-        private def selector = topicRepo.forUser(me) byCategNotStickyQuery categ
+        private def selector = topicRepo.forUser(me).byCategNotStickyQuery(categ)
     )

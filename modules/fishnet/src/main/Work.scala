@@ -1,11 +1,11 @@
 package lila.fishnet
 
-import ornicar.scalalib.ThreadLocalRandom
-
 import chess.Ply
 import chess.format.{ Fen, Uci }
 import chess.variant.Variant
-import lila.common.IpAddress
+import scalalib.ThreadLocalRandom
+
+import lila.core.net.IpAddress
 
 sealed trait Work:
   def _id: Work.Id
@@ -26,7 +26,7 @@ sealed trait Work:
   def nonAcquired                  = !isAcquired
   def canAcquire(client: Client)   = lastTryByKey.forall(client.key !=)
 
-  def acquiredBefore(date: Instant) = acquiredAt.so(_ isBefore date)
+  def acquiredBefore(date: Instant) = acquiredAt.so(_.isBefore(date))
 
 object Work:
 
@@ -43,13 +43,12 @@ object Work:
 
   private[fishnet] case class Game(
       id: String, // can be a study chapter ID, if studyId is set
-      initialFen: Option[Fen.Epd],
+      initialFen: Option[Fen.Full],
       studyId: Option[StudyId],
       variant: Variant,
       moves: String
   ):
-
-    def uciList: List[Uci] = ~(Uci readList moves)
+    def uciList: List[Uci] = ~(Uci.readList(moves))
 
   case class Sender(
       userId: UserId,
@@ -57,10 +56,7 @@ object Work:
       mod: Boolean,
       system: Boolean
   ):
-
-    override def toString =
-      if system then lila.user.User.lichessId.value
-      else userId.value
+    override def toString = if system then UserId.lichess.value else userId.value
 
   case class Clock(wtime: Int, btime: Int, inc: chess.Clock.IncrementSeconds)
 
@@ -71,6 +67,14 @@ object Work:
       clock: Option[Work.Clock]
   )
 
+  enum Origin(val nodesPerMove: Int, val slowOk: Boolean):
+    case officialBroadcast extends Origin(5_000_000, false)
+    case manualRequest     extends Origin(1_000_000, false) // games & studies
+    case autoHunter        extends Origin(300_000, true)
+    case autoTutor         extends Origin(150_000, true)
+  object Origin:
+    val slowOk = values.filter(_.slowOk)
+
   case class Analysis(
       _id: Work.Id, // random
       sender: Sender,
@@ -80,7 +84,8 @@ object Work:
       lastTryByKey: Option[Client.Key],
       acquired: Option[Acquired],
       skipPositions: List[Int],
-      createdAt: Instant
+      createdAt: Instant,
+      origin: Option[Origin] // remove Option after initial deploy
   ) extends Work:
 
     def skill = Client.Skill.Analysis
@@ -105,7 +110,9 @@ object Work:
 
     def nbMoves = game.moves.count(' ' ==) + 1
 
+    def nodesPerMove = origin.getOrElse(Origin.manualRequest).nodesPerMove
+
     override def toString =
       s"id:$id game:${game.id} variant:${game.variant} plies: ${game.moves.count(' ' ==)} tries:$tries requestedBy:$sender acquired:$acquired"
 
-  def makeId = Id(ThreadLocalRandom nextString 8)
+  def makeId = Id(ThreadLocalRandom.nextString(8))

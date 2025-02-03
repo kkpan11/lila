@@ -5,6 +5,7 @@
   <string name="toInviteSomeoneToPlayGiveThisUrl">To invite someone to play, give this URL</string>
   <string name="gameOver">Game Over</string>
   <string name="waitingForOpponent">Waiting for opponent</string>
+  <string name="orLetYourOpponentScanQrCode">Or let your opponent scan this QR code</string>
   <string name="waiting">Waiting</string>
   <string name="yourTurn">Your turn</string>
   <string name="aiNameLevelAiLevel">%1$s level %2$s</string>
@@ -69,6 +70,8 @@
   <string name="promoteVariation">Promote variation</string>
   <string name="makeMainLine">Make mainline</string>
   <string name="deleteFromHere">Delete from here</string>
+  <string name="collapseVariations">Collapse variations</string>
+  <string name="expandVariations">Expand variations</string>
   <string name="forceVariation">Force variation</string>
   <string name="copyVariationPgn">Copy variation PGN</string>
   <string name="move">Move</string>
@@ -113,7 +116,6 @@
   <string name="replayMode">Replay mode</string>
   <string name="realtimeReplay">Realtime</string>
   <string name="byCPL">By CPL</string>
-  <string name="openStudy">Open study</string>
   <string name="enable">Enable</string>
   <string name="bestMoveArrow">Best move arrow</string>
   <string name="showVariationArrows">Show variation arrows</string>
@@ -123,7 +125,6 @@
   <string name="memory">Memory</string>
   <string name="infiniteAnalysis">Infinite analysis</string>
   <string name="removesTheDepthLimit">Removes the depth limit, and keeps your computer warm</string>
-  <string name="engineManager">Engine manager</string>
   <string name="blunder">Blunder</string>
   <string name="mistake">Mistake</string>
   <string name="inaccuracy">Inaccuracy</string>
@@ -131,13 +132,25 @@
     <item quantity="one">%s blunder</item>
     <item quantity="other">%s blunders</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="one">%s Blunder</item>
+    <item quantity="other">%s Blunders</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="one">%s mistake</item>
     <item quantity="other">%s mistakes</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="one">%s Mistake</item>
+    <item quantity="other">%s Mistakes</item>
+  </plurals>
   <plurals name="nbInaccuracies">
     <item quantity="one">%s inaccuracy</item>
     <item quantity="other">%s inaccuracies</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
+    <item quantity="one">%s Inaccuracy</item>
+    <item quantity="other">%s Inaccuracies</item>
   </plurals>
   <string name="moveTimes">Move times</string>
   <string name="flipBoard">Flip board</string>
@@ -177,6 +190,7 @@
   <string name="latestForumPosts">Latest forum posts</string>
   <string name="players">Players</string>
   <string name="friends">Friends</string>
+  <string name="otherPlayers">other players</string>
   <string name="discussions">Conversations</string>
   <string name="today">Today</string>
   <string name="yesterday">Yesterday</string>
@@ -256,6 +270,7 @@
     <item quantity="one">%s game with you</item>
     <item quantity="other">%s games with you</item>
   </plurals>
+  <string name="ok">OK</string>
   <string name="cancel">Cancel</string>
   <string name="whiteTimeOut">White time out</string>
   <string name="blackTimeOut">Black time out</string>
@@ -275,6 +290,7 @@
   <string name="abortGame">Abort game</string>
   <string name="gameAborted">Game aborted</string>
   <string name="standard">Standard</string>
+  <string name="customPosition">Custom position</string>
   <string name="unlimited">Unlimited</string>
   <string name="mode">Mode</string>
   <string name="casual">Casual</string>
@@ -417,6 +433,7 @@
   <string name="blackCheckmatesInOneMove">Black to checkmate in one move</string>
   <string name="retry">Retry</string>
   <string name="reconnecting">Reconnecting</string>
+  <string name="noNetwork">Offline</string>
   <plurals name="nbFriendsOnline">
     <item quantity="one">%s friend online</item>
     <item quantity="other">%s friends online</item>
@@ -430,7 +447,6 @@
   <string name="block">Block</string>
   <string name="blocked">Blocked</string>
   <string name="unblock">Unblock</string>
-  <string name="followsYou">Follows you</string>
   <string name="xStartedFollowingY">%1$s started following %2$s</string>
   <plurals name="nbFollowers">
     <item quantity="one">%s follower</item>
@@ -462,9 +478,6 @@
   <string name="safeTournamentName">Pick a very safe name for the tournament.</string>
   <string name="inappropriateNameWarning">Anything even slightly inappropriate could get your account closed.</string>
   <string name="emptyTournamentName">Leave empty to name the tournament after a notable chess player.</string>
-  <string name="recommendNotTouching">We recommend not touching these.</string>
-  <string name="fewerPlayers">If you set entry requirements, your tournament will have fewer players.</string>
-  <string name="showAdvancedSettings">Show advanced settings</string>
   <string name="makePrivateTournament">Make the tournament private, and restrict access with a password</string>
   <string name="join">Join</string>
   <string name="withdraw">Withdraw</string>
@@ -504,9 +517,8 @@
   <string name="ifNoneLeaveEmpty">If none, leave empty</string>
   <string name="profile">Profile</string>
   <string name="editProfile">Edit profile</string>
-  <string name="firstName">First name</string>
-  <string name="lastName">Surname</string>
-  <string name="setFlair">Set your flair:</string>
+  <string name="realName">Real name</string>
+  <string name="setFlair">Set your flair</string>
   <string name="flair">Flair</string>
   <string name="youCanHideFlair">There is a setting to hide all user flairs across the entire site.</string>
   <string name="biography">Biography</string>
@@ -529,13 +541,15 @@
   <string name="automaticallyProceedToNextGameAfterMoving">Automatically proceed to next game after moving</string>
   <string name="autoSwitch">Auto switch</string>
   <string name="puzzles">Puzzles</string>
-  <string name="tournamentWinners">Tournament winners</string>
+  <string name="onlineBots">Online bots</string>
   <string name="name">Name</string>
   <string name="description">Description</string>
   <string name="descPrivate">Private description</string>
   <string name="descPrivateHelp">Text that only the team members will see. If set, replaces the public description for team members.</string>
   <string name="no">No</string>
   <string name="yes">Yes</string>
+  <string name="website">Website</string>
+  <string name="mobile">Mobile</string>
   <string name="help">Help:</string>
   <string name="createANewTopic">Create a new topic</string>
   <string name="topics">Topics</string>
@@ -552,11 +566,11 @@
   <string name="reason">Reason</string>
   <string name="whatIsIheMatter">What's the matter?</string>
   <string name="cheat">Cheat</string>
-  <string name="insult">Insult</string>
   <string name="troll">Troll</string>
-  <string name="ratingManipulation">Rating manipulation</string>
   <string name="other">Other</string>
-  <string name="reportDescriptionHelp">Paste the link to the game(s) and explain what is wrong about this user's behaviour. Don't just say "they cheat", but tell us how you came to this conclusion. Your report will be processed faster if written in English.</string>
+  <string name="reportCheatBoostHelp">Paste the link to the game(s) and explain what is wrong about this user's behaviour. Don't just say "they cheat", but tell us how you came to this conclusion.</string>
+  <string name="reportUsernameHelp">Explain what about this username is offensive. Don't just say "it's offensive/inappropriate", but tell us how you came to this conclusion, especially if the insult is obfuscated, not in english, is in slang, or is a historical/cultural reference.</string>
+  <string name="reportProcessedFasterInEnglish">Your report will be processed faster if written in English.</string>
   <string name="error.provideOneCheatedGameLink">Please provide at least one link to a cheated game.</string>
   <string name="by">by %s</string>
   <string name="importedByX">Imported by %s</string>
@@ -589,6 +603,7 @@
   <string name="slow">Slow</string>
   <string name="insideTheBoard">Inside the board</string>
   <string name="outsideTheBoard">Outside the board</string>
+  <string name="allSquaresOfTheBoard">All squares of the board</string>
   <string name="onSlowGames">On slow games</string>
   <string name="always">Always</string>
   <string name="never">Never</string>
@@ -702,7 +717,8 @@
   <string name="keyNextBranch">Next branch</string>
   <string name="toggleVariationArrows">Toggle variation arrows</string>
   <string name="cyclePreviousOrNextVariation">Cycle previous/next variation</string>
-  <string name="toggleGlyphAnnotations">Toggle glyph annotations</string>
+  <string name="toggleGlyphAnnotations">Toggle move annotations</string>
+  <string name="togglePositionAnnotations">Toggle position annotations</string>
   <string name="variationArrowsInfo">Variation arrows let you navigate without using the move list.</string>
   <string name="playSelectedMove">play selected move</string>
   <string name="newTournament">New tournament</string>
@@ -768,6 +784,7 @@
   <string name="onlineAndOfflinePlay">Online and offline play</string>
   <string name="viewTheSolution">View the solution</string>
   <string name="followAndChallengeFriends">Follow and challenge friends</string>
+  <string name="noChallenges">No challenges.</string>
   <plurals name="availableInNbLanguages">
     <item quantity="one">Available in %s language!</item>
     <item quantity="other">Available in %s languages!</item>
@@ -787,9 +804,12 @@
   <string name="transparent">Transparent</string>
   <string name="deviceTheme">Device theme</string>
   <string name="backgroundImageUrl">Background image URL:</string>
-  <string name="boardGeometry">Board geometry</string>
-  <string name="boardTheme">Board theme</string>
-  <string name="boardSize">Board size</string>
+  <string name="board">Board</string>
+  <string name="size">Size</string>
+  <string name="opacity">Opacity</string>
+  <string name="brightness">Brightness</string>
+  <string name="hue">Hue</string>
+  <string name="boardReset">Reset colours to default</string>
   <string name="pieceSet">Piece set</string>
   <string name="embedInYourWebsite">Embed in your website</string>
   <string name="usernameAlreadyUsed">This username is already in use, please try another one.</string>
@@ -930,21 +950,18 @@
   <string name="cancelTournament">Cancel the tournament</string>
   <string name="tournDescription">Tournament description</string>
   <string name="tournDescriptionHelp">Anything special you want to tell the participants? Try to keep it short. Markdown links are available: [name](https://url)</string>
-  <string name="ratedFormHelp">Games are rated
-and impact players ratings</string>
+  <string name="ratedFormHelp">Games are rated and impact players ratings</string>
   <string name="onlyMembersOfTeam">Only members of team</string>
   <string name="noRestriction">No restriction</string>
   <string name="minimumRatedGames">Minimum rated games</string>
   <string name="minimumRating">Minimum rating</string>
   <string name="maximumWeeklyRating">Maximum weekly rating</string>
-  <string name="onlyTitled">Only titled players</string>
-  <string name="onlyTitledHelp">Require an official title to join the tournament</string>
   <string name="positionInputHelp">Paste a valid FEN to start every game from a given position.
 It only works for standard games, not with variants.
 You can use the %s to generate a FEN position, then paste it here.
 Leave empty to start games from the normal initial position.</string>
   <string name="cancelSimul">Cancel the simul</string>
-  <string name="simulHostcolor">Host color for each game</string>
+  <string name="simulHostcolor">Host colour for each game</string>
   <string name="estimatedStart">Estimated start time</string>
   <string name="simulFeatured">Feature on %s</string>
   <string name="simulFeaturedHelp">Show your simul to everyone on %s. Disable for private simuls.</string>
@@ -966,9 +983,7 @@ Leave empty to start games from the normal initial position.</string>
   <string name="focusChat">Focus chat</string>
   <string name="showHelpDialog">Show this help dialog</string>
   <string name="reopenYourAccount">Reopen your account</string>
-  <string name="closedAccountChangedMind">If you closed your account, but have since changed your mind, you get one chance of getting your account back.</string>
-  <string name="onlyWorksOnce">This will only work once.</string>
-  <string name="cantDoThisTwice">If you close your account a second time, there will be no way of recovering it.</string>
+  <string name="reopenYourAccountDescription">If you closed your account, but have since changed your mind, you get a chance of getting your account back.</string>
   <string name="emailAssociatedToaccount">Email address associated to the account</string>
   <string name="sentEmailWithLink">We've sent you an email with a link.</string>
   <string name="tournamentEntryCode">Tournament entry code</string>
@@ -987,4 +1002,6 @@ Leave empty to start games from the normal initial position.</string>
   <string name="showMeEverything">Show me everything</string>
   <string name="lichessPatronInfo">Lichess is a charity and entirely free/libre open source software.
 All operating costs, development, and content are funded solely by user donations.</string>
+  <string name="nothingToSeeHere">Nothing to see here at the moment.</string>
+  <string name="stats">Stats</string>
 </resources>

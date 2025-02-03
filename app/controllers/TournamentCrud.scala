@@ -1,55 +1,50 @@
 package controllers
 
-import lila.app.{ given, * }
-import views.*
+import lila.app.*
 
 final class TournamentCrud(env: Env) extends LilaController(env):
 
-  private def crud = env.tournament.crudApi
+  import env.tournament.crudApi as crud
+  import views.tournament.form.crud as crudView
 
   def index(page: Int) = Secure(_.ManageTournament) { _ ?=> _ ?=>
-    Ok.pageAsync:
+    Ok.async:
       crud
         .paginator(page)
-        .map(html.tournament.crud.index)
+        .map(crudView.index)
   }
 
   def edit(id: TourId) = Secure(_.ManageTournament) { ctx ?=> _ ?=>
-    FoundPage(crud one id): tour =>
-      html.tournament.crud.edit(tour, crud editForm tour)
+    FoundPage(crud.one(id)): tour =>
+      crudView.edit(tour, crud.editForm(tour))
   }
 
   def update(id: TourId) = SecureBody(_.ManageTournament) { ctx ?=> _ ?=>
-    Found(crud one id): tour =>
-      crud
-        .editForm(tour)
-        .bindFromRequest()
-        .fold(
-          err => BadRequest.page(html.tournament.crud.edit(tour, err)),
-          data => crud.update(tour, data) inject Redirect(routes.TournamentCrud.edit(id)).flashSuccess
-        )
-  }
-
-  def form = Secure(_.ManageTournament) { ctx ?=> _ ?=>
-    Ok.page(html.tournament.crud.create(crud.createForm))
-  }
-
-  def create = SecureBody(_.ManageTournament) { ctx ?=> me ?=>
-    crud.createForm
-      .bindFromRequest()
-      .fold(
-        err => BadRequest.page(html.tournament.crud.create(err)),
-        data =>
-          crud.create(data) map { tour =>
-            Redirect {
-              if tour.isTeamBattle then routes.Tournament.teamBattleEdit(tour.id)
-              else routes.TournamentCrud.edit(tour.id)
-            }.flashSuccess
-          }
+    Found(crud.one(id)): tour =>
+      bindForm(crud.editForm(tour))(
+        err => BadRequest.page(crudView.edit(tour, err)),
+        data => crud.update(tour, data).inject(Redirect(routes.TournamentCrud.edit(id)).flashSuccess)
       )
   }
 
+  def form = Secure(_.ManageTournament) { ctx ?=> _ ?=>
+    Ok.page(crudView.create(crud.createForm))
+  }
+
+  def create = SecureBody(_.ManageTournament) { ctx ?=> me ?=>
+    bindForm(crud.createForm)(
+      err => BadRequest.page(crudView.create(err)),
+      data =>
+        crud.create(data).map { tour =>
+          Redirect {
+            if tour.isTeamBattle then routes.Tournament.teamBattleEdit(tour.id)
+            else routes.TournamentCrud.edit(tour.id)
+          }.flashSuccess
+        }
+    )
+  }
+
   def cloneT(id: TourId) = Secure(_.ManageTournament) { ctx ?=> _ ?=>
-    FoundPage(crud one id): old =>
-      html.tournament.crud.create(crud editForm crud.clone(old))
+    FoundPage(crud.one(id)): old =>
+      crudView.create(crud.editForm(crud.clone(old)))
   }

@@ -1,6 +1,6 @@
 package lila.clas
 
-final class ClasMarkup:
+final class ClasMarkup(using Executor):
 
   private val renderer = lila.common.MarkdownRender(
     autoLink = true,
@@ -11,7 +11,7 @@ final class ClasMarkup:
   )
 
   private val cache = lila.memo.CacheApi.scaffeineNoScheduler
-    .expireAfterAccess(20 minutes)
+    .expireAfterAccess(20.minutes)
     .maximumSize(512)
     .build[Markdown, Html]()
 

@@ -1,7 +1,6 @@
 import * as licon from 'common/licon';
-import { bind, onInsert } from 'common/snabbdom';
-import { h, VNode } from 'snabbdom';
-import AnalyseCtrl from '../ctrl';
+import { type VNode, bind, onInsert, looseH as h } from 'common/snabbdom';
+import type AnalyseCtrl from '../ctrl';
 import * as studyView from '../study/studyView';
 import { patch, nodeFullName } from '../view/util';
 import { renderVariationPgn } from '../pgnExport';
@@ -28,15 +27,11 @@ const elementId = 'analyse-cm';
 function getPosition(e: MouseEvent | TouchEvent): Coords | null {
   let pos = e as PageOrClientPos;
   if ('touches' in e && e.touches.length > 0) pos = e.touches[0];
-  if (pos.pageX || pos.pageY)
-    return {
-      x: pos.pageX!,
-      y: pos.pageY!,
-    };
+  if (pos.pageX || pos.pageY) return { x: pos.pageX!, y: pos.pageY! };
   else if (pos.clientX || pos.clientY)
     return {
-      x: pos.clientX! + document.body.scrollLeft + document.documentElement!.scrollLeft,
-      y: pos.clientY! + document.body.scrollTop + document.documentElement!.scrollTop,
+      x: pos.clientX! + document.body.scrollLeft + document.documentElement.scrollLeft,
+      y: pos.clientY! + document.body.scrollTop + document.documentElement.scrollTop,
     };
   else return null;
 }
@@ -57,21 +52,13 @@ function positionMenu(menu: HTMLElement, coords: Coords): void {
 }
 
 function action(icon: string, text: string, handler: () => void): VNode {
-  return h(
-    'a',
-    {
-      attrs: { 'data-icon': icon },
-      hook: bind('click', handler),
-    },
-    text,
-  );
+  return h('a', { attrs: { 'data-icon': icon }, hook: bind('click', handler) }, text);
 }
 
 function view(opts: Opts, coords: Coords): VNode {
   const ctrl = opts.root,
     node = ctrl.tree.nodeAtPath(opts.path),
-    onMainline = ctrl.tree.pathIsMainline(opts.path) && !ctrl.tree.pathIsForcedVariation(opts.path),
-    trans = ctrl.trans.noarg;
+    onMainline = ctrl.tree.pathIsMainline(opts.path) && !ctrl.tree.pathIsForcedVariation(opts.path);
   return h(
     'div#' + elementId + '.visible',
     {
@@ -85,23 +72,29 @@ function view(opts: Opts, coords: Coords): VNode {
     },
     [
       h('p.title', nodeFullName(node)),
-      onMainline
-        ? null
-        : action(licon.UpTriangle, trans('promoteVariation'), () => ctrl.promote(opts.path, false)),
-      onMainline ? null : action(licon.Checkmark, trans('makeMainLine'), () => ctrl.promote(opts.path, true)),
-      action(licon.Trash, trans('deleteFromHere'), () => ctrl.deleteNode(opts.path)),
-    ]
-      .concat(ctrl.study ? studyView.contextMenu(ctrl.study, opts.path, node) : [])
-      .concat([
-        onMainline
-          ? action(licon.InternalArrow, trans('forceVariation'), () => ctrl.forceVariation(opts.path, true))
-          : null,
-      ])
-      .concat([
-        action(licon.Clipboard, trans('copyVariationPgn'), () =>
-          navigator.clipboard.writeText(renderVariationPgn(opts.root.tree.getNodeList(opts.path))),
+
+      !onMainline &&
+        action(licon.UpTriangle, i18n.site.promoteVariation, () => ctrl.promote(opts.path, false)),
+
+      !onMainline && action(licon.Checkmark, i18n.site.makeMainLine, () => ctrl.promote(opts.path, true)),
+
+      action(licon.Trash, i18n.site.deleteFromHere, () => ctrl.deleteNode(opts.path)),
+
+      action(licon.PlusButton, i18n.site.expandVariations, () => ctrl.setAllCollapsed(opts.path, false)),
+
+      action(licon.MinusButton, i18n.site.collapseVariations, () => ctrl.setAllCollapsed(opts.path, true)),
+
+      ...(ctrl.study ? studyView.contextMenu(ctrl.study, opts.path, node) : []),
+
+      onMainline &&
+        action(licon.InternalArrow, i18n.site.forceVariation, () => ctrl.forceVariation(opts.path, true)),
+
+      action(licon.Clipboard, i18n.site.copyVariationPgn, () =>
+        navigator.clipboard.writeText(
+          renderVariationPgn(opts.root.data.game, opts.root.tree.getNodeList(opts.path)),
         ),
-      ]),
+      ),
+    ],
   );
 }
 

@@ -53,6 +53,7 @@
   <string name="allSyncMembersRemainOnTheSamePosition">Tutti i membri in SYNC rimangono sulla stessa posizione</string>
   <string name="shareChanges">Condividi le modifiche con gli spettatori e salvale sul server</string>
   <string name="playing">In corso</string>
+  <string name="showEvalBar">Barre di valutazione</string>
   <string name="first">Primo</string>
   <string name="previous">Precedente</string>
   <string name="next">Successivo</string>
@@ -63,7 +64,6 @@
   <string name="downloadAllGames">Scarica tutte le partite</string>
   <string name="chapterPgn">PGN del capitolo</string>
   <string name="copyChapterPgn">Copia in PGN</string>
-  <string name="copyChapterPgnDescription">Copia il capitolo in PGN negli appunti.</string>
   <string name="downloadGame">Scarica partita</string>
   <string name="studyUrl">URL dello studio</string>
   <string name="currentChapterUrl">URL del capitolo corrente</string>
@@ -167,4 +167,5 @@
   <string name="playAgain">Gioca di nuovo</string>
   <string name="whatWouldYouPlay">Cosa giocheresti in questa posizione?</string>
   <string name="youCompletedThisLesson">Congratulazioni! Hai completato questa lezione.</string>
+  <string name="perPage">%s per pagina</string>
 </resources>

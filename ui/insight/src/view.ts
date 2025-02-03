@@ -1,5 +1,5 @@
-import { h, thunk } from 'snabbdom';
-import debounce from 'common/debounce';
+import { thunk } from 'snabbdom';
+import { debounce } from 'common/timing';
 import * as licon from 'common/licon';
 import axis from './axis';
 import filters from './filters';
@@ -9,9 +9,9 @@ import { vert } from './table';
 import help from './help';
 import info from './info';
 import boards from './boards';
-import Ctrl from './ctrl';
-import { ViewTab } from './interfaces';
-import { bind } from 'common/snabbdom';
+import type Ctrl from './ctrl';
+import type { ViewTab } from './interfaces';
+import { bind, looseH as h } from 'common/snabbdom';
 
 let forceRender = false;
 
@@ -70,17 +70,13 @@ const viewTabData = (ctrl: Ctrl, view: ViewTab) => ({
   hook: bind('click', () => ctrl.setView(view)),
 });
 
-// we can't use css media queries for most sizing decisions due to differences in the
-// landscape vs portrait layouts, sorry for all the js formatting.
 function header(ctrl: Ctrl) {
   return h('header', widthStyle(mainW()), [
     isAtLeastXSmall(mainW())
       ? h('h2.text', { attrs: { 'data-icon': licon.Target } }, 'Chess Insights')
       : isAtLeastXXSmall(mainW())
-      ? h('h2.text', { attrs: { 'data-icon': licon.Target } }, 'Insights')
-      : mainW() >= 460
-      ? h('h2.text', 'Insights')
-      : null,
+        ? h('h2.text', { attrs: { 'data-icon': licon.Target } }, 'Insights')
+        : mainW() >= 460 && h('h2.text', 'Insights'),
     axis(ctrl, mainW() < 460 ? { attrs: { style: 'justify-content: space-evenly;' } } : null),
   ]);
 }
@@ -93,10 +89,10 @@ function landscapeView(ctrl: Ctrl) {
         h('div.panel-tabs', [
           h('a.tab.preset', panelTabData(ctrl, 'preset'), 'Presets'),
           h('a.tab.filter', panelTabData(ctrl, 'filter'), 'Filters'),
-          Object.keys(ctrl.vm.filters).length ? clearBtn(ctrl) : null,
+          Object.keys(ctrl.vm.filters).length && clearBtn(ctrl),
         ]),
-        ctrl.vm.panel === 'filter' ? filters(ctrl) : null,
-        ctrl.vm.panel === 'preset' ? presets(ctrl) : null,
+        ctrl.vm.panel === 'filter' && filters(ctrl),
+        ctrl.vm.panel === 'preset' && presets(ctrl),
         help(ctrl),
       ]),
       spacer(),
@@ -122,7 +118,7 @@ function portraitView(ctrl: Ctrl) {
         ? [header(ctrl), thunk('div.insight__main.box', renderMain, [ctrl, cacheKey(ctrl)])]
         : h('div.left-side', [
             info(ctrl),
-            ctrl.vm.view === 'filters' ? clearBtn(ctrl) : null,
+            ctrl.vm.view === 'filters' && clearBtn(ctrl),
             ctrl.vm.view === 'presets' ? presets(ctrl) : filters(ctrl),
           ]),
     ),
@@ -173,9 +169,9 @@ const containerStyle = () => ({
     // i would encrypt this if i could.  just look away
     style:
       ` width: ${availW()}px;` +
-      ` --header-height: ${interpolateBetween(mainW(), { x: 500, y: 30 }, { x: 800, y: 60 })}px;` +
-      ` --drop-menu-width: ${interpolateBetween(mainW(), { x: 320, y: 154 }, { x: 800, y: 200 })}px;` +
-      ` --chart-height: ${Math.max(300, Math.min(600, window.innerHeight - 100))}px;`,
+      ` ---header-height: ${interpolateBetween(mainW(), { x: 500, y: 30 }, { x: 800, y: 60 })}px;` +
+      ` ---drop-menu-width: ${interpolateBetween(mainW(), { x: 320, y: 154 }, { x: 800, y: 200 })}px;` +
+      ` ---chart-height: ${Math.max(300, Math.min(600, window.innerHeight - 100))}px;`,
   },
 });
 

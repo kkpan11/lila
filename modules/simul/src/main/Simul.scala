@@ -1,23 +1,27 @@
 package lila.simul
 
-import ornicar.scalalib.ThreadLocalRandom
-import chess.Color
 import chess.format.Fen
 import chess.variant.Variant
-import chess.Speed
+import chess.{ Color, Speed }
+import chess.IntRating
+import chess.rating.RatingProvisional
+import reactivemongo.api.bson.Macros.Annotations.Key
+import scalalib.ThreadLocalRandom
 
+import lila.core.perf.UserWithPerfs
+import lila.core.rating.Score
 import lila.rating.PerfType
-import lila.user.User
+import lila.rating.UserPerfsExt.bestPerf
 
 case class Simul(
-    _id: SimulId,
+    @Key("_id") id: SimulId,
     name: String,
     status: SimulStatus,
     clock: SimulClock,
     applicants: List[SimulApplicant],
     pairings: List[SimulPairing],
     variants: List[Variant],
-    position: Option[Fen.Epd],
+    position: Option[Fen.Full],
     createdAt: Instant,
     estimatedStartAt: Option[Instant] = None,
     hostId: UserId,
@@ -31,9 +35,7 @@ case class Simul(
     text: String,
     featurable: Option[Boolean],
     conditions: SimulCondition.All
-):
-  inline def id = _id
-
+) extends lila.core.simul.Simul:
   def fullName = s"$name simul"
 
   def isCreated = !isStarted
@@ -44,9 +46,9 @@ case class Simul(
 
   def isRunning = status == SimulStatus.Started
 
-  def hasApplicant(userId: UserId) = applicants.exists(_ is userId)
+  def hasApplicant(userId: UserId) = applicants.exists(_.is(userId))
 
-  def hasPairing(userId: UserId) = pairings.exists(_ is userId)
+  def hasPairing(userId: UserId) = pairings.exists(_.is(userId))
 
   def hasUser(userId: UserId) = hasApplicant(userId) || hasPairing(userId)
 
@@ -58,44 +60,42 @@ case class Simul(
 
   def removeApplicant(userId: UserId) =
     Created:
-      copy(applicants = applicants.filterNot(_ is userId))
+      copy(applicants = applicants.filterNot(_.is(userId)))
 
   def accept(userId: UserId, v: Boolean) =
     Created:
-      copy(applicants = applicants map {
-        case a if a is userId => a.copy(accepted = v)
-        case a                => a
-      })
+      copy(applicants = applicants.map: a =>
+        if a.is(userId) then a.copy(accepted = v) else a)
 
   def removePairing(userId: UserId) =
-    copy(pairings = pairings.filterNot(_ is userId)).finishIfDone
+    copy(pairings = pairings.filterNot(_.is(userId))).finishIfDone
 
   def nbAccepted = applicants.count(_.accepted)
 
   def startable = isCreated && nbAccepted > 1
 
   def start =
-    startable option copy(
-      status = SimulStatus.Started,
-      startedAt = nowInstant.some,
-      applicants = Nil,
-      clock = clock.adjustedForPlayers(nbAccepted),
-      pairings = applicants collect {
-        case a if a.accepted => SimulPairing(a.player)
-      },
-      hostSeenAt = none
+    startable.option(
+      copy(
+        status = SimulStatus.Started,
+        startedAt = nowInstant.some,
+        applicants = Nil,
+        clock = clock.adjustedForPlayers(nbAccepted),
+        pairings = applicants.collect {
+          case a if a.accepted => SimulPairing(a.player)
+        },
+        hostSeenAt = none
+      )
     )
 
   def updatePairing(gameId: GameId, f: SimulPairing => SimulPairing) =
     copy(
-      pairings = pairings collect {
-        case p if p.gameId == gameId => f(p)
-        case p                       => p
-      }
+      pairings = pairings.map: p =>
+        if p.gameId == gameId then f(p) else p
     ).finishIfDone
 
   def ejectCheater(userId: UserId): Option[Simul] =
-    hasUser(userId) option removeApplicant(userId).removePairing(userId)
+    hasUser(userId).option(removeApplicant(userId).removePairing(userId))
 
   private def finishIfDone =
     if isStarted && pairings.forall(_.finished) then
@@ -106,27 +106,31 @@ case class Simul(
       )
     else this
 
-  def gameIds = pairings.map(_.gameId)
+  def gameIds        = pairings.map(_.gameId)
+  def ongoingGameIds = pairings.filter(_.ongoing).map(_.gameId)
 
   def perfTypes: List[PerfType] =
     variants.map:
-      PerfType(_, Speed(clock.config.some))
+      lila.rating.PerfType(_, Speed(clock.config.some))
 
   def mainPerfType =
-    perfTypes.find(pt => PerfType.variantOf(pt).standard) orElse perfTypes.headOption getOrElse PerfType.Rapid
+    perfTypes
+      .find(pt => lila.rating.PerfType.variantOf(pt).standard)
+      .orElse(perfTypes.headOption)
+      .getOrElse(PerfType.Rapid)
 
   def applicantRatio = s"${applicants.count(_.accepted)}/${applicants.size}"
 
   def variantRich = variants.sizeIs > 3
 
-  def isHost(userOption: Option[User]): Boolean = userOption so isHost
+  def isHost(userOption: Option[User]): Boolean = userOption.so(isHost)
   def isHost(user: User): Boolean               = user.id == hostId
 
-  def playingPairings = pairings filterNot (_.finished)
+  def playingPairings = pairings.filterNot(_.finished)
 
-  def hostColor: Option[Color] = color flatMap chess.Color.fromName
+  def hostColor: Option[Color] = color.flatMap(Color.fromName)
 
-  def setPairingHostColor(gameId: GameId, hostColor: chess.Color) =
+  def setPairingHostColor(gameId: GameId, hostColor: Color) =
     updatePairing(gameId, _.copy(hostColor = hostColor))
 
   private def Created(s: => Simul): Simul = if isCreated then s else this
@@ -136,27 +140,29 @@ case class Simul(
   def losses  = pairings.count(p => p.finished && p.wins.has(true))
   def ongoing = pairings.count(_.ongoing)
 
-  def pairingOf(userId: UserId) = pairings.find(_ is userId)
+  def pairingOf(userId: UserId) = pairings.find(_.is(userId))
+  def playerIds                 = pairings.map(_.player.user)
+  def hostScore                 = lila.core.rating.Score(wins, losses, draws, none)
+  def playerScore(userId: UserId) = pairingOf(userId).map: p =>
+    Score(p.wins.has(true).so(1), p.wins.has(false).so(1), p.wins.isEmpty.so(1), none)
 
 object Simul:
 
-  case class OnStart(simul: Simul) extends AnyVal
-
   def make(
-      host: User.WithPerfs,
+      host: UserWithPerfs,
       name: String,
       clock: SimulClock,
       variants: List[Variant],
-      position: Option[Fen.Epd],
+      position: Option[Fen.Full],
       color: String,
       text: String,
       estimatedStartAt: Option[Instant],
       featurable: Option[Boolean],
       conditions: SimulCondition.All
   ): Simul =
-    val hostPerf = host.perfs.bestPerf(variants.map { PerfType(_, Speed(clock.config.some)) })
+    val hostPerf = host.perfs.bestPerf(variants.map { lila.rating.PerfType(_, Speed(clock.config.some)) })
     Simul(
-      _id = SimulId(ThreadLocalRandom nextString 8),
+      id = SimulId(ThreadLocalRandom.nextString(8)),
       name = name,
       status = SimulStatus.Created,
       clock = clock,

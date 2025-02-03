@@ -21,23 +21,23 @@ final private class Cleaner(
 
   private def cleanAnalysis: Funit =
     analysisColl
-      .find($doc("acquired.date" $lt durationAgo(analysisTimeoutBase)))
-      .sort($sort desc "acquired.date")
+      .find($doc("acquired.date".$lt(durationAgo(analysisTimeoutBase))))
+      .sort($sort.desc("acquired.date"))
       .cursor[Work.Analysis]()
       .documentSource()
       .filter: ana =>
-        ana.acquiredAt.so(_ isBefore durationAgo(analysisTimeout(ana.nbMoves)))
+        ana.acquiredAt.so(_.isBefore(durationAgo(analysisTimeout(ana.nbMoves))))
       .take(200)
       .mapAsyncUnordered(4): ana =>
-        repo.updateOrGiveUpAnalysis(ana, _.timeout).andDo {
+        for _ <- repo.updateOrGiveUpAnalysis(ana, _.timeout)
+        yield
           logger.info(s"Timeout analysis $ana")
           ana.acquired.foreach: ack =>
             Monitor.timeout(ack.userId)
-        }
       .runWith(Sink.ignore)
       .void
 
-  system.scheduler.scheduleWithFixedDelay(15 seconds, 10 seconds): () =>
+  system.scheduler.scheduleWithFixedDelay(15.seconds, 10.seconds): () =>
     cleanAnalysis
 
 object Cleaner:

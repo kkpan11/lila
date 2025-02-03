@@ -1,18 +1,16 @@
-import { h } from 'snabbdom';
+import { looseH as h, type VNode } from 'common/snabbdom';
 import * as licon from 'common/licon';
-import { Player } from 'game';
-import { Position } from '../interfaces';
-import RoundController from '../ctrl';
+import type { Player } from 'game';
+import type { Position } from '../interfaces';
+import type RoundController from '../ctrl';
 import { ratingDiff, userLink } from 'common/userLink';
 
-export const aiName = (ctrl: RoundController, level: number) =>
-  ctrl.trans('aiNameLevelAiLevel', 'Stockfish', level);
-
-export function userHtml(ctrl: RoundController, player: Player, position: Position) {
+export function userHtml(ctrl: RoundController, player: Player, position: Position): VNode {
   const d = ctrl.data,
     user = player.user,
     perf = (user?.perfs || {})[d.game.perf],
-    rating = player.rating || perf?.rating;
+    rating = player.rating || perf?.rating,
+    signal = user?.id === d.opponent.user?.id ? d.opponentSignal : undefined;
 
   if (user) {
     const connecting = !player.onGame && ctrl.firstSeconds && user.online;
@@ -32,54 +30,51 @@ export function userHtml(ctrl: RoundController, player: Player, position: Positi
             title: connecting
               ? 'Connecting to the game'
               : player.onGame
-              ? 'Joined the game'
-              : 'Left the game',
+                ? 'Joined the game'
+                : 'Left the game',
           },
         }),
         userLink({
           name: user.username,
           ...user,
-          attrs: { 'data-pt-pos': 's', ...(ctrl.isPlaying() ? { target: '_blank', rel: 'noopener' } : {}) },
+          attrs: { 'data-pt-pos': 's', ...(ctrl.isPlaying() ? { target: '_blank' } : {}) },
           online: false,
           line: false,
         }),
-        rating ? h('rating', rating + (player.provisional ? '?' : '')) : null,
-        rating ? ratingDiff(player) : null,
-        player.engine
-          ? h('span', {
-              attrs: {
-                'data-icon': licon.CautionCircle,
-                title: ctrl.noarg('thisAccountViolatedTos'),
-              },
-            })
-          : undefined,
+        !!signal && signalBars(signal),
+        !!rating && h('rating', rating + (player.provisional ? '?' : '')),
+        !!rating && ratingDiff(player),
+        player.engine &&
+          h('span', {
+            attrs: { 'data-icon': licon.CautionCircle, title: i18n.site.thisAccountViolatedTos },
+          }),
       ],
     );
   }
   const connecting = !player.onGame && ctrl.firstSeconds;
   return h(
     `div.ruser-${position}.ruser.user-link`,
-    {
-      class: {
-        online: player.onGame,
-        offline: !player.onGame,
-        connecting,
-      },
-    },
+    { class: { online: player.onGame, offline: !player.onGame, connecting } },
     [
       h('i.line', {
         attrs: {
           title: connecting ? 'Connecting to the game' : player.onGame ? 'Joined the game' : 'Left the game',
         },
       }),
-      h('name', player.name || ctrl.noarg('anonymous')),
+      h('name', player.name || i18n.site.anonymous),
     ],
   );
 }
 
-export const userTxt = (ctrl: RoundController, player: Player) =>
+const signalBars = (signal: number) => {
+  const bars = [];
+  for (let i = 1; i <= 4; i++) bars.push(h(i <= signal ? 'i' : 'i.off'));
+  return h('signal.q' + signal, bars);
+};
+
+export const userTxt = (player: Player): string =>
   player.user
     ? (player.user.title ? player.user.title + ' ' : '') + player.user.username
     : player.ai
-    ? aiName(ctrl, player.ai)
-    : ctrl.noarg('anonymous');
+      ? i18n.site.aiNameLevelAiLevel('Stockfish', player.ai)
+      : i18n.site.anonymous;

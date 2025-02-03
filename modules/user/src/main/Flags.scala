@@ -1,19 +1,8 @@
 package lila.user
 
-import scala.*
+import lila.core.user.Flag
 
-final class Flag(
-    val code: Flag.Code,
-    val name: Flag.Name,
-    val abrev: Option[String]
-):
-  def shortName = abrev | name
-
-object Flag:
-  type Code = String
-  type Name = String
-
-object Flags:
+object Flags extends lila.core.user.FlagApi:
 
   import Flag.*
 
@@ -219,6 +208,8 @@ object Flags:
     C("PR", "Puerto Rico"),
     C("PS", "Palestine"),
     C("PT", "Portugal"),
+    C("PT-20", "Azores"),
+    C("PT-30", "Madeira"),
     C("PW", "Palau"),
     C("PY", "Paraguay"),
     C("QA", "Qatar"),
@@ -260,7 +251,7 @@ object Flags:
     C("TM", "Turkmenistan"),
     C("TN", "Tunisia"),
     C("TO", "Tonga"),
-    C("TR", "Turkey"),
+    C("TR", "Turkiye"),
     C("TT", "Trinidad and Tobago"),
     C("TV", "Tuvalu"),
     C("TW", "Taiwan"),
@@ -292,13 +283,11 @@ object Flags:
     C("_adygea", "Adygea"),
     C("_belarus-wrw", "Belarus White-red-white"),
     C("_east-turkestan", "East Turkestan"),
+    C("_kurdistan", "Kurdistan"),
     C("_russia-wbw", "Russia White-blue-white"),
     C("_united-nations", "United Nations"),
     C("_earth", "Earth")
   )
-
-  val allPairs: List[(Code, Name)] = all.map: c =>
-    c.code -> c.name
 
   val map: Map[Code, Flag] = all.mapBy(_.code)
 
@@ -314,5 +303,5 @@ object Flags:
     "_earth"
   )
 
-  def info(code: Code): Option[Flag] = map get code
+  def info(code: Code): Option[Flag] = map.get(code)
   def name(flag: Flag): Name         = nameMap.getOrElse(flag, flag.name)

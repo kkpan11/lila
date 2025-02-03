@@ -56,6 +56,7 @@
   <string name="allSyncMembersRemainOnTheSamePosition">Svi sinhronizovani članovi ostaju na istoj poziciji</string>
   <string name="shareChanges">Podijelite promjene sa posmatračima i sačuvajte ih na server</string>
   <string name="playing">U toku</string>
+  <string name="showEvalBar">Evaluacijske trake</string>
   <string name="first">Prva strana</string>
   <string name="previous">Prethodna strana</string>
   <string name="next">Sljedeća strana</string>
@@ -66,7 +67,6 @@
   <string name="downloadAllGames">Skinite sve partije</string>
   <string name="chapterPgn">PGN poglavlja</string>
   <string name="copyChapterPgn">Kopirajte PGN</string>
-  <string name="copyChapterPgnDescription">Kopirajte PGN-poglavlje u međuspremnik.</string>
   <string name="downloadGame">Skini partiju</string>
   <string name="studyUrl">Link studije</string>
   <string name="currentChapterUrl">Link trenutnog poglavlja</string>

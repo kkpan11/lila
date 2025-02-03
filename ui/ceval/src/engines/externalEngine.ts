@@ -1,7 +1,13 @@
-import { Work, ExternalEngineInfo, CevalEngine, CevalState, EngineNotifier } from '../types';
-import { randomToken } from 'common/random';
-import { readNdJson } from 'common/ndjson';
-import throttle from 'common/throttle';
+import {
+  type Work,
+  type ExternalEngineInfo,
+  type CevalEngine,
+  type EngineNotifier,
+  CevalState,
+} from '../types';
+import { randomToken } from 'common/algo';
+import { readNdJson } from 'common/xhr';
+import { throttle } from 'common/timing';
 
 interface ExternalEngineOutput {
   time: number;
@@ -22,24 +28,24 @@ export class ExternalEngine implements CevalEngine {
 
   constructor(
     private opts: ExternalEngineInfo,
-    private status?: EngineNotifier,
+    private status?: EngineNotifier | undefined,
   ) {}
 
-  getState() {
+  getState(): CevalState {
     return this.state;
   }
 
-  getInfo() {
+  getInfo(): ExternalEngineInfo {
     return this.opts;
   }
 
-  start(work: Work) {
+  start(work: Work): void {
     this.stop();
     this.state = CevalState.Loading;
     this.process(work);
   }
 
-  process = throttle(700, work => {
+  process: (work: Work) => void = throttle(700, (work: Work) => {
     this.req = new AbortController();
     this.analyse(work, this.req.signal);
   });
@@ -61,12 +67,11 @@ export class ExternalEngine implements CevalEngine {
             sessionId: this.sessionId,
             threads: work.threads,
             hash: work.hashSize || 16,
-            infinite: true,
-            movetime: work.searchMs === Number.POSITIVE_INFINITY ? 24 * 3600 * 1000 : work.searchMs,
             multiPv: work.multiPv,
             variant: work.variant,
             initialFen: work.initialFen,
             moves: work.moves,
+            ...work.search,
           },
         }),
       });
@@ -85,8 +90,8 @@ export class ExternalEngine implements CevalEngine {
 
       this.state = CevalState.Initial;
       this.status?.();
-    } catch (err: unknown) {
-      if ((err as Error).name !== 'AbortError') {
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
         console.error(err);
         this.state = CevalState.Failed;
         this.status?.({ error: String(err) });
@@ -96,15 +101,15 @@ export class ExternalEngine implements CevalEngine {
     }
   }
 
-  stop() {
+  stop(): void {
     this.req?.abort();
   }
 
-  engineName() {
+  engineName(): string {
     return this.opts.name;
   }
 
-  destroy() {
+  destroy(): void {
     this.stop();
   }
 }

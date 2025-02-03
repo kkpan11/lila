@@ -5,6 +5,7 @@
   <string name="toInviteSomeoneToPlayGiveThisUrl">Norbait jokatzera gonbidatzeko, URL hau bidali iezaiozu</string>
   <string name="gameOver">Partida amaitu da</string>
   <string name="waitingForOpponent">Aurkariaren zain</string>
+  <string name="orLetYourOpponentScanQrCode">Edo utzi zure aurkariari QR kode hau eskaneatzen</string>
   <string name="waiting">Zain</string>
   <string name="yourTurn">Zure txanda</string>
   <string name="aiNameLevelAiLevel">%1$s, %2$s. maila</string>
@@ -69,6 +70,8 @@
   <string name="promoteVariation">Aldaera nagusi bihurtu</string>
   <string name="makeMainLine">Linea nagusi bihurtu</string>
   <string name="deleteFromHere">Ezabatu hemendik aurrera</string>
+  <string name="collapseVariations">Ezkutatu aldaerak</string>
+  <string name="expandVariations">Erakutsi aldaerak</string>
   <string name="forceVariation">Aldaera derrigortu</string>
   <string name="copyVariationPgn">Kopiatu ingurabidearen PGNa</string>
   <string name="move">Jokaldia</string>
@@ -113,7 +116,6 @@
   <string name="replayMode">Partida berriz ikusteko modua</string>
   <string name="realtimeReplay">Denbora errealean</string>
   <string name="byCPL">CPL</string>
-  <string name="openStudy">Ikerketa ireki</string>
   <string name="enable">Aktibatu</string>
   <string name="bestMoveArrow">Jokaldi onenaren gezia</string>
   <string name="showVariationArrows">Erakutsi aldaeren geziak</string>
@@ -123,7 +125,6 @@
   <string name="memory">Memoria</string>
   <string name="infiniteAnalysis">Analisi infinitua</string>
   <string name="removesTheDepthLimit">Sakonera muga ezabatzendu eta zure ordenagailua epel mantentzen du</string>
-  <string name="engineManager">Motore kudeatzailea</string>
   <string name="blunder">Hanka-sartzea</string>
   <string name="mistake">Akatsa</string>
   <string name="inaccuracy">Akats txikia</string>
@@ -131,13 +132,25 @@
     <item quantity="one">Hanka-sartze %s</item>
     <item quantity="other">%s hanka-sartze</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="one">Hanka-sartze %s</item>
+    <item quantity="other">%s Hanka-sartze</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="one">Akats %s</item>
     <item quantity="other">%s akats</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="one">Akats %s</item>
+    <item quantity="other">%s Akats</item>
+  </plurals>
   <plurals name="nbInaccuracies">
     <item quantity="one">Akats txiki %s</item>
     <item quantity="other">%s akats txiki</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
+    <item quantity="one">Akats txiki %s</item>
+    <item quantity="other">%s Akats txiki</item>
   </plurals>
   <string name="moveTimes">Jokaldi-denborak</string>
   <string name="flipBoard">Taula biratu</string>
@@ -177,6 +190,7 @@
   <string name="latestForumPosts">Foroko azken mezuak</string>
   <string name="players">Jokalariak</string>
   <string name="friends">Lagunak</string>
+  <string name="otherPlayers">beste jokalariak</string>
   <string name="discussions">Eztabaidak</string>
   <string name="today">Gaur</string>
   <string name="yesterday">Atzo</string>
@@ -256,6 +270,7 @@
     <item quantity="one">%s partida zure aurka</item>
     <item quantity="other">%s partida zure aurka</item>
   </plurals>
+  <string name="ok">OK</string>
   <string name="cancel">Ezeztatu</string>
   <string name="whiteTimeOut">Zuriaren denbora agortu egin da</string>
   <string name="blackTimeOut">Beltzaren denbora agortu egin da</string>
@@ -272,10 +287,10 @@
   <string name="playingRightNow">Oraintxe jokatzen</string>
   <string name="eventInProgress">Oraintxe jokatzen</string>
   <string name="finished">Amaituta</string>
-  <string name="finishesX">bukaera: %s</string>
   <string name="abortGame">Partida geldiarazi</string>
   <string name="gameAborted">Geldiarazitako partida</string>
   <string name="standard">Ohikoa</string>
+  <string name="customPosition">Posizio pertsonalizatua</string>
   <string name="unlimited">Mugagabea</string>
   <string name="mode">Modua</string>
   <string name="casual">Lagunartekoa</string>
@@ -405,7 +420,7 @@
   <string name="importGame">Partida inportatu</string>
   <string name="importGameExplanation">PGN partida bat itsastean ikusi daitekeen partida bat lortuko duzu, partidare eta analisiarekin, txatarekin eta elkarbanatu dezakezun helbide batekin.</string>
   <string name="importGameCaveat">Aldaerak ezabatu egingo dira. Mantendu nahi badituzu inportatu PGNa azterlan gisa.</string>
-  <string name="importGameCaveat2">PGN hau edonork deskargatu dezake. Partida bat era pribatuan inportatzeko azterlan bat erabili behar duzu.</string>
+  <string name="importGameDataPrivacyWarning">PGN hau edonork deskargatu dezake. Partida bat era pribatuan inportatzeko azterlan bat erabili behar duzu.</string>
   <plurals name="nbImportedGames">
     <item quantity="one">%s inportatutako partidak</item>
     <item quantity="other">%s inportatutako partidak</item>
@@ -418,6 +433,7 @@
   <string name="blackCheckmatesInOneMove">Beltzek xake-mate jokaldi bakarrean</string>
   <string name="retry">Berriro saiatu</string>
   <string name="reconnecting">Konektatuz</string>
+  <string name="noNetwork">Deskonektatuta</string>
   <plurals name="nbFriendsOnline">
     <item quantity="one">Lagun %s konektatuta</item>
     <item quantity="other">%s lagun konektatuta</item>
@@ -431,7 +447,6 @@
   <string name="block">Blokeatu</string>
   <string name="blocked">Blokeatuta</string>
   <string name="unblock">Desblokeatu</string>
-  <string name="followsYou">Zu jarraitzen</string>
   <string name="xStartedFollowingY">%1$s  %2$s  jarraitzen hasi da</string>
   <plurals name="nbFollowers">
     <item quantity="one">%s jarraitzaile</item>
@@ -463,9 +478,6 @@
   <string name="safeTournamentName">Adeitasunezko izena hauta ezazu.</string>
   <string name="inappropriateNameWarning">Errespetua galduz gero, zure kontua itxiko dugu.</string>
   <string name="emptyTournamentName">Ez baduzu betetzen, txapelketak Maisu Handi baten izena hartuko du, ausaz.</string>
-  <string name="recommendNotTouching">Hobe ez ukitu hau.</string>
-  <string name="fewerPlayers">Parte hartzeko baldintzak jartzen badituzu, jokalari gutxiago sartuko dira txapelketan.</string>
-  <string name="showAdvancedSettings">Ezarpen aurreratuak</string>
   <string name="makePrivateTournament">Txapelketa pribatu egin eta sarrera pasahitzarekin babestu</string>
   <string name="join">Sartu</string>
   <string name="withdraw">Txapelketa utzi</string>
@@ -505,9 +517,8 @@
   <string name="ifNoneLeaveEmpty">Ez baduzu, hutsik utzi</string>
   <string name="profile">Profila</string>
   <string name="editProfile">Nire profila editatu</string>
-  <string name="firstName">Izena</string>
-  <string name="lastName">Abizena</string>
-  <string name="setFlair">Ezarri zure iruditxoa:</string>
+  <string name="realName">Benetako izena</string>
+  <string name="setFlair">Ezarri zure iruditxoa</string>
   <string name="flair">Iruditxoa</string>
   <string name="youCanHideFlair">Webgune guztian zehar erabiltzaile guztien iruditxoak ezkutatzeko ezarpen bat dago.</string>
   <string name="biography">Biografia</string>
@@ -530,13 +541,15 @@
   <string name="automaticallyProceedToNextGameAfterMoving">Mugitu ondoren, hurrengo partidara joan</string>
   <string name="autoSwitch">Hurrengo partidara</string>
   <string name="puzzles">Ariketak</string>
-  <string name="tournamentWinners">Txapelketaren irabazleak</string>
+  <string name="onlineBots">Online dauden botak</string>
   <string name="name">Izena</string>
   <string name="description">Deskribapena</string>
   <string name="descPrivate">Deskribapen pribatua</string>
   <string name="descPrivateHelp">Taldekideek bakarrik ikusiko duten testua. Ezarrita badago, taldekideei taldearen deskribapenaren ordez agertuko zaie testu hau.</string>
   <string name="no">Ez</string>
   <string name="yes">Bai</string>
+  <string name="website">Webgunea</string>
+  <string name="mobile">Mobila</string>
   <string name="help">Laguntza:</string>
   <string name="createANewTopic">Gai berria sortu</string>
   <string name="topics">Gaiak</string>
@@ -553,11 +566,11 @@
   <string name="reason">Arrazoia</string>
   <string name="whatIsIheMatter">Zein da arazoa?</string>
   <string name="cheat">Tranpak</string>
-  <string name="insult">Irainak</string>
   <string name="troll">Trolla</string>
-  <string name="ratingManipulation">Puntuazioa manipulatu</string>
   <string name="other">Bestelakoak</string>
-  <string name="reportDescriptionHelp">Partidaren esteka itsasi, eta azaldu zer egin duen gaizki erabiltzaileak. Ez esan \"tranpak egiten ditu\" bakarrik, eman horren arrazoiak. Zure mezua azkarrago begiratuko dugu ingelesez idazten baduzu.</string>
+  <string name="reportCheatBoostHelp">Partidaren esteka itsasi, eta azaldu zer egin duen gaizki erabiltzaileak. Ez esan \"tranpak egiten ditu\" bakarrik, eman horren arrazoiak.</string>
+  <string name="reportUsernameHelp">Azaldu erabiltzaile-izen honek zer duen iraingarria. Ez esan \"iraingarria da\" soilik, eman arrazoiak, batez ere iraina ezkutatuta badago, ez bada ingelesezko hitz bat edo errefererantzia historiko edo kulturala bada.</string>
+  <string name="reportProcessedFasterInEnglish">Zure mezua azkarrago kudeatuko dugu ingelesez idazten baduzu.</string>
   <string name="error.provideOneCheatedGameLink">Iruzurra izandako partida baten lotura bidali gutxienez.</string>
   <string name="by">egilea %s</string>
   <string name="importedByX">%s erabiltzaileak inportatuta</string>
@@ -590,6 +603,7 @@
   <string name="slow">Geldoa</string>
   <string name="insideTheBoard">Taula barruan</string>
   <string name="outsideTheBoard">Taulatik kanpo</string>
+  <string name="allSquaresOfTheBoard">Taulako lauki guztiak</string>
   <string name="onSlowGames">Partida moteletan</string>
   <string name="always">Beti</string>
   <string name="never">Inoiz ere ez</string>
@@ -704,6 +718,7 @@
   <string name="toggleVariationArrows">Aktibatu/desaktibatu ingurabidearen geziak</string>
   <string name="cyclePreviousOrNextVariation">Aldatu aurreko/hurrengo ingurabidean</string>
   <string name="toggleGlyphAnnotations">Aktibatu/Desaktibatu ikur bidezko oharrak</string>
+  <string name="togglePositionAnnotations">Aktibatu/Desaktibatu posizioko oharrak</string>
   <string name="variationArrowsInfo">Ingurabidearen geziek jokaldi zerrenda erabili gabe nabigatzen uzten dute.</string>
   <string name="playSelectedMove">jokatu aukeratutako jokaldia</string>
   <string name="newTournament">Txapelketa berria</string>
@@ -769,6 +784,7 @@
   <string name="onlineAndOfflinePlay">Online zein offline jokatu</string>
   <string name="viewTheSolution">Erantzuna ikusi</string>
   <string name="followAndChallengeFriends">Jarraitu eta desafio egin lagunei</string>
+  <string name="noChallenges">Erronkarik ez.</string>
   <plurals name="availableInNbLanguages">
     <item quantity="one">%s hizkuntzatan eskuragarri!</item>
     <item quantity="other">%s hizkuntzatan eskuragarri!</item>
@@ -788,9 +804,12 @@
   <string name="transparent">Gardena</string>
   <string name="deviceTheme">Gailuaren gaia</string>
   <string name="backgroundImageUrl">Atzeko-planoko irudia:</string>
-  <string name="boardGeometry">Taularen geometria</string>
-  <string name="boardTheme">Taularen itxura</string>
-  <string name="boardSize">Taularen tamaina</string>
+  <string name="board">Taula</string>
+  <string name="size">Tamaina</string>
+  <string name="opacity">Gardentasuna</string>
+  <string name="brightness">Argitasuna</string>
+  <string name="hue">Ñabardura</string>
+  <string name="boardReset">Berrezarri koloreak defektuzkoetara</string>
   <string name="pieceSet">Pieza formatua</string>
   <string name="embedInYourWebsite">Zure webgunean txertatu</string>
   <string name="usernameAlreadyUsed">Erabiltzaile izen hori hartuta dago, erabili beste bat.</string>
@@ -862,9 +881,10 @@
     <item quantity="one">eta aurrejokaldi linea %s gorde</item>
     <item quantity="other">eta %s aurrejokaldi linea gorde</item>
   </plurals>
+  <string name="showUnreadLichessMessage">Lichessek bidalitako mezu pribatu bat jaso duzu.</string>
+  <string name="clickHereToReadIt">Egin klik hemen irakurtzeko</string>
   <string name="sorry">Barkatu :(</string>
   <string name="weHadToTimeYouOutForAWhile">Denbora tarte baterako bota egin behar izan zaitugu.</string>
-  <string name="timeoutExpires">Kanporaketaren amaiera: %s.</string>
   <string name="why">Zergatik?</string>
   <string name="pleasantChessExperience">Guztioi xakean jokatzeko aukera atsegina eskaintzea da gure helburua.</string>
   <string name="goodPractice">Horretarako, jokalari guztiek praktika onak jarraitzen dituztela ziur izan behar dugu.</string>
@@ -884,6 +904,7 @@
   <string name="agreementPolicy">Lichessek ezarritako politikak beteko ditut.</string>
   <string name="searchOrStartNewDiscussion">Hizketaldia bilatu edo berria hasi</string>
   <string name="edit">Aldatu</string>
+  <string name="bullet" comment="Probably best left untranslated. Leave it as 'Bullet' unless your language has a better word for it.">Bullet</string>
   <string name="blitz" comment="Probably best left untranslated. Leave it as 'Blitz' unless your language has a better word for it.">Blitz</string>
   <string name="rapid">Aktiboa</string>
   <string name="classical">Estandarra</string>
@@ -935,8 +956,6 @@
   <string name="minimumRatedGames">Gutxieneko partida kopurua</string>
   <string name="minimumRating">Gutxieneko sailkapena</string>
   <string name="maximumWeeklyRating">Asteroko gehieneko sailkapena</string>
-  <string name="onlyTitled">Tituludun jokalariak bakarrik</string>
-  <string name="onlyTitledHelp">Eskatu titulu ofiziala izatea txapelketan sartzeko</string>
   <string name="positionInputHelp">Partida guztiak posizio jakin batekin asteko sartu posizioaren FEN balioa.
 Xake-arrunteko partidekin bakarrik balio du, ez aldaerekin.
 %s erabili dezakezu FEN balioa lortzeko, eta ondoren hemen itsatsi.
@@ -964,9 +983,6 @@ Utzi hutsik partidak ohiko posizioarekin hasteko.</string>
   <string name="focusChat">Eraman fokua txatera</string>
   <string name="showHelpDialog">Erakutsi laguntza leiho hau</string>
   <string name="reopenYourAccount">Berreskuratu zure kontua</string>
-  <string name="closedAccountChangedMind">Zure kontua itxi bazenuen baina berreskuratu nahi baduzu, aukera bakarra duzu hori egiteko.</string>
-  <string name="onlyWorksOnce">Honek behin bakarrik funtzionatuko du.</string>
-  <string name="cantDoThisTwice">Zure kontua bigarren aldiz ixten baduzu ezingo duzu berriz berreskuratu.</string>
   <string name="emailAssociatedToaccount">Posta elektronikoa ondo lotu da zure kontura</string>
   <string name="sentEmailWithLink">Posta elektroniko bat bidali dizugu lotura batekin.</string>
   <string name="tournamentEntryCode">Txapelketara sartzeko kodea</string>
@@ -985,4 +1001,6 @@ Utzi hutsik partidak ohiko posizioarekin hasteko.</string>
   <string name="showMeEverything">Erakutsi guztia</string>
   <string name="lichessPatronInfo">Lichess software librea da.
 Garapen eta mantentze-kostu guztiak erabiltzaileen dohaintzekin ordaintzen dira.</string>
+  <string name="nothingToSeeHere">Hemen ez dago ezer zuretzat.</string>
+  <string name="stats">Estatistikak</string>
 </resources>

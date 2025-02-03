@@ -1,47 +1,27 @@
 package lila.msg
 
-import lila.user.User
-import lila.hub.LightTeam
-import lila.common.config.BaseUrl
-
-case class MsgPreset(name: String, text: String)
+import lila.core.LightUser
+import lila.core.config.BaseUrl
+import lila.core.id.ForumCategId
+import lila.core.team.LightTeam
 
 object MsgPreset:
 
-  type Username = String
+  import lila.core.msg.MsgPreset as Msg
 
-  lazy val sandbagAuto = MsgPreset(
-    name = "Warning: possible sandbagging",
-    text =
-      """You have lost a couple games after a few moves. Please note that you MUST try to win every rated game.
-Losing rated games on purpose is called "sandbagging" and is not allowed on Lichess.
+  private val baseUrl = "https://lichess.org"
 
-Thank you for your understanding."""
-  )
-
-  lazy val boostAuto = MsgPreset(
-    name = "Warning: possible boosting",
-    """You have won a couple of games after a few moves. Please note that both players MUST try to win every game.
-Taking advantage of opponents losing rated games on purpose is called "boosting" and is not allowed on Lichess.
-
-Thank you for your understanding."""
-  )
-
-  lazy val sittingAuto = MsgPreset(
-    name = "Warning: leaving games / stalling on time",
-    text =
-      """In your game history, you have several games where you have left the game or just let the time run out instead of playing or resigning.
-This can be very annoying for your opponents. If this behavior continues to happen, we may be forced to terminate your account."""
-  )
-
-  def maxFollow(username: Username, max: Int) =
-    MsgPreset(
+  def maxFollow(username: UserName, max: Int) =
+    Msg(
       name = "Follow limit reached!",
       text = s"""Sorry, you can't follow more than $max players on Lichess.
-To follow new players, you must first unfollow some on https://lichess.org/@/$username/following.
+To follow new players, you must first unfollow some on $baseUrl/@/$username/following.
 
 Thank you for your understanding."""
     )
+
+  def forumRelocation(title: String, newUrl: String) =
+    s"""A moderator has moved your post "$title" to a different subforum. You can find it here: $baseUrl$newUrl."""
 
   object forumDeletion:
 
@@ -55,17 +35,27 @@ Thank you for your understanding."""
 
     def byModerator = compose("A moderator")
 
-    def byTeamLeader(teamSlug: String) = compose(s"A team leader of https://lichess.org/forum/$teamSlug")
+    def byTeamLeader(forumId: ForumCategId) = compose(s"A team leader of $baseUrl/forum/$forumId")
 
-    def byBlogAuthor(authorId: String) = compose(by = s"The community blog author $authorId")
+    def byBlogAuthor(user: UserName) = compose(by = s"The community blog author $user")
 
     private def compose(by: String)(reason: String, forumPost: String) =
-      s"""$by deleted the following of your posts for this reason: $reason. Please read Lichess' Forum-Etiquette: https://lichess.org/page/forum-etiquette
+      s"""$by deleted the following of your posts for this reason: $reason. Please read Lichess' Forum-Etiquette: $baseUrl/page/forum-etiquette
 ----
 $forumPost
     """
 
-  def newPermissions(by: User, team: LightTeam, perms: Iterable[String], baseUrl: BaseUrl) =
-    s"""@${by.username} has changed your leader permissions in the team "${team.name}".
+  def newPermissions(by: LightUser, team: LightTeam, perms: Iterable[String], baseUrl: BaseUrl) =
+    s"""@${by.name} has changed your leader permissions in the team "${team.name}".
 Your new permissions are: ${perms.mkString(", ")}.
 $baseUrl/team/${team.id}"""
+
+  def apiTokenRevoked(url: String) =
+    s"""Your Lichess API token has been found on GitHub
+
+We detected one of your API tokens in a public code repository on GitHub at the following URL:
+
+$url
+
+We have automatically revoked the token to protect your account.
+    """

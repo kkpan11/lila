@@ -1,9 +1,11 @@
 package lila.tutor
 
-import lila.insight.ClockPercent
-import lila.user.User
+import chess.IntRating
 
-export lila.Lila.{ *, given }
+import lila.core.perf.UserWithPerfs
+import lila.insight.ClockPercent
+export lila.core.lilaism.Lilaism.{ *, given }
+export lila.common.extensions.*
 
 private val logger = lila.log("tutor")
 
@@ -12,6 +14,6 @@ private given Ordering[ClockPercent]                 = doubleOrdering
 private given Ordering[IntRating]                    = intOrdering
 private given Ordering[GoodPercent]                  = doubleOrdering
 
-private given Conversion[User.WithPerfs, User] = _.user
+private given Conversion[UserWithPerfs, User] = _.user
 
 private def roundToInt(d: Double) = Math.round(d).toInt

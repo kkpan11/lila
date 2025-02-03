@@ -1,9 +1,10 @@
-import { h, VNode } from 'snabbdom';
+import { h, type VNode } from 'snabbdom';
 import * as licon from 'common/licon';
 import { bindSubmit } from 'common/snabbdom';
-import { User } from '../interfaces';
-import MsgCtrl from '../ctrl';
-import throttle from 'common/throttle';
+import type { User } from '../interfaces';
+import type MsgCtrl from '../ctrl';
+import { throttle } from 'common/timing';
+import { alert } from 'common/dialog';
 
 export default function renderInteract(ctrl: MsgCtrl, user: User): VNode {
   const connected = ctrl.connected();
@@ -22,11 +23,7 @@ export default function renderInteract(ctrl: MsgCtrl, user: User): VNode {
       renderTextarea(ctrl, user),
       h('button.msg-app__convo__post__submit.button', {
         class: { connected },
-        attrs: {
-          type: 'submit',
-          'data-icon': licon.PlayTriangle,
-          disabled: !connected,
-        },
+        attrs: { type: 'submit', 'data-icon': licon.PlayTriangle, disabled: !connected },
       }),
     ],
   );
@@ -34,10 +31,7 @@ export default function renderInteract(ctrl: MsgCtrl, user: User): VNode {
 
 function renderTextarea(ctrl: MsgCtrl, user: User): VNode {
   return h('textarea.msg-app__convo__post__text', {
-    attrs: {
-      rows: 1,
-      enterkeyhint: 'send',
-    },
+    attrs: { rows: 1, enterkeyhint: 'send' },
     hook: {
       insert(vnode) {
         setupTextarea(vnode.elm as HTMLTextAreaElement, user.id, ctrl);
@@ -56,7 +50,10 @@ function setupTextarea(area: HTMLTextAreaElement, contact: string, ctrl: MsgCtrl
     if (prev > now - 1000 || !ctrl.connected()) return;
     prev = now;
     const txt = area.value.trim();
-    if (txt.length > 8000) return alert('The message is too long.');
+    if (txt.length > 8000) {
+      alert('The message is too long.');
+      return;
+    }
     if (txt) ctrl.post(txt);
     area.value = '';
     area.dispatchEvent(new Event('input')); // resize the textarea
@@ -85,7 +82,7 @@ function setupTextarea(area: HTMLTextAreaElement, contact: string, ctrl: MsgCtrl
 
   // send the content on <enter.
   area.addEventListener('keypress', (e: KeyboardEvent) => {
-    if ((e.which == 10 || e.which == 13) && !e.shiftKey) {
+    if ((e.which === 10 || e.which === 13) && !e.shiftKey) {
       e.preventDefault();
       setTimeout(send);
     }

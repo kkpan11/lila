@@ -1,15 +1,15 @@
-import * as cg from 'chessground/types';
-import { onInsert } from 'common/snabbdom';
+import type { MouchEvent } from 'chessground/types';
+import { onInsert, type LooseVNode } from 'common/snabbdom';
 import { h } from 'snabbdom';
-import RoundController from '../ctrl';
-import { Position } from '../interfaces';
-import * as round from '../round';
+import type RoundController from '../ctrl';
+import type { Position } from '../interfaces';
+import { plyStep } from '../util';
 import { crazyKeys, drag, pieceRoles } from './crazyCtrl';
 
 const eventNames = ['mousedown', 'touchstart'];
 
-export default function pocket(ctrl: RoundController, color: Color, position: Position) {
-  const step = round.plyStep(ctrl.data, ctrl.ply);
+export default function pocket(ctrl: RoundController, color: Color, position: Position): LooseVNode {
+  const step = plyStep(ctrl.data, ctrl.ply);
   if (!step.crazy) return;
   const droppedRole = ctrl.justDropped,
     preDropRole = ctrl.preDrop,
@@ -25,8 +25,8 @@ export default function pocket(ctrl: RoundController, color: Color, position: Po
       class: { usable },
       hook: onInsert(el =>
         eventNames.forEach(name =>
-          el.addEventListener(name, (e: cg.MouchEvent) => {
-            if (position === (ctrl.flip ? 'top' : 'bottom') && crazyKeys.length == 0) drag(ctrl, e);
+          el.addEventListener(name, (e: MouchEvent) => {
+            if (position === (ctrl.flip ? 'top' : 'bottom') && crazyKeys.length === 0) drag(ctrl, e);
           }),
         ),
       ),
@@ -43,11 +43,7 @@ export default function pocket(ctrl: RoundController, color: Color, position: Po
           'div.pocket-c2',
           h('piece.' + role + '.' + color, {
             class: { premove: activeColor && preDropRole === role },
-            attrs: {
-              'data-role': role,
-              'data-color': color,
-              'data-nb': nb,
-            },
+            attrs: { 'data-role': role, 'data-color': color, 'data-nb': nb },
           }),
         ),
       );

@@ -1,12 +1,12 @@
 package lila.study
 
 import chess.format.pgn.*
-import chess.format.pgn.PgnTree.*
 import chess.format.{ Fen, Uci, UciCharPair }
-import chess.{ Ply, Check, variant }
-import Node.*
+import chess.{ Check, Ply, variant }
 
 import lila.tree.{ Branch, Branches, Root }
+
+import Node.*
 
 class PgnDumpTest extends munit.FunSuite:
 
@@ -19,7 +19,7 @@ class PgnDumpTest extends munit.FunSuite:
       id = UciCharPair(Uci(uci).get),
       ply = ply,
       move = Uci.WithSan(Uci(uci).get, SanStr(san)),
-      fen = Fen.Epd("<fen>"),
+      fen = Fen.Full("<fen>"),
       check = Check.No,
       clock = None,
       crazyData = None,

@@ -5,6 +5,7 @@
   <string name="toInviteSomeoneToPlayGiveThisUrl">For å invitere noen til å spille, gi dem denne lenken</string>
   <string name="gameOver">Partiet er avsluttet</string>
   <string name="waitingForOpponent">Venter på motstander</string>
+  <string name="orLetYourOpponentScanQrCode">Eller få motstanderen din til å skanne denne QR-koden</string>
   <string name="waiting">Venter</string>
   <string name="yourTurn">Ditt trekk</string>
   <string name="aiNameLevelAiLevel">%1$s på nivå %2$s</string>
@@ -69,6 +70,8 @@
   <string name="promoteVariation">Forfrem variant</string>
   <string name="makeMainLine">Gjør til hovedvariant</string>
   <string name="deleteFromHere">Slett herfra</string>
+  <string name="collapseVariations">Skjul varianter</string>
+  <string name="expandVariations">Vis varianter</string>
   <string name="forceVariation">Vis som variant</string>
   <string name="copyVariationPgn">Kopier variant-PGN</string>
   <string name="move">Trekk</string>
@@ -113,17 +116,15 @@
   <string name="replayMode">Gjennomspilling</string>
   <string name="realtimeReplay">Sanntid</string>
   <string name="byCPL">Etter CBT</string>
-  <string name="openStudy">Åpne studie</string>
   <string name="enable">Aktiver</string>
   <string name="bestMoveArrow">Pil for beste trekk</string>
   <string name="showVariationArrows">Vis variantpiler</string>
   <string name="evaluationGauge">Evalueringsmåler</string>
-  <string name="multipleLines">Flere linjer</string>
+  <string name="multipleLines">Flere varianter</string>
   <string name="cpus">Prosessorer</string>
   <string name="memory">Minne</string>
   <string name="infiniteAnalysis">Uendelig analyse</string>
   <string name="removesTheDepthLimit">Fjerner dybdebegrensning, og holder maskinen din varm</string>
-  <string name="engineManager">Innstillinger for sjakkmotorer</string>
   <string name="blunder">Bukk</string>
   <string name="mistake">Feil</string>
   <string name="inaccuracy">Unøyaktighet</string>
@@ -131,13 +132,25 @@
     <item quantity="one">%s bukk</item>
     <item quantity="other">%s bukker</item>
   </plurals>
+  <plurals name="numberBlunders">
+    <item quantity="one">%s Bukk</item>
+    <item quantity="other">%s Bukker</item>
+  </plurals>
   <plurals name="nbMistakes">
     <item quantity="one">%s feil</item>
     <item quantity="other">%s feil</item>
   </plurals>
+  <plurals name="numberMistakes">
+    <item quantity="one">%s Feil</item>
+    <item quantity="other">%s Feil</item>
+  </plurals>
   <plurals name="nbInaccuracies">
     <item quantity="one">%s unøyaktighet</item>
     <item quantity="other">%s unøyaktigheter</item>
+  </plurals>
+  <plurals name="numberInaccuracies">
+    <item quantity="one">%s Unøyaktighet</item>
+    <item quantity="other">%s Unøyaktigheter</item>
   </plurals>
   <string name="moveTimes">Tidsbruk</string>
   <string name="flipBoard">Snu brettet</string>
@@ -177,6 +190,7 @@
   <string name="latestForumPosts">Nyeste foruminnlegg</string>
   <string name="players">Spillere</string>
   <string name="friends">Venner</string>
+  <string name="otherPlayers">andre spillere</string>
   <string name="discussions">Samtaler</string>
   <string name="today">I dag</string>
   <string name="yesterday">I går</string>
@@ -256,6 +270,7 @@
     <item quantity="one">%s partier mot deg</item>
     <item quantity="other">%s partier mot deg</item>
   </plurals>
+  <string name="ok">OK</string>
   <string name="cancel">Avbryt</string>
   <string name="whiteTimeOut">Tiden er ute for hvit</string>
   <string name="blackTimeOut">Tiden er ute for svart</string>
@@ -272,10 +287,10 @@
   <string name="playingRightNow">Pågår</string>
   <string name="eventInProgress">Pågår</string>
   <string name="finished">Ferdig</string>
-  <string name="finishesX">avsluttes %s</string>
   <string name="abortGame">Avbryt partiet</string>
   <string name="gameAborted">Partiet er avbrutt</string>
   <string name="standard">Standard</string>
+  <string name="customPosition">Brukerdefinert stilling</string>
   <string name="unlimited">Ubegrenset</string>
   <string name="mode">Modus</string>
   <string name="casual">Urangert</string>
@@ -329,7 +344,7 @@
     <item quantity="other">Gi %s sekunder</item>
   </plurals>
   <string name="thisAccountViolatedTos">Denne kontoen brøt vilkårene for å bruke Lichess</string>
-  <string name="openingExplorerAndTablebase">Åpningsutforsker &amp; tabellbase</string>
+  <string name="openingExplorerAndTablebase">Åpningsutforsker og tabellbase</string>
   <string name="takeback">Angre</string>
   <string name="proposeATakeback">Foreslå å angre</string>
   <string name="takebackPropositionSent">Angreforslag sendt</string>
@@ -405,7 +420,7 @@
   <string name="importGame">Importer parti</string>
   <string name="importGameExplanation">Lim inn PGN for gjennomblaing, maskinanalyse, partisamtale og delbar URL.</string>
   <string name="importGameCaveat">Varianter importeres ikke. Bruk en studie for å importere PGN med varianter.</string>
-  <string name="importGameCaveat2">Denne PGN-en er offentlig tilgjengelig. Bruk en studie for å importere et parti privat.</string>
+  <string name="importGameDataPrivacyWarning">Denne PGN-en er offentlig tilgjengelig. Bruk en studie for å importere et parti privat.</string>
   <plurals name="nbImportedGames">
     <item quantity="one">%s importert parti</item>
     <item quantity="other">%s importerte partier</item>
@@ -418,6 +433,7 @@
   <string name="blackCheckmatesInOneMove">Svart setter matt i ett trekk</string>
   <string name="retry">Prøv igjen</string>
   <string name="reconnecting">Gjenoppretter forbindelsen</string>
+  <string name="noNetwork">Frakoblet</string>
   <plurals name="nbFriendsOnline">
     <item quantity="one">%s venn online</item>
     <item quantity="other">%s venner online</item>
@@ -431,7 +447,6 @@
   <string name="block">Blokker</string>
   <string name="blocked">Blokkert</string>
   <string name="unblock">Fjern blokkering</string>
-  <string name="followsYou">Følger deg</string>
   <string name="xStartedFollowingY">%1$s begynte å følge %2$s</string>
   <plurals name="nbFollowers">
     <item quantity="one">%s følger</item>
@@ -463,9 +478,6 @@
   <string name="safeTournamentName">Velg et veldig trygt navn for turneringen.</string>
   <string name="inappropriateNameWarning">Upassende innhold kan føre til at brukerkontoen din blir stengt.</string>
   <string name="emptyTournamentName">La stå tomt for at turneringa skal få navn etter en tilfeldig stormester.</string>
-  <string name="recommendNotTouching">Vi anbefaler å ikke endre disse.</string>
-  <string name="fewerPlayers">Om du stiller betingelser for å delta vil turneringa få færre deltakere.</string>
-  <string name="showAdvancedSettings">Vis avanserte innstillinger</string>
   <string name="makePrivateTournament">Gjør turneringen privat og begrens tilgang med et passord</string>
   <string name="join">Bli med</string>
   <string name="withdraw">Trekk deg</string>
@@ -505,9 +517,8 @@
   <string name="ifNoneLeaveEmpty">Hvis ingen, la stå tom</string>
   <string name="profile">Profil</string>
   <string name="editProfile">Rediger profil</string>
-  <string name="firstName">Fornavn</string>
-  <string name="lastName">Etternavn</string>
-  <string name="setFlair">Velg flair:</string>
+  <string name="realName">Virkelig navn</string>
+  <string name="setFlair">Velg flair</string>
   <string name="flair">Flair</string>
   <string name="youCanHideFlair">Det finnes en innstilling for å skjule alle brukerflairer på hele nettstedet.</string>
   <string name="biography">Biografi</string>
@@ -530,13 +541,15 @@
   <string name="automaticallyProceedToNextGameAfterMoving">Fortsett automatisk til neste parti etter utført trekk</string>
   <string name="autoSwitch">Autosyklus</string>
   <string name="puzzles">Sjakknøtter</string>
-  <string name="tournamentWinners">Turneringsvinnere</string>
+  <string name="onlineBots">Påloggede boter</string>
   <string name="name">Navn</string>
   <string name="description">Beskrivelse</string>
   <string name="descPrivate">Privat beskrivelse</string>
   <string name="descPrivateHelp">Tekst som lagmedlemmene ser i stedet for den offentlige beskrivelsen.</string>
   <string name="no">Nei</string>
   <string name="yes">Ja</string>
+  <string name="website">Nettsted</string>
+  <string name="mobile">Mobil</string>
   <string name="help">Hjelp:</string>
   <string name="createANewTopic">Opprett nytt emne</string>
   <string name="topics">Emner</string>
@@ -553,11 +566,11 @@
   <string name="reason">Årsak</string>
   <string name="whatIsIheMatter">Hva gjelder det?</string>
   <string name="cheat">Juks</string>
-  <string name="insult">Fornærmelse</string>
   <string name="troll">Troll</string>
-  <string name="ratingManipulation">Ratingmanipulering</string>
   <string name="other">Annet</string>
-  <string name="reportDescriptionHelp">Kopier lenken til partiet/partiene og forklar hva som er galt med denne brukerens oppførsel.</string>
+  <string name="reportCheatBoostHelp">Kopier lenken til partiet/partiene og forklar hva som er galt med denne brukerens oppførsel. Skriv en utdypende begrunnelse, ikke bare «vedkommende jukser».</string>
+  <string name="reportUsernameHelp">Forklar hvorfor brukernavnet er støtende. Skriv en utdypende begrunnelse, ikke bare «det er støtende/upassende». Dette gjelder særlig hvis fornærmelsen er tilslørt, ikke er på engelsk, er et slanguttrykk eller er en historisk/kulturell referanse.</string>
+  <string name="reportProcessedFasterInEnglish">Rapporten din blir behandlet raskere hvis den er skrevet på engelsk.</string>
   <string name="error.provideOneCheatedGameLink">Oppgi minst én lenke til et jukseparti.</string>
   <string name="by">av %s</string>
   <string name="importedByX">Importert av %s</string>
@@ -590,6 +603,7 @@
   <string name="slow">Sakte</string>
   <string name="insideTheBoard">Innenfor brettet</string>
   <string name="outsideTheBoard">Utenfor brettet</string>
+  <string name="allSquaresOfTheBoard">Alle felt på brettet</string>
   <string name="onSlowGames">På lange partier</string>
   <string name="always">Alltid</string>
   <string name="never">Aldri</string>
@@ -704,6 +718,7 @@
   <string name="toggleVariationArrows">Skru variantpiler av eller på</string>
   <string name="cyclePreviousOrNextVariation">Endre til forrige/neste variant</string>
   <string name="toggleGlyphAnnotations">Skru symboler i kommentarer av eller på</string>
+  <string name="togglePositionAnnotations">Skru kommentarer for stillinger av eller på</string>
   <string name="variationArrowsInfo">Variantpiler lar deg navigere uten å bruke notasjonslisten.</string>
   <string name="playSelectedMove">spill valgt trekk</string>
   <string name="newTournament">Ny turnering</string>
@@ -769,6 +784,7 @@
   <string name="onlineAndOfflinePlay">Online og offline spill</string>
   <string name="viewTheSolution">Se løsning</string>
   <string name="followAndChallengeFriends">Følg og utfordre venner</string>
+  <string name="noChallenges">Ingen utfordringer.</string>
   <plurals name="availableInNbLanguages">
     <item quantity="one">Tilgjengelig på %s språk!</item>
     <item quantity="other">Tilgjengelig på %s språk!</item>
@@ -788,9 +804,12 @@
   <string name="transparent">Gjennomsiktig</string>
   <string name="deviceTheme">Enhetstema</string>
   <string name="backgroundImageUrl">URL for bakgrunnsbilde:</string>
-  <string name="boardGeometry">Brettgeometri</string>
-  <string name="boardTheme">Brett-tema</string>
-  <string name="boardSize">Brettstørrelse</string>
+  <string name="board">Brett</string>
+  <string name="size">Størrelse</string>
+  <string name="opacity">Ugjennomsiktighet</string>
+  <string name="brightness">Lysstyrke</string>
+  <string name="hue">Fargetone</string>
+  <string name="boardReset">Tilbake til standardfarger</string>
   <string name="pieceSet">Brikkesett</string>
   <string name="embedInYourWebsite">Bygg inn på nettstedet ditt</string>
   <string name="usernameAlreadyUsed">Brukernavnet er allerede i bruk, prøv et annet et.</string>
@@ -859,12 +878,13 @@
   <string name="noConditionalPremoves">Ingen betingede forhåndstrekk</string>
   <string name="playX">Spill %s</string>
   <plurals name="andSaveNbPremoveLines">
-    <item quantity="one">og lagre %s linje med forhåndstrekk</item>
-    <item quantity="other">og lagre %s linjer med forhåndstrekk</item>
+    <item quantity="one">og lagre %s forhåndstrekkvariant</item>
+    <item quantity="other">og lagre %s forhåndstrekkvarianter</item>
   </plurals>
+  <string name="showUnreadLichessMessage">Du har mottatt en privat melding fra Lichess.</string>
+  <string name="clickHereToReadIt">Klikk her for å lese den</string>
   <string name="sorry">Beklager :(</string>
   <string name="weHadToTimeYouOutForAWhile">Vi måtte gi deg en timeout.</string>
-  <string name="timeoutExpires">Timeouten utløper %s.</string>
   <string name="why">Hvorfor?</string>
   <string name="pleasantChessExperience">Vi forsøker å gi alle en god sjakkopplevelse.</string>
   <string name="goodPractice">For å oppnå det må vi sikre at alle spillere følger god praksis.</string>
@@ -884,6 +904,7 @@
   <string name="agreementPolicy">Jeg lover å respektere alle Lichess\' retningslinjer.</string>
   <string name="searchOrStartNewDiscussion">Søk eller start en ny diskusjon</string>
   <string name="edit">Rediger</string>
+  <string name="bullet" comment="Probably best left untranslated. Leave it as 'Bullet' unless your language has a better word for it.">Bullet</string>
   <string name="blitz" comment="Probably best left untranslated. Leave it as 'Blitz' unless your language has a better word for it.">Blitz</string>
   <string name="rapid">Hurtigsjakk</string>
   <string name="classical">Klassisk</string>
@@ -936,8 +957,6 @@ og påvirker spillernes rating</string>
   <string name="minimumRatedGames">Minimum ratede partier</string>
   <string name="minimumRating">Minimum rating</string>
   <string name="maximumWeeklyRating">Maksimum ukerating</string>
-  <string name="onlyTitled">Kun spillere med sjakktittel</string>
-  <string name="onlyTitledHelp">Krev en offisiell sjakktittel for å bli med i turneringen</string>
   <string name="positionInputHelp">Lim inn gyldig FEN for å begynne hvert parti fra gitt stilling.
 Det fungerer bare for standardpartier, ikke for varianter.
 Du kan bruke %s for å generere en FEN-stilling, som du limer inn her.
@@ -965,9 +984,7 @@ La feltet stå tomt for å begynne partiene fra den normale utgangsstillingen.</
   <string name="focusChat">Fokus på samtale</string>
   <string name="showHelpDialog">Vis denne hjelpedialogen</string>
   <string name="reopenYourAccount">Gjenopprett kontoen din</string>
-  <string name="closedAccountChangedMind">Hvis du har avsluttet kontoen din og så ombestemt deg, får du én sjanse til å gjenopprette kontoen din.</string>
-  <string name="onlyWorksOnce">Dette fungerer bare én gang.</string>
-  <string name="cantDoThisTwice">Hvis du avslutter kontoen din for andre gang, er den tapt for alltid.</string>
+  <string name="reopenYourAccountDescription">Hvis du angrer på at du har avsluttet kontoen din, kan du gjenopprette den.</string>
   <string name="emailAssociatedToaccount">E-postadresse tilknyttet kontoen</string>
   <string name="sentEmailWithLink">Vi har sendt deg en e-post med en lenke.</string>
   <string name="tournamentEntryCode">Turneringsadgangskode</string>
@@ -986,4 +1003,6 @@ La feltet stå tomt for å begynne partiene fra den normale utgangsstillingen.</
   <string name="showMeEverything">Vis meg alt</string>
   <string name="lichessPatronInfo">Lichess er en ideell forening, basert på fri programvare med åpen kildekode.
 Alle kostnader for drift, utvikling og innhold finansieres utelukkende av brukerbidrag.</string>
+  <string name="nothingToSeeHere">Ingenting her for nå.</string>
+  <string name="stats">Statistikk</string>
 </resources>

@@ -6,8 +6,6 @@ import reactivemongo.api.bson.*
 import lila.common.LilaFuture
 import lila.db.AsyncColl
 import lila.db.dsl.{ *, given }
-import lila.user.User
-import lila.common.config.Max
 
 opaque type StudyTopic = String
 object StudyTopic extends OpaqueString[StudyTopic]:
@@ -44,14 +42,14 @@ final class StudyTopicApi(topicRepo: StudyTopicRepo, userTopicRepo: StudyUserTop
 ):
 
   def byId(str: String): Fu[Option[StudyTopic]] =
-    topicRepo.coll(_.byId[Bdoc](str)) dmap { _ flatMap docTopic }
+    topicRepo.coll(_.byId[Bdoc](str)).dmap { _.flatMap(docTopic) }
 
-  def findLike(str: String, myId: Option[UserId], nb: Int = 10): Fu[StudyTopics] = StudyTopics from {
-    (str.lengthIs >= 2) so {
+  def findLike(str: String, myId: Option[UserId], nb: Int = 10): Fu[StudyTopics] = StudyTopics.from {
+    (str.lengthIs >= 2).so {
       val favsFu: Fu[List[StudyTopic]] =
         myId.so: userId =>
           userTopics(userId).map:
-            _.value.filter(_.value startsWith str) take nb
+            _.value.filter(_.value.startsWith(str)).take(nb)
       favsFu.flatMap: favs =>
         topicRepo
           .coll:
@@ -59,7 +57,7 @@ final class StudyTopicApi(topicRepo: StudyTopicRepo, userTopicRepo: StudyUserTop
               .sort($sort.naturalAsc)
               .cursor[Bdoc]()
               .list(nb - favs.size)
-          .dmap { _ flatMap docTopic }
+          .dmap { _.flatMap(docTopic) }
           .dmap { favs ::: _ }
     }
   }
@@ -89,39 +87,45 @@ final class StudyTopicApi(topicRepo: StudyTopicRepo, userTopicRepo: StudyUserTop
       .void
 
   def userTopicsAdd(userId: UserId, topics: StudyTopics): Funit =
-    topics.value.nonEmpty so userTopics(userId).flatMap { prev =>
+    topics.value.nonEmpty.so(userTopics(userId).flatMap { prev =>
       val newTopics = prev ++ topics
-      (newTopics != prev) so
+      (newTopics != prev).so(
         userTopicRepo
           .coll:
             _.update.one($id(userId), $set("topics" -> newTopics), upsert = true)
           .void
-    }
+      )
+    })
+
+  def userTopicsDelete(userId: UserId) =
+    userTopicRepo.coll(_.delete.one($id(userId)))
 
   def popular(nb: Int): Fu[StudyTopics] =
-    StudyTopics from topicRepo
-      .coll:
-        _.find($empty)
-          .sort($sort.naturalAsc)
-          .cursor[Bdoc]()
-          .list(nb)
-      .dmap:
-        _ flatMap docTopic
+    StudyTopics.from(
+      topicRepo
+        .coll:
+          _.find($empty)
+            .sort($sort.naturalAsc)
+            .cursor[Bdoc]()
+            .list(nb)
+        .dmap:
+          _.flatMap(docTopic)
+    )
 
   private def docTopic(doc: Bdoc): Option[StudyTopic] =
     doc.getAsOpt[StudyTopic]("_id")
 
-  private val recomputeWorkQueue = lila.hub.AsyncActorSequencer(
+  private val recomputeWorkQueue = scalalib.actor.AsyncActorSequencer(
     maxSize = Max(1),
-    timeout = 61 seconds,
+    timeout = 61.seconds,
     name = "studyTopicAggregation",
-    logging = false
+    lila.log.asyncActorMonitor.unhandled
   )
 
   def recompute(): Unit =
-    recomputeWorkQueue(LilaFuture.makeItLast(60 seconds)(recomputeNow)).recover:
-      case _: lila.hub.BoundedAsyncActor.EnqueueException => ()
-      case e: Exception                                   => logger.warn("Can't recompute study topics!", e)
+    recomputeWorkQueue(LilaFuture.makeItLast(60.seconds)(recomputeNow)).recover:
+      case _: scalalib.actor.AsyncActorBounded.EnqueueException => ()
+      case e: Exception => logger.warn("Can't recompute study topics!", e)
 
   private def recomputeNow: Funit =
     studyRepo
@@ -131,7 +135,7 @@ final class StudyTopicApi(topicRepo: StudyTopicRepo, userTopicRepo: StudyUserTop
           List(
             Match(
               $doc(
-                "topics" $exists true,
+                "topics".$exists(true),
                 "visibility" -> "public"
               )
             ),
