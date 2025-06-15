@@ -51,7 +51,7 @@ object replay:
         withNoteAge = ctx.isAuth.option(pov.game.secondsSinceCreation),
         public = true,
         resourceId = lila.chat.Chat.ResourceId(s"game/${c.chat.id}"),
-        palantir = ctx.canPalantir
+        voiceChat = ctx.canVoiceChat
       ) -> views.chat.frag
 
     val side = views.game.side(pov, initialFen, none, simul = simul, userTv = userTv, bookmarked = bookmarked)
@@ -78,7 +78,7 @@ object embed:
       pageModule = ui.bits
         .analyseModule("userAnalysis", Json.obj("data" -> data, "embed" -> true) ++ ui.explorerAndCevalConfig)
         .some,
-      csp = _.withExternalAnalysisApis,
+      csp = _.withExternalAnalysisApis.withWebAssembly,
       i18nModules = List(_.site, _.timeago, _.study)
     )(
       ui.bits.embedUserAnalysisBody,
