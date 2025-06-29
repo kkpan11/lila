@@ -31,6 +31,7 @@ final class Env(
     gameProxy: lila.core.game.GameProxy,
     guessPlayer: lila.core.fide.GuessPlayer,
     getPlayer: lila.core.fide.GetPlayer,
+    getPlayerFollowers: lila.core.fide.GetPlayerFollowers,
     cacheApi: lila.memo.CacheApi,
     settingStore: SettingStore.Builder,
     irc: lila.core.irc.IrcApi,
@@ -38,6 +39,7 @@ final class Env(
     notifyApi: lila.core.notify.NotifyApi,
     picfitApi: lila.memo.PicfitApi,
     picfitUrl: lila.memo.PicfitUrl,
+    lightUserSync: lila.core.LightUser.GetterSync,
     langList: lila.core.i18n.LangList,
     baker: lila.core.security.LilaCookie
 )(using Executor, akka.stream.Materializer, play.api.Mode)(using scheduler: Scheduler):

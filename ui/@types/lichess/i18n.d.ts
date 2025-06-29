@@ -247,6 +247,10 @@ interface I18n {
     broadcastCalendar: string;
     /** Broadcasts */
     broadcasts: string;
+    /** Community broadcast */
+    communityBroadcast: string;
+    /** Created and managed by %s. */
+    createdAndManagedBy: I18nFormat;
     /** Current game URL */
     currentGameUrl: string;
     /** Definitively delete the round and all its games. */
@@ -1215,8 +1219,6 @@ interface I18n {
     viewSiteInformationPopUp: string;
     /** Watch International Master Eric Rosen checkmate %s. */
     watchIMRosenCheckmate: I18nFormat;
-    /** To get it, hiimgosu challenged himself to berserk and win all games of %s. */
-    wayOfBerserkExplanation: I18nFormat;
     /** Unfortunately, we cannot give back rating points for games lost due to lag or disconnection, regardless of whether the problem was at your end or our end. The latter is very rare though. Also note that when Lichess restarts and you lose on time because of that, we abort the game to prevent an unfair loss. */
     weCannotDoThatEvenIfItIsServerSideButThatsRare: string;
     /** We repeated a position three times. Why was the game not drawn? */
@@ -1747,7 +1749,7 @@ interface I18n {
     announceLastMove: string;
     /** Announce piece captured in last move. */
     announceLastMoveCapture: string;
-    /** Announce locations of pieces. Example: p capital N for white knights, p lowercase k for black king. */
+    /** Announce locations of pieces. Example: p capital N for white knights, p lowercase k for black king, p capital A for all white pieces. */
     announcePieceLocations: string;
     /** Announce pieces on a rank or a file. Example: s a, s 1. */
     announcePiecesOnRankOrFile: string;
@@ -1755,6 +1757,20 @@ interface I18n {
     announcePossibleCaptures: string;
     /** Announce possible moves for the selected piece. */
     announcePossibleMoves: string;
+    /** bishop */
+    bishop: string;
+    /** black bishop */
+    blackBishop: string;
+    /** black king */
+    blackKing: string;
+    /** black knight */
+    blackKnight: string;
+    /** black pawn */
+    blackPawn: string;
+    /** black queen */
+    blackQueen: string;
+    /** black rook */
+    blackRook: string;
     /** Command list when the board has focus */
     boardCommandList: string;
     /** Featured events */
@@ -1773,6 +1789,12 @@ interface I18n {
     inputForm: string;
     /** Type these commands in the command input form. */
     inputFormCommandList: string;
+    /** Invalid move */
+    invalidMove: string;
+    /** king */
+    king: string;
+    /** knight */
+    knight: string;
     /** Last move */
     lastMove: string;
     /** Move list */
@@ -1789,10 +1811,48 @@ interface I18n {
     moveWithArrows: string;
     /** Opponent clock */
     opponentClock: string;
+    /** pawn */
+    pawn: string;
     /** Pieces */
     pieces: string;
+    /** Premove cancelled */
+    premoveCancelled: string;
+    /** Premove recorded: %s. Hit enter to cancel */
+    premoveRecorded: I18nFormat;
     /** To promote to anything else than a queen, use equals. For example a-8-equals-n promotes to a knight. */
     promotion: string;
+    /** queen */
+    queen: string;
+    /** rook */
+    rook: string;
+    /** check */
+    sanCheck: string;
+    /** checkmate */
+    sanCheckmate: string;
+    /** is dropped on */
+    sanDroppedOn: string;
+    /** long castling */
+    sanLongCastling: string;
+    /** promotes to */
+    sanPromotesTo: string;
+    /** short castling */
+    sanShortCastling: string;
+    /** K Q R B N x */
+    sanSymbols: string;
+    /** takes */
+    sanTakes: string;
+    /** white bishop */
+    whiteBishop: string;
+    /** white king */
+    whiteKing: string;
+    /** white knight */
+    whiteKnight: string;
+    /** white pawn */
+    whitePawn: string;
+    /** white queen */
+    whiteQueen: string;
+    /** white rook */
+    whiteRook: string;
     /** Your clock */
     yourClock: string;
   };
@@ -3087,8 +3147,6 @@ interface I18n {
     createANewTopic: string;
     /** Create a new tournament */
     createANewTournament: string;
-    /** Created by */
-    createdBy: string;
     /** Newly created simuls */
     createdSimuls: string;
     /** Create the game */
