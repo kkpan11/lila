@@ -152,7 +152,7 @@ final class UserAnalysis(
 
   private def forecastReload = JsonOk(Json.obj("reload" -> true))
 
-  def forecasts(fullId: GameFullId) = AuthBody(parse.json) { ctx ?=> _ ?=>
+  def forecastsPost(fullId: GameFullId) = AuthOrScopedBodyWithParser(parse.json)(_.Web.Mobile) { ctx ?=> _ ?=>
     import lila.round.Forecast
     Found(env.round.proxyRepo.pov(fullId)): pov =>
       if isTheft(pov) then theftResponse
@@ -166,15 +166,19 @@ final class UserAnalysis(
                 _   <- env.round.forecastApi.save(pov, forecasts)
                 res <- env.round.forecastApi.loadForDisplay(pov)
               yield res.fold(JsonOk(Json.obj("none" -> true)))(JsonOk(_))
-              fu.recover {
+              fu.recover:
                 case Forecast.OutOfSync             => forecastReload
                 case _: lila.core.round.ClientError => forecastReload
-              }
           )
   }
 
+  def forecastsGet(fullId: GameFullId) = Scoped(_.Web.Mobile) { _ ?=> _ ?=>
+    Found(env.round.proxyRepo.pov(fullId)): pov =>
+      JsonOk(env.round.mobile.forecast(pov.game, pov.fullId.anyId))
+  }
+
   def forecastsOnMyTurn(fullId: GameFullId, uci: String) =
-    AuthBody(parse.json) { ctx ?=> _ ?=>
+    AuthOrScopedBodyWithParser(parse.json)(_.Web.Mobile) { ctx ?=> _ ?=>
       import lila.round.Forecast
       Found(env.round.proxyRepo.pov(fullId)): pov =>
         if isTheft(pov) then theftResponse

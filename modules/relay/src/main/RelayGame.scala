@@ -1,12 +1,12 @@
 package lila.relay
 
 import chess.Outcome
+import chess.format.UciPath
 import chess.format.pgn.{ Tag, TagType, Tags }
 
 import lila.study.{ MultiPgn, PgnDump }
 import lila.tree.{ Root, Clock }
 import lila.tree.Node.Comments
-import chess.format.UciPath
 
 case class RelayGame(
     tags: Tags,
@@ -19,6 +19,8 @@ case class RelayGame(
 
   def isEmpty = tags.value.isEmpty && root.children.nodes.isEmpty
 
+  def isBye = tags.names.exists(_.exists(_.value.toLowerCase == "bye"))
+
   def hasMoves = root.children.nodes.nonEmpty
 
   def withoutMoves = copy(root = root.withoutChildren)
@@ -29,7 +31,7 @@ case class RelayGame(
   )
 
   def fideIdsPair: Option[PairOf[Option[chess.FideId]]] =
-    tags.fideIds.some.filter(_.forall(_.exists(_.value > 0))).map(_.toPair)
+    tags.fideIds.some.filter(_.exists(_.exists(_.value > 0))).map(_.toPair)
 
   def hasUnknownPlayer: Boolean =
     List(RelayGame.whiteTags, RelayGame.blackTags).exists:
@@ -100,7 +102,7 @@ private object RelayGame:
     value = tags.value.filter: tag =>
       (tag.name != Tag.White && tag.name != Tag.Black) || {
         val n = tag.value.toLowerCase
-        n.size > 1 && n != "bye" && n != "unknown"
+        n.size > 1 && n != "unknown"
       }
   )
 
